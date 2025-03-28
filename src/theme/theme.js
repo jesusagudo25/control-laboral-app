@@ -1,0 +1,93 @@
+import { createTheme } from "@rneui/themed";
+
+const theme = createTheme({
+  colors: {
+    primary: "#1E6091", // Azul profundo, confiable
+    secondary: "#168AAD", // Azul medio, moderno
+    accent: "#f7941e", // Naranja suave, para resaltar
+    error: "#E76F51", // Rojo terracota, menos agresivo
+    success: "#4CAF50", // Verde equilibrado, profesional
+    warning: "#F4A261", // Naranja suave, sin ser llamativo
+    info: "#468FAF", // Azul grisáceo, más sutil
+    text: "#0D0D0D", // Negro suave, para buena lectura
+    background: "#F6F6F6", // Gris claro, para mejor contraste
+    border: "#B0B0B0", // Gris medio, discreto
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 40,
+  },
+  typography: {
+    fonts: {
+      body: "Arial",
+      heading: "Arial",
+      monospace: "Arial",
+    },
+    fontSizes: {
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 20,
+      xl: 24,
+    },
+    fontWeights: {
+      normal: "400",
+      medium: "500",
+      bold: "700",
+    },
+    lineHeights: {
+      xs: 16,
+      sm: 20,
+      md: 24,
+      lg: 28,
+      xl: 32,
+    },
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 30,
+    marginTop: 25,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: "#1E6091",
+    padding: 11,
+    marginBottom: 15,
+    color: "#000",
+    backgroundColor: "#fff",
+  },
+  buttonPrimary: {
+    backgroundColor: "#000",
+    padding: 10,
+    margin: 10,
+    color: "#fff",
+  },
+  buttonSecondary: {
+    backgroundColor: "#fff",
+    padding: 10,
+    margin: 10,
+    color: "#000",
+  },
+  textPrimary: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+    color: "#000",
+  },
+  textSecondary: {
+    fontSize: 15,
+    fontWeight: "400",
+    textAlign: "center",
+    color: "#000",
+    marginBottom: 10,
+
+  },
+});
+
+export default theme;
