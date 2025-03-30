@@ -31,9 +31,9 @@ const Home = () => {
   const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
   const [appStatus, setAppStatus] = useState(AppState.currentState);
-  const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
+  //const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
   //const [workingDayStatus, setWorkingDayStatus] = useState("InProgress");
-  //const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
+  const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
 
   const checkInWorkingDay = {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
@@ -59,31 +59,30 @@ const Home = () => {
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
-        <Header
-          backgroundColor={theme.colors.accent}
-          barStyle="default"
-          centerComponent={{
-            text: `Buenos días, ${name}`,
-            style: {
-              color: theme.colors.header,
-              fontSize: 16,
-            },
-          }}
-          containerStyle={{ width: Dimensions.get("window").width }}
-          leftComponent={
-            <TouchableOpacity onPress={() => setIsVisible(true)}>
-              <Icon name="notifications" color="white" />
-            </TouchableOpacity>
-          }
-          placement="center"
-          rightComponent={
-            <TouchableOpacity onPress={() => logout()}>
-              <Icon name="logout" color="white" />
-            </TouchableOpacity>
-          }
-        />
+      <Header
+        backgroundColor={theme.colors.accent}
+        barStyle="default"
+        centerComponent={{
+          text: `Buenos días, ${name}`,
+          style: {
+            color: theme.colors.header,
+            fontSize: 16,
+          },
+        }}
+        containerStyle={{ width: Dimensions.get("window").width }}
+        leftComponent={
+          <TouchableOpacity onPress={() => setIsVisible(true)}>
+            <Icon name="notifications" color="white" />
+          </TouchableOpacity>
+        }
+        placement="center"
+        rightComponent={
+          <TouchableOpacity onPress={() => logout()}>
+            <Icon name="logout" color="white" />
+          </TouchableOpacity>
+        }
+      />
       <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
-
         <View
           style={{
             justifyContent: "center",

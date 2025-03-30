@@ -75,7 +75,7 @@ const Register = () => {
           containerStyle={{
             justifyContent: "center",
             alignItems: "center",
-            marginTop: 25,
+            marginTop: 15,
             marginBottom: 15,
           }}
           buttonStyle={{
