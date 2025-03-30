@@ -19,7 +19,7 @@ import {
   Text,
   Image,
   Dialog,
-  useTheme
+  useTheme,
 } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -31,76 +31,43 @@ const Home = () => {
   const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
   const [appStatus, setAppStatus] = useState(AppState.currentState);
+  const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
+  //const [workingDayStatus, setWorkingDayStatus] = useState("InProgress");
+  //const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
 
-  const list = [
-    {
-      title: "Funcionamiento",
-      onPress: () => {
-        setIsVisible(false);
-        navigation.navigate("Operation");
-      },
-      titleStyle: { color: "#371B34" },
-    },
-    {
-      title: "Aspectos agronómicos",
-      onPress: () => {
-        setIsVisible(false);
-        navigation.navigate("Agronomic");
-      },
-      titleStyle: { color: "#371B34" },
-    },
-    {
-      title: "Contactar a un asesor",
-      onPress: () => {
-        setIsVisible(false);
-        const url = `whatsapp://send?phone=${config.WHATSAPP_NUMBER}`;
-
-        Linking.openURL(url)
-          .then(() => {
-            console.log("Whatsapp Opened");
-          })
-          .catch((err) => {
-            setShowDialog(true);
-          });
-      },
-      titleStyle: { color: "#371B34" },
-    },
-    {
-      title: "Cerrar",
-      containerStyle: { backgroundColor: "#F09E54" },
-      titleStyle: { color: "white" },
-      onPress: () => setIsVisible(false),
-    },
-  ];
-
-  const calculator = {
-    uri: "https://plus.unsplash.com/premium_photo-1663045734621-98e1f1007c34?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
-  };
-  const history = {
-    uri: "https://plus.unsplash.com/premium_photo-1663040310399-28080634fc91?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
+  const checkInWorkingDay = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
   };
 
-  const premium = {
-    uri: "https://revistapesquisa.fapesp.br/wp-content/uploads/2019/09/038-040_Rel.-agricultura_271-1200px-1-1.png",
+  const woringDayInProgress = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
   };
 
-  const logout = async () => {
-  
+  const workingDayFinished = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
   };
 
-  const getName = async () => {
-
+  const calendar = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
   };
+
+  const logout = async () => {};
+
+  const getName = async () => {};
+
+  /* Control Laboral App */
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
-      <View>
         <Header
           backgroundColor={theme.colors.accent}
           barStyle="default"
           centerComponent={{
             text: `Buenos días, ${name}`,
-            style: { color: "#fff", fontSize: 16 },
+            style: {
+              color: theme.colors.header,
+              fontSize: 16,
+            },
           }}
           containerStyle={{ width: Dimensions.get("window").width }}
           leftComponent={
@@ -115,90 +82,164 @@ const Home = () => {
             </TouchableOpacity>
           }
         />
+      <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
 
-        <Card
-          containerStyle={{
-            borderRadius: 6,
-            marginTop: 20,
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <Card.Title style={{ textAlign: "left", color: "#371B34" }}>
-            ¿Qué quieres hacer hoy?
-          </Card.Title>
-          <Card.Divider
+          <Image
+            source={require("../../../assets/logo_trans.png")}
             style={{
-              backgroundColor: "#F09E54",
+              width: 80,
+              height: 80,
+              alignSelf: "center",
+              resizeMode: "contain",
             }}
           />
-          <View style={styles.vertical}>
-            <TouchableOpacity
-              style={styles.buttonFacebookStyle}
-              activeOpacity={0.5}
-              onPress={() => {
-                navigation.navigate("Calculator");
-              }}
-            >
-              <ImageBackground
-                source={calculator}
-                resizeMode="cover"
-                style={styles.image}
-                imageStyle={{ borderRadius: 6 }}
-              >
-                <Text style={styles.text}>Calculadora</Text>
-              </ImageBackground>
-            </TouchableOpacity>
+        </View>
 
-            <Divider
-              orientation="vertical"
-              style={{
-                backgroundColor: "#371B34",
-                height: 100,
-                width: 1,
-                marginHorizontal: 10,
-              }}
-            />
-
-            <TouchableOpacity
-              style={styles.buttonFacebookStyle}
-              activeOpacity={0.5}
-              onPress={() => {
-                navigation.navigate("Record");
-              }}
-            >
-              <ImageBackground
-                source={history}
-                resizeMode="cover"
-                style={styles.image}
-                imageStyle={{ borderRadius: 6 }}
-              >
-                <Text style={styles.text}>Historial</Text>
-              </ImageBackground>
-            </TouchableOpacity>
-          </View>
-        </Card>
-
-        <Card
-          containerStyle={{
-            borderRadius: 6,
-            marginTop: 20,
-            height: 180,
-          }}
-        >
-          <Card.Title style={{ textAlign: "left", color: "#371B34" }}>
-            ¡Actualiza tu cuenta!
-          </Card.Title>
-          <Card.Divider
+        <Card containerStyle={theme.card}>
+          <Card.Title
             style={{
-              backgroundColor: "#F09E54",
-            }}
-          />
-          <TouchableOpacity
-            style={styles.buttonRequest}
-            activeOpacity={0.5}
-            onPress={() => {
-              navigation.navigate("Premium");
+              textAlign: "left",
+              color: theme.colors.text,
             }}
           >
+            Fichaje
+          </Card.Title>
+          <Card.Divider
+            style={{
+              backgroundColor: theme.colors.primary,
+            }}
+          />
+          <TouchableOpacity style={theme.buttonRequest} activeOpacity={0.5}>
+            {workingDayStatus === "NotStarted" ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "column",
+                    width: "60%",
+                  }}
+                >
+                  <Text style={theme.textRequest}>Iniciar jornada laboral</Text>
+                  <Text style={theme.paragraphRequest}>
+                    Comienza a registrar tu jornada laboral y tus horas
+                    trabajadas.
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "40%",
+                  }}
+                >
+                  <Image
+                    source={checkInWorkingDay}
+                    style={{ width: 80, height: 80 }}
+                  />
+                </View>
+              </View>
+            ) : workingDayStatus === "InProgress" ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "column",
+                    width: "60%",
+                  }}
+                >
+                  <Text style={theme.textRequest}>Ver jornada laboral</Text>
+                  <Text style={theme.paragraphRequest}>
+                    Visualiza tus horas trabajadas y registra tu salida.
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "40%",
+                  }}
+                >
+                  <Image
+                    source={woringDayInProgress}
+                    style={{ width: 80, height: 80 }}
+                  />
+                </View>
+              </View>
+            ) : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "column",
+                    width: "60%",
+                  }}
+                >
+                  <Text style={theme.textRequest}>
+                    Jornada laboral finalizada
+                  </Text>
+                  <Text style={theme.paragraphRequest}>
+                    Buen trabajo, ya puedes ver tus horas trabajadas.
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "40%",
+                  }}
+                >
+                  <Image
+                    source={workingDayFinished}
+                    style={{ width: 80, height: 80 }}
+                  />
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        </Card>
+
+        <Card containerStyle={theme.card}>
+          <Card.Title
+            style={{
+              textAlign: "left",
+              color: theme.colors.text,
+            }}
+          >
+            Calendario
+          </Card.Title>
+          <Card.Divider
+            style={{
+              backgroundColor: theme.colors.primary,
+            }}
+          />
+          <TouchableOpacity style={theme.buttonRequest} activeOpacity={0.5}>
             <View
               style={{
                 flexDirection: "row",
@@ -212,25 +253,10 @@ const Home = () => {
                   width: "60%",
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "bold",
-                    textAlign: "left",
-                    marginBottom: 5,
-                    color: "#371B34",
-                  }}
-                >
-                  Plan premium
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    textAlign: "left",
-                    color: "#371B34",
-                  }}
-                >
-                  Obtienes multiples beneficios para tu cuenta
+                <Text style={theme.textRequest}>Visualizar eventos</Text>
+                <Text style={theme.paragraphRequest}>
+                  Revisa tu programación de eventos y recibe notificaciones de
+                  recordatorios.
                 </Text>
               </View>
 
@@ -242,7 +268,7 @@ const Home = () => {
                   width: "40%",
                 }}
               >
-                <Image source={premium} style={{ width: 80, height: 80 }} />
+                <Image source={calendar} style={{ width: 80, height: 80 }} />
               </View>
             </View>
           </TouchableOpacity>
@@ -253,51 +279,3 @@ const Home = () => {
 };
 
 export default Home;
-
-const styles = StyleSheet.create({
-  vertical: {
-    marginBottom: 10,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-  },
-  image: {
-    width: Dimensions.get("window").width / 2 - 35,
-    height: Dimensions.get("window").width / 2 - 35,
-    justifyContent: "center",
-    borderRadius: 100,
-  },
-  text: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    backgroundColor: "#000000c0",
-  },
-  button: {
-    position: "absolute",
-    borderRadius: 100,
-    padding: 20,
-  },
-  containerPercentage: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonRequest: {
-    height: 130,
-  },
-  textPercentage: {
-    color: "#43484d",
-    fontSize: 18,
-    textAlign: "center",
-    position: "absolute",
-    padding: 20,
-  },
-  textRequest: {
-    color: "#43484d",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-});

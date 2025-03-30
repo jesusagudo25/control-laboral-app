@@ -11,6 +11,7 @@ import { useTheme } from "@rneui/themed";
 import Login from "../screens/auth/Login";
 import Register from "../screens/auth/Register";
 import Home from "../screens/home/Home";
+import Signing from "../screens/signing/Signing";
 
 
 //const Stack = createStackNavigator();
@@ -45,20 +46,22 @@ const Navigate = () => {
             tabBarIcon: () => <Icon name="login" size={24} color={theme.colors.text} />,
           }}
         />
-        <Tab.Screen
-          name="Register"
-          component={Register}
-          options={{
-            tabBarLabel: "Registro",
-            tabBarIcon: () => <Icon name="person-add" size={24} color={theme.colors.text} />,
-          }}
-        />
+
         <Tab.Screen
           name="Home"
           component={Home}
           options={{
             tabBarLabel: "Inicio",
             tabBarIcon: () => <Icon name="home" size={24} color={theme.colors.text} />,
+          }}
+        />
+
+        <Tab.Screen
+          name="Signing"
+          component={Signing}
+          options={{
+            tabBarLabel: "Jornada",
+            tabBarIcon: () => <Icon name="work" size={24} color={theme.colors.text} />,
           }}
         />
       </Tab.Navigator>

@@ -12,6 +12,7 @@ const theme = createTheme({
     text: "#0D0D0D", // Negro suave, para buena lectura
     background: "#F6F6F6", // Gris claro, para mejor contraste
     border: "#B0B0B0", // Gris medio, discreto
+    header: "#FFF", // Blanco
   },
   spacing: {
     xs: 4,
@@ -73,6 +74,9 @@ const theme = createTheme({
     margin: 10,
     color: "#000",
   },
+  buttonRequest: {
+    height: 130,
+  },
   textPrimary: {
     fontSize: 24,
     fontWeight: "bold",
@@ -86,7 +90,29 @@ const theme = createTheme({
     textAlign: "center",
     color: "#000",
     marginBottom: 10,
-
+  },
+  textRequest: {
+    fontSize: 17,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 5,
+    color: "#0D0D0D",
+  },
+  paragraphRequest: {
+    fontSize: 14.5,
+    textAlign: "left",
+    color: '#0D0D0D',
+  },
+  card: {
+    borderRadius: 6,
+    height: 180,
+    borderColor: "#1E6091",
+    borderWidth: 1,
+    backgroundColor: "#fff",
+    marginBottom: 10,
+    marginTop: 10,
+    marginLeft: 0,
+    marginRight: 0,
   },
 });
 
