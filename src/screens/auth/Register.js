@@ -11,11 +11,13 @@ import { Button, Image, Dialog, Divider } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
 
-const Register = () => {
+const Register = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -56,6 +58,14 @@ const Register = () => {
 
         <TextInput
           style={theme.input}
+          placeholder="Ingresa tu usuario"
+          onChangeText={setUsername}
+          placeholderTextColor={theme.colors.text}
+          value={username}
+        />
+
+        <TextInput
+          style={theme.input}
           placeholder="Ingresa tu correo electrónico"
           onChangeText={setEmail}
           placeholderTextColor={theme.colors.text}
@@ -84,44 +94,6 @@ const Register = () => {
             paddingHorizontal: 15,
             paddingVertical: 10,
             width: "100%",
-          }}
-          onPress={async () => {
-            setLoading(true);
-            if (name === "" || email === "" || password === "") {
-              setMessage("Por favor, ingresa todos los datos.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            } else if (!checked) {
-              setMessage("Por favor, verifica los datos ingresados.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-
-            const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-            if (emailRegex.test(email) === false) {
-              setMessage("Por favor, ingresa un correo electrónico válido.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-
-            const emailUnique = await axios.get(
-              `${config.API_URL}/users/validate/${email}`
-            );
-            if (emailUnique.data.exists) {
-              setMessage(
-                "El correo electrónico ingresado ya se encuentra registrado."
-              );
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-            setLoading(false);
-
-            navigation.navigate("QuestionRegister", { name, email, password });
           }}
           loading={loading}
         />

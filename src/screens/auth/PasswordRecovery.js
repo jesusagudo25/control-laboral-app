@@ -11,7 +11,7 @@ import { Button, Image, Dialog, Divider } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
 
-const PasswordRecovery = () => {
+const PasswordRecovery = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [name, setName] = useState("");
@@ -76,44 +76,6 @@ const PasswordRecovery = () => {
             paddingHorizontal: 15,
             paddingVertical: 10,
             width: "100%",
-          }}
-          onPress={async () => {
-            setLoading(true);
-            if (name === "" || email === "" || password === "") {
-              setMessage("Por favor, ingresa todos los datos.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            } else if (!checked) {
-              setMessage("Por favor, verifica los datos ingresados.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-
-            const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-            if (emailRegex.test(email) === false) {
-              setMessage("Por favor, ingresa un correo electrónico válido.");
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-
-            const emailUnique = await axios.get(
-              `${config.API_URL}/users/validate/${email}`
-            );
-            if (emailUnique.data.exists) {
-              setMessage(
-                "El correo electrónico ingresado ya se encuentra registrado."
-              );
-              setShowDialog(true);
-              setLoading(false);
-              return;
-            }
-            setLoading(false);
-
-            navigation.navigate("QuestionRegister", { name, email, password });
           }}
           loading={loading}
         />

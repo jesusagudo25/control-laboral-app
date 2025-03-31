@@ -4,23 +4,74 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
 } from "react-native";
 import { Button, Image, Dialog, Divider } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
+import Connection from "../../components/Connection";
+import axios from "axios";
 
 const Login = ({ navigation }) => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleLogin = async () => {};
+  const [isConnected, setIsConnected] = useState(true);
+  const [connectionType, setConnectionType] = useState("none");
+
+  const handleLogin = async () => {
+    if (!isConnected) {
+      showErrorMessage("Por favor, verifica tu conexión a internet.");
+      return;
+    }
+
+    if (!username || !password) {
+      showErrorMessage("Por favor, completa todos los campos.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authenticateUser(username, password);
+      await saveToken(response.data.access_token);
+      resetForm();
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error(error);
+      showErrorMessage("Por favor, verifica tus credenciales.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const authenticateUser = async (username, password) => {
+    return axios.post(`${API_URL}`, {
+      action: "auth",
+      grant_type: "client_credentials",
+      client_id: username,
+      client_secret: password,
+    });
+  };
+
+  const saveToken = async (token) => {
+    await AsyncStorage.setItem("token", token);
+  };
+
+  const resetForm = () => {
+    setUsername("");
+    setPassword("");
+  };
+
+  const showErrorMessage = (message) => {
+    setMessage(message);
+    setShowDialog(true);
+  };
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -45,10 +96,10 @@ const Login = ({ navigation }) => {
 
         <TextInput
           style={theme.input}
-          placeholder="Ingresa tu correo electrónico"
-          onChangeText={setEmail}
+          placeholder="Ingresa tu usuario"
+          onChangeText={setUsername}
           placeholderTextColor={theme.colors.text}
-          value={email}
+          value={username}
         />
         <TextInput
           style={theme.input}
@@ -62,12 +113,39 @@ const Login = ({ navigation }) => {
         <Dialog
           isVisible={showDialog}
           onBackdropPress={() => setShowDialog(false)}
+          overlayStyle={{
+            backgroundColor: theme.colors.header,
+            borderRadius: 10,
+            padding: 20,
+          }}
+          dialogStyle={{
+            backgroundColor: theme.colors.header,
+            borderRadius: 10,
+          }}
+          dialogContainerStyle={{
+            backgroundColor: theme.colors.header,
+            borderRadius: 10,
+          }}
+          dialogTitleStyle={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: "bold",
+          }}
+          titleStyle={{ color: theme.colors.text }}
         >
           <Dialog.Title title="Error" />
           <Text>{message}</Text>
         </Dialog>
 
-        <TouchableOpacity activeOpacity={0.8}>
+        <Connection
+          setIsConnected={setIsConnected}
+          setConnectionType={setConnectionType}
+        />
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("PasswordRecovery")}
+        >
           <Text
             style={{
               textAlign: "center",
@@ -95,6 +173,11 @@ const Login = ({ navigation }) => {
             paddingVertical: 10,
             width: "100%",
           }}
+          disabledStyle={{
+            backgroundColor: theme.colors.disabled,
+            borderRadius: 3,
+            paddingHorizontal: 15,
+          }}
           onPress={() => handleLogin()}
           loading={loading}
           disabled={loading}
@@ -118,8 +201,7 @@ const Login = ({ navigation }) => {
             paddingVertical: 10,
             width: "100%",
           }}
-          onPress={() => handleLogin()}
-          loading={loading}
+          onPress={() => navigation.navigate("Register")}
         />
       </View>
     </ScrollView>
@@ -127,4 +209,3 @@ const Login = ({ navigation }) => {
 };
 
 export default Login;
-

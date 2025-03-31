@@ -13,6 +13,7 @@ const theme = createTheme({
     background: "#F6F6F6", // Gris claro, para mejor contraste
     border: "#B0B0B0", // Gris medio, discreto
     header: "#FFF", // Blanco
+    disabled: "#F4A261", // Light gray for disabled elements
   },
   spacing: {
     xs: 4,
