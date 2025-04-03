@@ -23,14 +23,21 @@ import {
 } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import Connection from "../../components/Connection";
+import StatusApp from "../../components/StatusApp";
 
-const Home = () => {
+const Home = ({ navigation }) => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [isVisible, setIsVisible] = useState(false);
   const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
   const [appStatus, setAppStatus] = useState(AppState.currentState);
+  
+    const [isConnected, setIsConnected] = useState(true);
+    const [connectionType, setConnectionType] = useState("none");
+
   //const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
   //const [workingDayStatus, setWorkingDayStatus] = useState("InProgress");
   const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
@@ -51,11 +58,77 @@ const Home = () => {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
   };
 
-  const logout = async () => {};
+  const logout = async () => {
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("userName");
 
-  const getName = async () => {};
+    //Falta el fetch para cerrar sesión en la API
+    navigation.navigate("Login");
+  };
+
+  const getName = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/index.php?action=user_info`);
+
+      setName(`¡Hola, ${response.data.data.lastname}!`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getUserTurn = async () => {
+
+    const dayWeek = new Date().getDay(); // 0-6 -> 1-7
+    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
+    const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    //index.php?day=7&action=user_turn&date=2025-04-03
+    console.log(`${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`);
+    
+    try {
+      const response = await axios.get(`${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`);
+      console.log(response.data.data.horario[day]);
+      const turn = response.data.data.horario[day];
+      //contar cuantos registros tiene turn
+      const count = Object.keys(turn).length;
+      console.log(count);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   /* Control Laboral App */
+
+  useEffect(() => {
+    getName();
+    getUserTurn();
+  }, []);
+
+  useEffect(() => {
+    if (appStatus !== "active") {
+      const exit = async () => {
+        try {
+          await axios.post(`${config.API_URL}/logout`);
+          await AsyncStorage.removeItem('token');
+          await AsyncStorage.removeItem('id');
+        }
+        catch (error) {
+          console.log(error);
+        }
+      }
+      exit();
+    }
+  }, [appStatus]);
+
+  React.useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e) => {
+        logout();
+      }),
+    [navigation]
+  );
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -63,7 +136,7 @@ const Home = () => {
         backgroundColor={theme.colors.accent}
         barStyle="default"
         centerComponent={{
-          text: `Buenos días, ${name}`,
+          text: `${name}`,
           style: {
             color: theme.colors.header,
             fontSize: 16,
@@ -272,6 +345,9 @@ const Home = () => {
             </View>
           </TouchableOpacity>
         </Card>
+
+        <StatusApp appStatus={appStatus} setAppStatus={setAppStatus} navigation={navigation} />
+        <Connection setIsConnected={setIsConnected} setConnectionType={setConnectionType} navigation={navigation} />
       </View>
     </ScrollView>
   );

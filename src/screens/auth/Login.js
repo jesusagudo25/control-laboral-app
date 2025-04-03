@@ -39,9 +39,13 @@ const Login = ({ navigation }) => {
     try {
       setLoading(true);
       const response = await authenticateUser(username, password);
-      await saveToken(response.data.access_token);
-      resetForm();
-      navigation.navigate("Home");
+      if (response.data && response.data.access_token) {
+        await saveToken(response.data.access_token);
+        await AsyncStorage.setItem("userName", username);
+        navigation.navigate("Home");
+      } else {
+        showErrorMessage("Por favor, verifica tus credenciales.");
+      }
     } catch (error) {
       console.error(error);
       showErrorMessage("Por favor, verifica tus credenciales.");
@@ -51,7 +55,7 @@ const Login = ({ navigation }) => {
   };
 
   const authenticateUser = async (username, password) => {
-    return axios.post(`${API_URL}`, {
+    return axios.post(`${API_URL}/index.php`, {
       action: "auth",
       grant_type: "client_credentials",
       client_id: username,
