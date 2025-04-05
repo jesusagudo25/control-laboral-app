@@ -34,21 +34,9 @@ const Home = ({ navigation }) => {
   const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
   const [appStatus, setAppStatus] = useState(AppState.currentState);
-  
-    const [isConnected, setIsConnected] = useState(true);
-    const [connectionType, setConnectionType] = useState("none");
 
-  //const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
-  //const [workingDayStatus, setWorkingDayStatus] = useState("InProgress");
-  const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
-
-  const checkInWorkingDay = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-  };
-
-  const woringDayInProgress = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
-  };
+  const [isConnected, setIsConnected] = useState(true);
+  const [connectionType, setConnectionType] = useState("none");
 
   const workingDayFinished = {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
@@ -77,23 +65,33 @@ const Home = ({ navigation }) => {
   };
 
   const getUserTurn = async () => {
-
     const dayWeek = new Date().getDay(); // 0-6 -> 1-7
-    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
     const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
     const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
     //index.php?day=7&action=user_turn&date=2025-04-03
-    console.log(`${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`);
-    
+    console.log(
+      `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+    );
+
     try {
-      const response = await axios.get(`${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`);
+      const response = await axios.get(
+        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+      );
       console.log(response.data.data.horario[day]);
       const turn = response.data.data.horario[day];
       //contar cuantos registros tiene turn
       const count = Object.keys(turn).length;
       console.log(count);
-
     } catch (error) {
       console.log(error);
     }
@@ -103,7 +101,7 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     getName();
-    getUserTurn();
+    //getUserTurn();
   }, []);
 
   useEffect(() => {
@@ -111,20 +109,19 @@ const Home = ({ navigation }) => {
       const exit = async () => {
         try {
           await axios.post(`${config.API_URL}/logout`);
-          await AsyncStorage.removeItem('token');
-          await AsyncStorage.removeItem('id');
-        }
-        catch (error) {
+          await AsyncStorage.removeItem("token");
+          await AsyncStorage.removeItem("id");
+        } catch (error) {
           console.log(error);
         }
-      }
+      };
       exit();
     }
   }, [appStatus]);
 
   React.useEffect(
     () =>
-      navigation.addListener('beforeRemove', (e) => {
+      navigation.addListener("beforeRemove", (e) => {
         logout();
       }),
     [navigation]
@@ -187,113 +184,44 @@ const Home = ({ navigation }) => {
               backgroundColor: theme.colors.primary,
             }}
           />
-          <TouchableOpacity style={theme.buttonRequest} activeOpacity={0.5}>
-            {workingDayStatus === "NotStarted" ? (
+          <TouchableOpacity
+            style={theme.buttonRequest}
+            activeOpacity={0.5}
+            onPress={() => navigation.navigate("Signing")}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: "column",
+                  width: "60%",
                 }}
               >
-                <View
-                  style={{
-                    flexDirection: "column",
-                    width: "60%",
-                  }}
-                >
-                  <Text style={theme.textRequest}>Iniciar jornada laboral</Text>
-                  <Text style={theme.paragraphRequest}>
-                    Comienza a registrar tu jornada laboral y tus horas
-                    trabajadas.
-                  </Text>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "40%",
-                  }}
-                >
-                  <Image
-                    source={checkInWorkingDay}
-                    style={{ width: 80, height: 80 }}
-                  />
-                </View>
+                <Text style={theme.textRequest}>Jornada laboral</Text>
+                <Text style={theme.paragraphRequest}>
+                  Realiza el fichaje de entrada y salida de tu jornada laboral.
+                </Text>
               </View>
-            ) : workingDayStatus === "InProgress" ? (
+
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+                  flexDirection: "column",
+                  justifyContent: "center",
                   alignItems: "center",
+                  width: "40%",
                 }}
               >
-                <View
-                  style={{
-                    flexDirection: "column",
-                    width: "60%",
-                  }}
-                >
-                  <Text style={theme.textRequest}>Ver jornada laboral</Text>
-                  <Text style={theme.paragraphRequest}>
-                    Visualiza tus horas trabajadas y registra tu salida.
-                  </Text>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "40%",
-                  }}
-                >
-                  <Image
-                    source={woringDayInProgress}
-                    style={{ width: 80, height: 80 }}
-                  />
-                </View>
+                <Image
+                  source={workingDayFinished}
+                  style={{ width: 80, height: 80 }}
+                />
               </View>
-            ) : (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "column",
-                    width: "60%",
-                  }}
-                >
-                  <Text style={theme.textRequest}>
-                    Jornada laboral finalizada
-                  </Text>
-                  <Text style={theme.paragraphRequest}>
-                    Buen trabajo, ya puedes ver tus horas trabajadas.
-                  </Text>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "40%",
-                  }}
-                >
-                  <Image
-                    source={workingDayFinished}
-                    style={{ width: 80, height: 80 }}
-                  />
-                </View>
-              </View>
-            )}
+            </View>
           </TouchableOpacity>
         </Card>
 
@@ -346,8 +274,16 @@ const Home = ({ navigation }) => {
           </TouchableOpacity>
         </Card>
 
-        <StatusApp appStatus={appStatus} setAppStatus={setAppStatus} navigation={navigation} />
-        <Connection setIsConnected={setIsConnected} setConnectionType={setConnectionType} navigation={navigation} />
+        <StatusApp
+          appStatus={appStatus}
+          setAppStatus={setAppStatus}
+          navigation={navigation}
+        />
+        <Connection
+          setIsConnected={setIsConnected}
+          setConnectionType={setConnectionType}
+          navigation={navigation}
+        />
       </View>
     </ScrollView>
   );

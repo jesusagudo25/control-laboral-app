@@ -85,7 +85,7 @@ const theme = createTheme({
     color: "#000",
   },
   buttonRequest: {
-    height: 130,
+    height: "auto",
   },
   textPrimary: {
     fontSize: 24,
@@ -135,7 +135,7 @@ const theme = createTheme({
   },
   card: {
     borderRadius: 6,
-    height: 180,
+    height: "auto",
     borderColor: "#1E6091",
     borderWidth: 1,
     backgroundColor: "#fff",
