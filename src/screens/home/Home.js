@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Dimensions,
@@ -6,27 +6,28 @@ import {
   ScrollView,
   AppState,
 } from "react-native";
-import { Header, Skeleton, Icon, Image, useTheme } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Header, Icon, Image, useTheme } from "@rneui/themed";
 import axios from "axios";
 import Connection from "../../components/Connection";
 import StatusApp from "../../components/StatusApp";
 import CardGoo from "../../components/CardGoo";
-import { LinearGradient } from "expo-linear-gradient";
 import SkeletonCard from "../../components/SkeletonCard";
+import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
+import { useFocusEffect } from "@react-navigation/native";
 
 const Home = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
+  const { logout, setUserName } = useAuth(); //
 
   const [isVisible, setIsVisible] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
 
-  const [name, setName] = useState("");
   const [appStatus, setAppStatus] = useState(AppState.currentState);
   const [connectionType, setConnectionType] = useState("none");
   const [workingDayStatus, setWorkingDayStatus] = useState("none");
+  const [nameShown, setNameShown] = useState("Cargando...");
 
   const workingDayFinished = {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
@@ -44,68 +45,44 @@ const Home = ({ navigation }) => {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
   };
 
-  const logout = async () => {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("userName");
-
-    //Falta el fetch para cerrar sesión en la API
-    navigation.navigate("Login");
+  const handleLogout = async () => {
+    await axios.delete(`${API_URL}/index.php?action=auth`);
+    logout();
   };
 
-  const getName = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/index.php?action=user_info`);
+  useFocusEffect(
+    useCallback(() => {
+      //Set none to workingDayStatus
+      setWorkingDayStatus("none");
+      setNameShown("Cargando...");
 
-      setName(`¡Hola, ${response.data.data.lastname}!`);
-      setWorkingDayStatus(response.data.data.status);
-      console.log(response.data.data.status);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+      const getName = async () => {
+        try {
+          const response = await axios.get(
+            `${API_URL}/index.php?action=user_info`
+          );
+          let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
+          userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra
+          userName = userName.trim(); // Elimina espacios en blanco al inicio y al final
+          setUserName(userName);
+          setNameShown(`¡Hola, ${userName}!`);
+          setWorkingDayStatus(response.data.data.status);
 
-  const getUserTurn = async () => {
-    const dayWeek = new Date().getDay(); // 0-6 -> 1-7
-    const dayName = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-    ];
-    const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
-    const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        } catch (error) {
+          console.log(error);
+        }
+      };
 
-    try {
-      const response = await axios.get(
-        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
-      );
-      console.log(response.data.data.horario[day]);
-      const turn = response.data.data.horario[day];
-      //contar cuantos registros tiene turn
-      const count = Object.keys(turn).length;
-      console.log(count);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  /* Control Laboral App */
-
-  useEffect(() => {
-    getName();
-    //getUserTurn();
-  }, []);
+      getName();
+    }, [])
+  );
 
   useEffect(() => {
     if (appStatus !== "active") {
       const exit = async () => {
         try {
-          //await axios.post(`${config.API_URL}/logout`);
-          await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("id");
+          await axios.delete(`${API_URL}/index.php?action=auth`);
+          logout();
         } catch (error) {
           console.log(error);
         }
@@ -128,7 +105,7 @@ const Home = ({ navigation }) => {
         backgroundColor={theme.colors.accent}
         barStyle="default"
         centerComponent={{
-          text: `${name}`,
+          text: `${nameShown}`,
           style: {
             color: theme.colors.header,
             fontSize: 16,
@@ -142,7 +119,7 @@ const Home = ({ navigation }) => {
         }
         placement="center"
         rightComponent={
-          <TouchableOpacity onPress={() => logout()}>
+          <TouchableOpacity onPress={() => handleLogout()}>
             <Icon name="logout" color="white" />
           </TouchableOpacity>
         }
@@ -179,8 +156,8 @@ const Home = ({ navigation }) => {
         ) : workingDayStatus === "En proceso" ? (
           <CardGoo
             title="Control Laboral"
-            subtitle="Finalizar jornada laboral"
-            description="Finaliza tu jornada laboral para registrar tus horas de trabajo."
+            subtitle="Ver jornada laboral"
+            description="Tu jornada laboral está en progreso. Revisa tus horas trabajadas."
             icon={woringDayInProgress}
             navigation={navigation}
             screen="Signing"

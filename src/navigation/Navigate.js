@@ -54,41 +54,7 @@ const AuthStack = () => {
         component={Home}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name="Signing"
-        component={Signing}
-        options={{
-          headerShown: true,
-          title: "Registro de Asistencia",
-          headerStyle: { backgroundColor: theme.colors.accent, height: 45 },
-          headerTintColor: theme.colors.header,
-          headerTitleStyle: {
-            textAlign: "center",
-            fontSize: 16,
-            fontWeight: "ultralight",
-          },
-          headerTitleAlign: "center",
-        }}
-      />
-      <Stack.Screen
-        name="Calendar"
-        component={Calendar}
-        options={{
-          headerShown: true,
-          title: "Calendario",
-          headerStyle: {
-            backgroundColor: theme.colors.accent,
-            height: 45,
-          },
-          headerTintColor: theme.colors.header,
-          headerTitleStyle: {
-            textAlign: "center",
-            fontSize: 16,
-            fontWeight: "ultralight",
-          },
-          headerTitleAlign: "center",
-        }}
-      />
+
     </Stack.Navigator>
   );
 };
@@ -152,13 +118,64 @@ const TabNavigator = () => {
   );
 };
 
+///** 🚀 3️⃣ AppStack de la App después del Login */
+const AppStack = () => {
+  const { theme } = useTheme();
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Tabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="Signing"
+        component={Signing}
+        options={{
+          headerShown: true,
+          title: "Registro de Asistencia",
+          headerStyle: { backgroundColor: theme.colors.accent, height: 45 },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="Calendar"
+        component={Calendar}
+        options={{
+          headerShown: true,
+          title: "Calendario",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 const Navigate = () => {
   //const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isAuthenticated } = useAuth(); // Consumir el estado de autenticación
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <TabNavigator /> : <AuthStack />}
+      {isAuthenticated ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };

@@ -1,33 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Linking,
-  Dimensions,
-  ImageBackground,
-  TouchableOpacity,
-  ScrollView,
-  AppState,
-} from "react-native";
-import {
-  Header,
-  ListItem,
-  Card,
-  Icon,
-  Divider,
-  BottomSheet,
-  Text,
-  Image,
-  Dialog,
-  useTheme,
-} from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, ScrollView, AppState } from "react-native";
+import { Card, Divider, Text, useTheme } from "@rneui/themed";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; // Importar el locale español
-import { Button } from "@rneui/base";
 import SkeletonSigning from "../../../components/SkeletonSigning";
 import ButtonSigning from "../../../components/ButtonSigning";
+import useAuth from "../../../hooks/useAuth"; // Importar el hook useAuth
 
 dayjs.locale("es"); // Establece español como idioma predeterminado
 
@@ -43,12 +22,13 @@ const dayName = [
 
 const Signing = () => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME; // Nombre de la app
   const { theme } = useTheme(); // Obtener el tema actual
+  const { userName } = useAuth(); //
 
   const [isVisible, setIsVisible] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
-  const [name, setName] = useState("Cargando...");
   const [appStatus, setAppStatus] = useState(AppState.currentState);
   const [connectionType, setConnectionType] = useState("none");
   const [currentDate, setCurrentDate] = useState(
@@ -61,20 +41,6 @@ const Signing = () => {
   const [comment, setComment] = useState("");
   const [motives, setMotives] = useState([]);
   const [selectedMotive, setSelectedMotive] = useState("");
-
-  const getName = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/index.php?action=user_info`);
-      let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
-      userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra
-      userName = userName.trim(); // Elimina espacios en blanco al inicio y al final
-      setName(userName);
-
-      console.log(response.data.data.status);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const getUserTurn = async () => {
     const dayWeek = new Date().getDay(); // 0-6 -> 1-7
@@ -179,7 +145,6 @@ const Signing = () => {
   /* Control Laboral App */
 
   useEffect(() => {
-    getName();
     getUserTurn();
     getUserButtons();
   }, []);
@@ -217,7 +182,7 @@ const Signing = () => {
             </Text>
           </View>
 
-          {countTurnData > 0 && name !== "" ? (
+          {countTurnData > 0 && userName ? (
             <Card containerStyle={theme.showSigning}>
               <View
                 style={{
@@ -226,9 +191,9 @@ const Signing = () => {
                 }}
               >
                 <View>
-                  <Text style={theme.textSigning}>{`${name}`}</Text>
+                  <Text style={theme.textSigning}>{`${userName}`}</Text>
                   <Text style={theme.titleSigning}>Empresa</Text>
-                  <Text style={theme.textSigning}>Goo Movil</Text>
+                  <Text style={theme.textSigning}>{`${APP_NAME}`}</Text>
                 </View>
 
                 <View>

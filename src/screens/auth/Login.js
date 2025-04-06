@@ -11,10 +11,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
 import Connection from "../../components/Connection";
 import axios from "axios";
+import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 
 const Login = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
+  const { login } = useAuth(); // aquí traes la función de login del contexto
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -40,10 +42,10 @@ const Login = ({ navigation }) => {
       setLoading(true);
       const response = await authenticateUser(username, password);
       if (response.data && response.data.access_token) {
-        await saveToken(response.data.access_token);
-        await AsyncStorage.setItem("userName", username);
+        // Llamas a login desde el contexto con el token y el nombre de usuario
+        await login(response.data.access_token);
         resetForm();
-        navigation.navigate("Home");
+        navigation.navigate("Home"); // o puedes usar una navegación controlada según auth
       } else {
         showErrorMessage("Por favor, verifica tus credenciales.");
       }
@@ -62,10 +64,6 @@ const Login = ({ navigation }) => {
       client_id: username,
       client_secret: password,
     });
-  };
-
-  const saveToken = async (token) => {
-    await AsyncStorage.setItem("token", token);
   };
 
   const resetForm = () => {
