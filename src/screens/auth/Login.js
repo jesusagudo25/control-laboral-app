@@ -42,6 +42,7 @@ const Login = ({ navigation }) => {
       if (response.data && response.data.access_token) {
         await saveToken(response.data.access_token);
         await AsyncStorage.setItem("userName", username);
+        resetForm();
         navigation.navigate("Home");
       } else {
         showErrorMessage("Por favor, verifica tus credenciales.");

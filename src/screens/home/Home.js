@@ -1,45 +1,43 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  StyleSheet,
-  Linking,
   Dimensions,
-  ImageBackground,
   TouchableOpacity,
   ScrollView,
   AppState,
 } from "react-native";
-import {
-  Header,
-  ListItem,
-  Card,
-  Icon,
-  Divider,
-  BottomSheet,
-  Text,
-  Image,
-  Dialog,
-  useTheme,
-} from "@rneui/themed";
+import { Header, Skeleton, Icon, Image, useTheme } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Connection from "../../components/Connection";
 import StatusApp from "../../components/StatusApp";
+import CardGoo from "../../components/CardGoo";
+import { LinearGradient } from "expo-linear-gradient";
+import SkeletonCard from "../../components/SkeletonCard";
 
 const Home = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [isVisible, setIsVisible] = useState(false);
-  const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
-  const [appStatus, setAppStatus] = useState(AppState.currentState);
-
   const [isConnected, setIsConnected] = useState(true);
+
+  const [name, setName] = useState("");
+  const [appStatus, setAppStatus] = useState(AppState.currentState);
   const [connectionType, setConnectionType] = useState("none");
+  const [workingDayStatus, setWorkingDayStatus] = useState("none");
 
   const workingDayFinished = {
     uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
+  };
+
+  const checkInWorkingDay = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+  };
+
+  const woringDayInProgress = {
+    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
   };
 
   const calendar = {
@@ -59,6 +57,8 @@ const Home = ({ navigation }) => {
       const response = await axios.get(`${API_URL}/index.php?action=user_info`);
 
       setName(`¡Hola, ${response.data.data.lastname}!`);
+      setWorkingDayStatus(response.data.data.status);
+      console.log(response.data.data.status);
     } catch (error) {
       console.log(error);
     }
@@ -77,11 +77,6 @@ const Home = ({ navigation }) => {
     ];
     const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
     const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-
-    //index.php?day=7&action=user_turn&date=2025-04-03
-    console.log(
-      `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
-    );
 
     try {
       const response = await axios.get(
@@ -108,7 +103,7 @@ const Home = ({ navigation }) => {
     if (appStatus !== "active") {
       const exit = async () => {
         try {
-          await axios.post(`${config.API_URL}/logout`);
+          //await axios.post(`${config.API_URL}/logout`);
           await AsyncStorage.removeItem("token");
           await AsyncStorage.removeItem("id");
         } catch (error) {
@@ -170,109 +165,49 @@ const Home = ({ navigation }) => {
           />
         </View>
 
-        <Card containerStyle={theme.card}>
-          <Card.Title
-            style={{
-              textAlign: "left",
-              color: theme.colors.text,
-            }}
-          >
-            Fichaje
-          </Card.Title>
-          <Card.Divider
-            style={{
-              backgroundColor: theme.colors.primary,
-            }}
+        {workingDayStatus === "none" ? (
+          <SkeletonCard />
+        ) : workingDayStatus === "Sin iniciar" ? (
+          <CardGoo
+            title="Control Laboral"
+            subtitle="Iniciar jornada laboral"
+            description="Inicia tu jornada laboral para registrar tus horas de trabajo."
+            icon={checkInWorkingDay}
+            navigation={navigation}
+            screen="Signing"
           />
-          <TouchableOpacity
-            style={theme.buttonRequest}
-            activeOpacity={0.5}
-            onPress={() => navigation.navigate("Signing")}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "column",
-                  width: "60%",
-                }}
-              >
-                <Text style={theme.textRequest}>Jornada laboral</Text>
-                <Text style={theme.paragraphRequest}>
-                  Realiza el fichaje de entrada y salida de tu jornada laboral.
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "40%",
-                }}
-              >
-                <Image
-                  source={workingDayFinished}
-                  style={{ width: 80, height: 80 }}
-                />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </Card>
-
-        <Card containerStyle={theme.card}>
-          <Card.Title
-            style={{
-              textAlign: "left",
-              color: theme.colors.text,
-            }}
-          >
-            Calendario
-          </Card.Title>
-          <Card.Divider
-            style={{
-              backgroundColor: theme.colors.primary,
-            }}
+        ) : workingDayStatus === "En proceso" ? (
+          <CardGoo
+            title="Control Laboral"
+            subtitle="Finalizar jornada laboral"
+            description="Finaliza tu jornada laboral para registrar tus horas de trabajo."
+            icon={woringDayInProgress}
+            navigation={navigation}
+            screen="Signing"
           />
-          <TouchableOpacity style={theme.buttonRequest} activeOpacity={0.5}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "column",
-                  width: "60%",
-                }}
-              >
-                <Text style={theme.textRequest}>Visualizar eventos</Text>
-                <Text style={theme.paragraphRequest}>
-                  Revisa tu programación de eventos y recibe notificaciones de
-                  recordatorios.
-                </Text>
-              </View>
+        ) : workingDayStatus === "Finalizado" ? (
+          <CardGoo
+            title="Control Laboral"
+            subtitle="Jornada laboral finalizada"
+            description="Tu jornada laboral ha finalizado. Revisa tus horas trabajadas."
+            icon={workingDayFinished}
+            navigation={navigation}
+            screen="Signing"
+          />
+        ) : null}
 
-              <View
-                style={{
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "40%",
-                }}
-              >
-                <Image source={calendar} style={{ width: 80, height: 80 }} />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </Card>
+        {workingDayStatus === "none" ? (
+          <SkeletonCard />
+        ) : (
+          <CardGoo
+            title="Calendario"
+            subtitle="Visualiza eventos"
+            description="Revisa tu programación de eventos y recibe notificaciones de recordatorios."
+            icon={calendar}
+            navigation={navigation}
+            screen="Calendar"
+          />
+        )}
 
         <StatusApp
           appStatus={appStatus}

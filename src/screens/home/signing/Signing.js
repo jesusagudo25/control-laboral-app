@@ -26,22 +26,163 @@ import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; // Importar el locale español
 import { Button } from "@rneui/base";
+import SkeletonSigning from "../../../components/SkeletonSigning";
+import ButtonSigning from "../../../components/ButtonSigning";
 
 dayjs.locale("es"); // Establece español como idioma predeterminado
 
+const dayName = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
 const Signing = () => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [isVisible, setIsVisible] = useState(false);
-  const [name, setName] = useState("Cargando...");
   const [showDialog, setShowDialog] = useState(false);
+
+  const [name, setName] = useState("Cargando...");
   const [appStatus, setAppStatus] = useState(AppState.currentState);
-  //const [workingDayStatus, setWorkingDayStatus] = useState("NotStarted");
-  const [workingDayStatus, setWorkingDayStatus] = useState("InProgress");
-  //const [workingDayStatus, setWorkingDayStatus] = useState("Finished");
+  const [connectionType, setConnectionType] = useState("none");
   const [currentDate, setCurrentDate] = useState(
     dayjs().format("DD [de] MMMM [de] YYYY")
   );
+  const [turnData, setTurnData] = useState([]);
+  const [countTurnData, setCountTurnData] = useState(0);
+  const [totalHours, setTotalHours] = useState(0);
+  const [actions, setActions] = useState([]);
+  const [comment, setComment] = useState("");
+  const [motives, setMotives] = useState([]);
+  const [selectedMotive, setSelectedMotive] = useState("");
+
+  const getName = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/index.php?action=user_info`);
+      let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
+      userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra
+      userName = userName.trim(); // Elimina espacios en blanco al inicio y al final
+      setName(userName);
+
+      console.log(response.data.data.status);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getUserTurn = async () => {
+    const dayWeek = new Date().getDay(); // 0-6 -> 1-7
+    const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
+    const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+      );
+      const turn = response.data.data.horario[day];
+      //Darle formato a las horas
+      Object.keys(turn).forEach((key) => {
+        const item = turn[key];
+        const inTime = item.in.split(":").map(Number);
+        const outTime = item.out.split(":").map(Number);
+        const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
+        const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
+        const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
+        const hours = Math.floor(diff);
+        const minutes = Math.round((diff - hours) * 60);
+        const formattedInTime = `${String(inTime[0]).padStart(2, "0")}:${String(
+          inTime[1]
+        ).padStart(2, "0")}`;
+        const formattedOutTime = `${String(outTime[0]).padStart(2, "0")}:${String(
+          outTime[1]
+        ).padStart(2, "0")}`;
+        const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
+          minutes
+        ).padStart(2, "0")}`;
+        turn[key].in = formattedInTime;
+        turn[key].out = formattedOutTime;
+        turn[key].total = formattedTotalHours;
+      });
+
+      setTurnData(turn);
+
+      console.log(response.data.data.horario[day]);
+      const count = Object.keys(turn).length;
+      setCountTurnData(count);
+      console.log(count);
+
+      //Obtener el total de horas, en base a los turnos
+      let totalHours = 0;
+      Object.keys(turn).forEach((key) => {
+        const item = turn[key];
+        const inTime = item.in.split(":").map(Number);
+        const outTime = item.out.split(":").map(Number);
+        const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
+        const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
+        const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
+        totalHours += diff;
+      });
+      console.log("Total horas:", totalHours);
+      // Formatear el total de horas a formato HH:MM
+      const hours = Math.floor(totalHours);
+      const minutes = Math.round((totalHours - hours) * 60);
+      const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
+        minutes
+      ).padStart(2, "0")}`;
+      console.log("Total horas formateadas:", formattedTotalHours);
+
+      setTotalHours(formattedTotalHours);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getUserButtons = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/index.php?action=user_buttons`
+      );
+      let actionsBucket = [];
+      console.log(response.data.data);
+      if (response.data?.data?.Firma) {
+        actionsBucket.push(response.data.data.Firma.action);
+      }
+
+      if (response.data?.data?.Entrada) {
+        actionsBucket.push(response.data.data.Entrada.action);
+      }
+
+      if (response.data?.data?.Salida) {
+        actionsBucket.push(response.data.data.Salida.action);
+      }
+
+      if (response.data?.data?.Pausa) {
+        actionsBucket.push(response.data.data.Pausa.action);
+      }
+
+      if (response.data?.data?.Reanudacion) {
+        actionsBucket.push(response.data.data.Reanudacion.action);
+      }
+
+      setActions(actionsBucket);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  /* Control Laboral App */
+
+  useEffect(() => {
+    getName();
+    getUserTurn();
+    getUserButtons();
+  }, []);
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -76,111 +217,50 @@ const Signing = () => {
             </Text>
           </View>
 
-          <Card containerStyle={theme.showSigning}>
-            <View
-              style={{
-                flexDirection: "column",
-                width: "100%"
-              }}
-            >
-              <View>
-                <Text style={theme.textSigning}>Nombre de usuario</Text>
-                <Text style={theme.titleSigning}>Empresa</Text>
-                <Text style={theme.textSigning}>Recursos Humanos</Text>
-              </View>
+          {countTurnData > 0 && name !== "" ? (
+            <Card containerStyle={theme.showSigning}>
+              <View
+                style={{
+                  flexDirection: "column",
+                  width: "100%",
+                }}
+              >
+                <View>
+                  <Text style={theme.textSigning}>{`${name}`}</Text>
+                  <Text style={theme.titleSigning}>Empresa</Text>
+                  <Text style={theme.textSigning}>Goo Movil</Text>
+                </View>
 
-              <View>
-                <Text style={theme.titleSigning}>Jornada laboral</Text>
-                <Divider />
-                <Text style={theme.hoursSigning}>09:00 a 14:00</Text>
-                <Divider />
-                <Text style={theme.hoursSigning}>16:00 a 19:00</Text>
-                <Divider />
-                <Text style={theme.titleSigning}>Total jornada: 08:00</Text>
-              </View>
+                <View>
+                  <Text style={theme.titleSigning}>
+                    Jornada laboral ({countTurnData})
+                  </Text>
 
-              <View>
-                {workingDayStatus === "NotStarted" ? (
-                  <Button
-                    title="Iniciar jornada"
-                    containerStyle={{
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: 25,
-                      marginBottom: 5,
-                    }}
-                    buttonStyle={{
-                      backgroundColor: theme.colors.accent,
-                      borderRadius: 3,
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      width: "100%",
-                    }}
-                    onPress={() => handleLogin()}
-                  />
-                ) : workingDayStatus === "InProgress" ? (
-                  <>
-                    <Button
-                      title="Pausar jornada"
-                      containerStyle={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: 10,
-                        marginBottom: 5,
-                      }}
-                      buttonStyle={{
-                        backgroundColor: theme.colors.accent,
-                        borderRadius: 3,
-                        paddingHorizontal: 15,
-                        paddingVertical: 10,
-                        width: "100%",
-                      }}
-                      onPress={() => handleLogin()}
-                    />
+                  <Divider />
 
-                    <Button
-                      title="Finalizar jornada"
-                      type="outline"
-                      titleStyle={{ color: theme.colors.primary }}
-                      containerStyle={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: 5,
-                        marginBottom: 20,
-                      }}
-                      buttonStyle={{
-                        borderColor: theme.colors.primary,
-                        borderWidth: 1.2,
-                        borderRadius: 3,
-                        paddingHorizontal: 15,
-                        paddingVertical: 10,
-                        width: "100%",
-                      }}
-                      onPress={() => handleLogin()}
-                    />
-                  </>
-                ) : (
-                  <Button
-                    title="Reanudar jornada"
-                    containerStyle={{
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: 10,
-                      marginBottom: 5,
-                    }}
-                    buttonStyle={{
-                      backgroundColor: theme.colors.accent,
-                      borderRadius: 3,
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      width: "100%",
-                    }}
-                    onPress={() => handleLogin()}
-                  />
-                )}
+                  {Object.keys(turnData).map((key) => {
+                    const item = turnData[key];
+                    return (
+                      <View key={key}>
+                        <Text style={theme.hoursSigning}>
+                          {item.in} a {item.out}
+                        </Text>
+                        <Divider />
+                      </View>
+                    );
+                  })}
+
+                  <Text style={theme.titleSigning}>
+                    Total jornada: {totalHours}
+                  </Text>
+                </View>
+
+                <ButtonSigning actions={actions} />
               </View>
-            </View>
-          </Card>
+            </Card>
+          ) : (
+            <SkeletonSigning />
+          )}
         </View>
       </View>
     </ScrollView>

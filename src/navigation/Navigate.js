@@ -5,6 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
+import useAuth from "../hooks/useAuth"; // Importar el hook useAuth
 
 // Auth Screens
 import Login from "../screens/auth/Login";
@@ -28,79 +29,132 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 /** 🚀 1️⃣ Stack de Autenticación */
-const AuthStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Login" component={Login} />
-    <Stack.Screen name="Register" component={Register} />
-    <Stack.Screen name="PasswordRecovery" component={passwordRecovery} />
-    <Stack.Screen name="Home" component={Home} />
-    <Stack.Screen name="Signing" component={Signing} />
-    <Stack.Screen name="Calendar" component={Calendar} />
-  </Stack.Navigator>
-);
+const AuthStack = () => {
+  const { theme } = useTheme(); // Obtener el tema actual
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Login"
+        component={Login}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={Register}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PasswordRecovery"
+        component={passwordRecovery}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Signing"
+        component={Signing}
+        options={{
+          headerShown: true,
+          title: "Registro de Asistencia",
+          headerStyle: { backgroundColor: theme.colors.accent, height: 45 },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="Calendar"
+        component={Calendar}
+        options={{
+          headerShown: true,
+          title: "Calendario",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
 
 /** 🚀 2️⃣ Tabs de la App después del Login */
 const TabNavigator = () => {
   const { theme } = useTheme(); // Obtener el tema actual
 
   return (
-  <Tab.Navigator
-    initialRouteName="Home"
-    screenOptions={{
-      headerShown: false,
-      tabBarStyle: { display: "flex", backgroundColor: theme.colors.header },
-      tabBarActiveTintColor: theme.colors.warning,
-      tabBarInactiveTintColor: "#8e8e93",
-      tabBarLabelStyle: { fontSize: 12 },
-    }}
-  >
-    <Tab.Screen
-      name="Home"
-      component={Home}
-      options={{
-        tabBarLabel: "Inicio",
-        tabBarIcon: ({ color }) => (
-          <Icon name="home" type="font-awesome" color={color} />
-        ),
+    <Tab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: { display: "flex", backgroundColor: theme.colors.header },
+        tabBarActiveTintColor: theme.colors.warning,
+        tabBarInactiveTintColor: "#8e8e93",
+        tabBarLabelStyle: { fontSize: 12 },
       }}
-    />
-    <Tab.Screen
-      name="Request"
-      component={Request}
-      options={{
-        tabBarLabel: "Solicitudes",
-        tabBarIcon: ({ color }) => (
-          <Icon name="file-text" type="font-awesome" color={color} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Document"
-      component={Document}
-      options={{
-        tabBarLabel: "Documentos",
-        tabBarIcon: ({ color }) => (
-          <Icon name="folder" type="font-awesome" color={color} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="More"
-      component={More}
-      options={{
-        tabBarLabel: "Más",
-        tabBarIcon: ({ color }) => (
-          <Icon name="gear" type="font-awesome" color={color} />
-        ),
-      }}
-    />
-  </Tab.Navigator>
-  )
-
+    >
+      <Tab.Screen
+        name="Home"
+        component={Home}
+        options={{
+          tabBarLabel: "Inicio",
+          tabBarIcon: ({ color }) => (
+            <Icon name="home" type="font-awesome" color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Request"
+        component={Request}
+        options={{
+          tabBarLabel: "Solicitudes",
+          tabBarIcon: ({ color }) => (
+            <Icon name="file-text" type="font-awesome" color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Document"
+        component={Document}
+        options={{
+          tabBarLabel: "Documentos",
+          tabBarIcon: ({ color }) => (
+            <Icon name="folder" type="font-awesome" color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="More"
+        component={More}
+        options={{
+          tabBarLabel: "Más",
+          tabBarIcon: ({ color }) => (
+            <Icon name="gear" type="font-awesome" color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
 };
 
 const Navigate = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  //const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useAuth(); // Consumir el estado de autenticación
 
   return (
     <NavigationContainer>

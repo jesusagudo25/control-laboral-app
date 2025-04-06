@@ -4,8 +4,10 @@ import Constants from "expo-constants";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeProvider } from "@rneui/themed";
+import AuthProvider from "./src/context/AuthProvider";
 import Navigate from "./src/navigation/Navigate";
 import theme from "./src/theme/theme";
+import { NavigationContainer } from "@react-navigation/native";
 
 axios.interceptors.request.use(
   async (config) => {
@@ -17,18 +19,18 @@ axios.interceptors.request.use(
   },
   (err) => {
     return Promise.reject(err);
-  },
+  }
 );
-
-
 
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
-      <View style={{ marginTop: Constants.statusBarHeight, flexGrow: 1 }}>
-        <Navigate />
-        <StatusBar style="auto" />
-      </View>
+      <AuthProvider>
+        <View style={{ marginTop: Constants.statusBarHeight, flexGrow: 1 }}>
+          <Navigate />
+          <StatusBar style="auto" />
+        </View>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

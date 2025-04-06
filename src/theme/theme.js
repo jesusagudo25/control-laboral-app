@@ -72,17 +72,32 @@ const theme = createTheme({
     color: "#000",
     backgroundColor: "#fff",
   },
-  buttonPrimary: {
-    backgroundColor: "#000",
-    padding: 10,
-    margin: 10,
-    color: "#fff",
+  buttonPrimaryContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 5,
   },
-  buttonSecondary: {
-    backgroundColor: "#fff",
-    padding: 10,
-    margin: 10,
-    color: "#000",
+  buttonPrimaryStyle: {
+    backgroundColor: "#f7941e",
+    borderRadius: 3,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    width: "100%",
+  },
+  buttonSecondaryContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 5,
+    marginBottom: 20,
+  },
+  buttonSecondaryStyle: {
+    borderColor: "#1E6091",
+    borderWidth: 1.2,
+    borderRadius: 3,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    width: "100%",
   },
   buttonRequest: {
     height: "auto",
