@@ -169,6 +169,13 @@ const theme = createTheme({
     marginLeft: 0,
     marginRight: 0,
   },
+  textError: {
+    fontSize: 14,
+    color: "#E76F51",
+    marginTop: 5,
+    textAlign: "left",
+    fontWeight: "bold",
+  },
 });
 
 export default theme;

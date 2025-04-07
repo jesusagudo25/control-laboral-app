@@ -7,7 +7,9 @@ import { ThemeProvider } from "@rneui/themed";
 import AuthProvider from "./src/context/AuthProvider";
 import Navigate from "./src/navigation/Navigate";
 import theme from "./src/theme/theme";
-import { NavigationContainer } from "@react-navigation/native";
+import Connection from "./src/components/Connection";
+import StatusApp from "./src/components/StatusApp";
+
 
 axios.interceptors.request.use(
   async (config) => {
@@ -23,12 +25,15 @@ axios.interceptors.request.use(
 );
 
 export default function App() {
+
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <View style={{ marginTop: Constants.statusBarHeight, flexGrow: 1 }}>
           <Navigate />
           <StatusBar style="auto" />
+          <StatusApp   />
+          <Connection />
         </View>
       </AuthProvider>
     </ThemeProvider>

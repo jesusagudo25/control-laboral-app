@@ -7,13 +7,30 @@ import {
   AppState,
 } from "react-native";
 import { Header, Icon, Image, useTheme } from "@rneui/themed";
+
 import axios from "axios";
 import Connection from "../../components/Connection";
 import StatusApp from "../../components/StatusApp";
 import CardGoo from "../../components/CardGoo";
 import SkeletonCard from "../../components/SkeletonCard";
-import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
+import useAuth from "../../hooks/useAuth";
 import { useFocusEffect } from "@react-navigation/native";
+
+const workingDayFinished = {
+  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
+};
+
+const checkInWorkingDay = {
+  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+};
+
+const woringDayInProgress = {
+  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
+};
+
+const calendar = {
+  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
+};
 
 const Home = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -22,28 +39,9 @@ const Home = ({ navigation }) => {
 
   const [isVisible, setIsVisible] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
 
-  const [appStatus, setAppStatus] = useState(AppState.currentState);
-  const [connectionType, setConnectionType] = useState("none");
   const [workingDayStatus, setWorkingDayStatus] = useState("none");
   const [nameShown, setNameShown] = useState("Cargando...");
-
-  const workingDayFinished = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
-  };
-
-  const checkInWorkingDay = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-  };
-
-  const woringDayInProgress = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
-  };
-
-  const calendar = {
-    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
-  };
 
   const handleLogout = async () => {
     await axios.delete(`${API_URL}/index.php?action=auth`);
@@ -67,7 +65,6 @@ const Home = ({ navigation }) => {
           setUserName(userName);
           setNameShown(`¡Hola, ${userName}!`);
           setWorkingDayStatus(response.data.data.status);
-
         } catch (error) {
           console.log(error);
         }
@@ -75,28 +72,6 @@ const Home = ({ navigation }) => {
 
       getName();
     }, [])
-  );
-
-  useEffect(() => {
-    if (appStatus !== "active") {
-      const exit = async () => {
-        try {
-          await axios.delete(`${API_URL}/index.php?action=auth`);
-          logout();
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      exit();
-    }
-  }, [appStatus]);
-
-  React.useEffect(
-    () =>
-      navigation.addListener("beforeRemove", (e) => {
-        logout();
-      }),
-    [navigation]
   );
 
   return (
@@ -186,16 +161,6 @@ const Home = ({ navigation }) => {
           />
         )}
 
-        <StatusApp
-          appStatus={appStatus}
-          setAppStatus={setAppStatus}
-          navigation={navigation}
-        />
-        <Connection
-          setIsConnected={setIsConnected}
-          setConnectionType={setConnectionType}
-          navigation={navigation}
-        />
       </View>
     </ScrollView>
   );

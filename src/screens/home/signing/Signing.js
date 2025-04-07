@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, AppState } from "react-native";
-import { Card, Divider, Text, useTheme } from "@rneui/themed";
+import { useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { View, ScrollView } from "react-native";
+import { Text, useTheme } from "@rneui/themed";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; // Importar el locale español
 import SkeletonSigning from "../../../components/SkeletonSigning";
-import ButtonSigning from "../../../components/ButtonSigning";
-import useAuth from "../../../hooks/useAuth"; // Importar el hook useAuth
+import useAuth from "../../../hooks/useAuth";
+import CardSigning from "../../../components/CardSigning";
 
 dayjs.locale("es"); // Establece español como idioma predeterminado
 
 const dayName = [
-  "sunday",
-  "monday",
+  "sunday", // Spanish: domingo
+  "monday", // Spanish: lunes
   "tuesday",
   "wednesday",
   "thursday",
   "friday",
-  "saturday",
+  "saturday", // Spanish: sábado
 ];
 
-const Signing = () => {
+const Signing = ({ route, navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
-  const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME; // Nombre de la app
   const { theme } = useTheme(); // Obtener el tema actual
-  const { userName } = useAuth(); //
+  const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
 
-  const [isVisible, setIsVisible] = useState(false);
+  const { message, type } = route.params || {}; // Desestructuración de los parámetros
+
   const [showDialog, setShowDialog] = useState(false);
+  const [motives, setMotives] = useState([]);
 
-  const [appStatus, setAppStatus] = useState(AppState.currentState);
-  const [connectionType, setConnectionType] = useState("none");
   const [currentDate, setCurrentDate] = useState(
     dayjs().format("DD [de] MMMM [de] YYYY")
   );
@@ -38,20 +39,21 @@ const Signing = () => {
   const [countTurnData, setCountTurnData] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
   const [actions, setActions] = useState([]);
-  const [comment, setComment] = useState("");
-  const [motives, setMotives] = useState([]);
-  const [selectedMotive, setSelectedMotive] = useState("");
 
   const getUserTurn = async () => {
-    const dayWeek = new Date().getDay(); // 0-6 -> 1-7
+    const dayWeek = new Date().getDay();
     const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
-    const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
 
     try {
       const response = await axios.get(
         `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
       const turn = response.data.data.horario[day];
+      console.log(
+        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+      );
+
       //Darle formato a las horas
       Object.keys(turn).forEach((key) => {
         const item = turn[key];
@@ -75,6 +77,8 @@ const Signing = () => {
         turn[key].out = formattedOutTime;
         turn[key].total = formattedTotalHours;
       });
+
+      console.log("Turnos:", turn);
 
       setTurnData(turn);
 
@@ -136,6 +140,10 @@ const Signing = () => {
         actionsBucket.push(response.data.data.Reanudacion.action);
       }
 
+      if (actionsBucket.length === 0) {
+        actionsBucket.push("none");
+      }
+
       setActions(actionsBucket);
     } catch (error) {
       console.log(error);
@@ -143,11 +151,20 @@ const Signing = () => {
   };
 
   /* Control Laboral App */
+  useFocusEffect(
+    useCallback(() => {
+      getUserTurn();
+      getUserButtons();
+    }, [])
+  );
 
+  //Si se recibe una actualizacion por parametros, se actualiza el estado de las funciones: getUserTurn y getUserButtons
   useEffect(() => {
-    getUserTurn();
-    getUserButtons();
-  }, []);
+    if (message) {
+      getUserTurn();
+      getUserButtons();
+    }
+  }, [message, type]);
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -182,47 +199,14 @@ const Signing = () => {
             </Text>
           </View>
 
-          {countTurnData > 0 && userName ? (
-            <Card containerStyle={theme.showSigning}>
-              <View
-                style={{
-                  flexDirection: "column",
-                  width: "100%",
-                }}
-              >
-                <View>
-                  <Text style={theme.textSigning}>{`${userName}`}</Text>
-                  <Text style={theme.titleSigning}>Empresa</Text>
-                  <Text style={theme.textSigning}>{`${APP_NAME}`}</Text>
-                </View>
-
-                <View>
-                  <Text style={theme.titleSigning}>
-                    Jornada laboral ({countTurnData})
-                  </Text>
-
-                  <Divider />
-
-                  {Object.keys(turnData).map((key) => {
-                    const item = turnData[key];
-                    return (
-                      <View key={key}>
-                        <Text style={theme.hoursSigning}>
-                          {item.in} a {item.out}
-                        </Text>
-                        <Divider />
-                      </View>
-                    );
-                  })}
-
-                  <Text style={theme.titleSigning}>
-                    Total jornada: {totalHours}
-                  </Text>
-                </View>
-
-                <ButtonSigning actions={actions} />
-              </View>
-            </Card>
+          {countTurnData > 0 && userName !== "" && actions.length > 0 ? (
+            <CardSigning
+              turnData={turnData}
+              countTurnData={countTurnData}
+              totalHours={totalHours}
+              actions={actions}
+              navigation={navigation}
+            />
           ) : (
             <SkeletonSigning />
           )}
