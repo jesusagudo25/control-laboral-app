@@ -94,10 +94,9 @@ const ButtonSigning = ({ location, actions, navigation }) => {
       {actions.includes("ficharfirma") && (
         <Button
           title="Firmar"
-          type="outline"
-          titleStyle={{ color: theme.colors.primary }}
-          containerStyle={theme.buttonSecondaryContainer}
-          buttonStyle={theme.buttonSecondaryStyle}
+          containerStyle={theme.buttonPrimaryContainer}
+          buttonStyle={theme.buttonPrimaryStyle}
+          onPress={() => navigation.navigate("SignDay")}
         />
       )}
 

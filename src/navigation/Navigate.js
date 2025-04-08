@@ -23,6 +23,7 @@ import Signing from "../screens/home/signing/Signing";
 
 //Calendar Screens - Acces from Home
 import Calendar from "../screens/home/calendar/Calendar";
+import SignDay from "../screens/home/signing/SignDay";
 
 // Importar los componentes de navegación
 const Stack = createStackNavigator();
@@ -54,7 +55,6 @@ const AuthStack = () => {
         component={Home}
         options={{ headerShown: false }}
       />
-
     </Stack.Navigator>
   );
 };
@@ -146,6 +146,27 @@ const AppStack = () => {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen
+        name="SignDay"
+        component={SignDay}
+        options={{
+          headerShown: true,
+          title: "Firma del Día",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+
       <Stack.Screen
         name="Calendar"
         component={Calendar}
