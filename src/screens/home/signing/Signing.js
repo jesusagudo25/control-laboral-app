@@ -29,7 +29,6 @@ const Signing = ({ route, navigation }) => {
 
   const { message, type } = route.params || {}; // Desestructuración de los parámetros
 
-  const [showDialog, setShowDialog] = useState(false);
   const [motives, setMotives] = useState([]);
 
   const [currentDate, setCurrentDate] = useState(
@@ -47,67 +46,74 @@ const Signing = ({ route, navigation }) => {
 
     try {
       const response = await axios.get(
-        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
-      );
-      const turn = response.data.data.horario[day];
-      console.log(
-        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+        `${API_URL}/index.php?day=4&action=user_turn&date=2025-04-10`
       );
 
-      //Darle formato a las horas
-      Object.keys(turn).forEach((key) => {
-        const item = turn[key];
-        const inTime = item.in.split(":").map(Number);
-        const outTime = item.out.split(":").map(Number);
-        const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
-        const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
-        const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
-        const hours = Math.floor(diff);
-        const minutes = Math.round((diff - hours) * 60);
-        const formattedInTime = `${String(inTime[0]).padStart(2, "0")}:${String(
-          inTime[1]
-        ).padStart(2, "0")}`;
-        const formattedOutTime = `${String(outTime[0]).padStart(2, "0")}:${String(
-          outTime[1]
-        ).padStart(2, "0")}`;
+      const turn = response.data.data.horario["thursday"];
+      const marks = response.data.data.marks["thursday"];
+      const countMarks = Object.keys(marks).length;
+
+      if (countMarks == 0) {
+        //Darle formato a las horas
+        Object.keys(turn).forEach((key) => {
+          const item = turn[key];
+          const inTime = item.in.split(":").map(Number);
+          const outTime = item.out.split(":").map(Number);
+          const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
+          const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
+          const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
+          const hours = Math.floor(diff);
+          const minutes = Math.round((diff - hours) * 60);
+          const formattedInTime = `${String(inTime[0]).padStart(2, "0")}:${String(
+            inTime[1]
+          ).padStart(2, "0")}`;
+          const formattedOutTime = `${String(outTime[0]).padStart(2, "0")}:${String(
+            outTime[1]
+          ).padStart(2, "0")}`;
+          const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
+            minutes
+          ).padStart(2, "0")}`;
+          turn[key].in = formattedInTime;
+          turn[key].out = formattedOutTime;
+          turn[key].total = formattedTotalHours;
+        });
+
+        console.log("Turnos:", turn);
+
+        setTurnData(turn);
+
+        console.log(response.data.data.horario[day]);
+        const count = Object.keys(turn).length;
+        setCountTurnData(count);
+        console.log(count);
+
+        //Obtener el total de horas, en base a los turnos
+        let totalHours = 0;
+        Object.keys(turn).forEach((key) => {
+          const item = turn[key];
+          const inTime = item.in.split(":").map(Number);
+          const outTime = item.out.split(":").map(Number);
+          const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
+          const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
+          const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
+          totalHours += diff;
+        });
+        console.log("Total horas:", totalHours);
+        // Formatear el total de horas a formato HH:MM
+        const hours = Math.floor(totalHours);
+        const minutes = Math.round((totalHours - hours) * 60);
         const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
           minutes
         ).padStart(2, "0")}`;
-        turn[key].in = formattedInTime;
-        turn[key].out = formattedOutTime;
-        turn[key].total = formattedTotalHours;
-      });
+        console.log("Total horas formateadas:", formattedTotalHours);
 
-      console.log("Turnos:", turn);
-
-      setTurnData(turn);
-
-      console.log(response.data.data.horario[day]);
-      const count = Object.keys(turn).length;
-      setCountTurnData(count);
-      console.log(count);
-
-      //Obtener el total de horas, en base a los turnos
-      let totalHours = 0;
-      Object.keys(turn).forEach((key) => {
-        const item = turn[key];
-        const inTime = item.in.split(":").map(Number);
-        const outTime = item.out.split(":").map(Number);
-        const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
-        const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
-        const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
-        totalHours += diff;
-      });
-      console.log("Total horas:", totalHours);
-      // Formatear el total de horas a formato HH:MM
-      const hours = Math.floor(totalHours);
-      const minutes = Math.round((totalHours - hours) * 60);
-      const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
-        minutes
-      ).padStart(2, "0")}`;
-      console.log("Total horas formateadas:", formattedTotalHours);
-
-      setTotalHours(formattedTotalHours);
+        setTotalHours(formattedTotalHours);
+      } else {
+        setTurnData(marks);
+        console.log("Marcas:", marks);
+        setCountTurnData(countMarks);
+        //Calcular el total de horas, si puede obtenerlas del api mejor
+      }
     } catch (error) {
       console.log(error);
     }
@@ -134,6 +140,17 @@ const Signing = ({ route, navigation }) => {
 
       if (response.data?.data?.Pausa) {
         actionsBucket.push(response.data.data.Pausa.action);
+        //[{"id": "1", "label": {"id": "1", "label": "Almuerzo"}}, {"id": "2", "label": {"id": "2", "label": "En espera"}}]
+        const motivesData = Object.keys(response.data.data.Pausa.motivos).map(
+          (key) => {
+            return {
+              id: key,
+              label: response.data.data.Pausa.motivos[key].label, // Accede al valor de 'label'
+            };
+          }
+        );
+
+        setMotives(motivesData);
       }
 
       if (response.data?.data?.Reanudacion) {
@@ -206,6 +223,7 @@ const Signing = ({ route, navigation }) => {
               totalHours={totalHours}
               actions={actions}
               navigation={navigation}
+              motives={motives}
             />
           ) : (
             <SkeletonSigning />

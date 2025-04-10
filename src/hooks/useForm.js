@@ -3,12 +3,11 @@ import React from "react";
 const useForm = (initialForm = {}) => {
   const [formState, setFormState] = React.useState(initialForm);
 
-  const handleInputChange = ({ target }) => {
-    const { name, value } = target;
-    setFormState({
-      ...formState,
+  const handleInputChange = (name, value) => {
+    setFormState((prevState) => ({
+      ...prevState,
       [name]: value,
-    });
+    }));
   };
 
   const handleReset = () => {

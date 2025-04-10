@@ -1,26 +1,31 @@
 import React, { useEffect, useState } from "react";
-import * as Location from "expo-location";
-import { View } from "react-native";
+import { View, TextInput } from "react-native";
 import { useTheme } from "@rneui/themed";
+import { Text, Button, Dialog } from "@rneui/base";
 import axios from "axios";
 
+import { Picker } from "@react-native-picker/picker";
+
 import "dayjs/locale/es"; // Importar el locale español
-import { Button } from "@rneui/base";
 
 import useForm from "../hooks/useForm";
 
-const ButtonSigning = ({ location, actions, navigation }) => {
+const ButtonSigning = ({ location, actions, navigation, motives }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingBreak, setIsLoadingBreak] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const { description, motivo_pausa, longitude, latitude } = useForm({
-    description: "",
-    motivo_pausa: "",
-    longitude: location?.longitude,
-    latitude: location?.latitude,
-  });
+  const [showDialog, setShowDialog] = useState(false);
+
+  const { description, motivo_pausa, longitude, latitude, handleInputChange } =
+    useForm({
+      description: "",
+      motivo_pausa: "",
+      longitude: location?.longitude,
+      latitude: location?.latitude,
+    });
 
   const handleSignIn = async () => {
     const params = {
@@ -40,6 +45,7 @@ const ButtonSigning = ({ location, actions, navigation }) => {
       if (response.data.success) {
         console.log("Success: ", response.data);
         setErrorMsg(null);
+        setIsLoading(false);
 
         navigation.navigate("Signing", {
           message: "Entrada registrada correctamente.",
@@ -57,8 +63,116 @@ const ButtonSigning = ({ location, actions, navigation }) => {
     }
   };
 
-  console.log("ButtonSigning location: ", location);
-  //console.log("ButtonSigning actions: ", actions);
+  const handleBreak = async () => {
+    const params = {
+      action: "user_fichaje",
+      fichaje: "ficharpausa",
+      description,
+      motivo_pausa,
+      long: longitude,
+      lat: latitude,
+    };
+    console.log("ButtonSigning params: ", params);
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/index.php`, params);
+      //console.log("Response: ", response.data);
+      if (response.data.success) {
+        console.log("Success: ", response.data);
+        setErrorMsg(null);
+        setIsLoading(false);
+        setShowDialog(false); // Cerrar el diálogo después de enviar
+        handleInputChange("description", ""); // Limpiar el campo de descripción
+        handleInputChange("motivo_pausa", ""); // Limpiar el campo de motivo de pausa
+
+        navigation.navigate("Signing", {
+          message: "Pausa registrada correctamente.",
+          type: "success",
+        });
+      } else {
+        console.log("Error: ", response.data.msg);
+        setErrorMsg(response.data.msg);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      setErrorMsg("Error al registrar la pausa. Inténtalo de nuevo.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleContinue = async () => {
+    const params = {
+      action: "user_fichaje",
+      fichaje: "ficharreanudacion",
+      description,
+      motivo_pausa,
+      long: longitude,
+      lat: latitude,
+    };
+    console.log("ButtonSigning params: ", params);
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(`${API_URL}/index.php`, params);
+      //console.log("Response: ", response.data);
+      if (response.data.success) {
+        console.log("Success: ", response.data);
+        setErrorMsg(null);
+        setIsLoading(false);
+        navigation.navigate("Signing", {
+          message: "Reanudación registrada correctamente.",
+          type: "success",
+        });
+      } else {
+        console.log("Error: ", response.data.msg);
+        setErrorMsg(response.data.msg);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      setErrorMsg("Error al registrar la reanudación. Inténtalo de nuevo.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    const params = {
+      action: "user_fichaje",
+      fichaje: "ficharsalida",
+      description,
+      motivo_pausa,
+      long: longitude,
+      lat: latitude,
+    };
+    console.log("ButtonSigning params: ", params);
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/index.php`, params);
+      //console.log("Response: ", response.data);
+      if (response.data.success) {
+        console.log("Success: ", response.data);
+        setErrorMsg(null);
+        setIsLoading(false);
+
+        navigation.navigate("Signing", {
+          message: "Salida registrada correctamente.",
+          type: "success",
+        });
+      } else {
+        console.log("Error: ", response.data.msg);
+        setErrorMsg(response.data.msg);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      setErrorMsg("Error al registrar la salida. Inténtalo de nuevo.");
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View>
@@ -79,6 +193,9 @@ const ButtonSigning = ({ location, actions, navigation }) => {
             title="Pausar"
             containerStyle={theme.buttonPrimaryContainer}
             buttonStyle={theme.buttonPrimaryStyle}
+            onPress={() => setShowDialog(true)}
+            disabled={isLoading}
+            loading={isLoading}
           />
 
           <Button
@@ -87,6 +204,9 @@ const ButtonSigning = ({ location, actions, navigation }) => {
             titleStyle={{ color: theme.colors.primary }}
             containerStyle={theme.buttonSecondaryContainer}
             buttonStyle={theme.buttonSecondaryStyle}
+            onPress={() => handleFinish()}
+            disabled={isLoading}
+            loading={isLoading}
           />
         </View>
       )}
@@ -96,7 +216,15 @@ const ButtonSigning = ({ location, actions, navigation }) => {
           title="Firmar"
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
-          onPress={() => navigation.navigate("SignDay")}
+          onPress={() =>
+            navigation.navigate("SignDay", {
+              fichaje: "ficharfirma",
+              description: description,
+              motivo_pausa: motivo_pausa,
+              long: longitude,
+              lat: latitude,
+            })
+          }
         />
       )}
 
@@ -105,8 +233,94 @@ const ButtonSigning = ({ location, actions, navigation }) => {
           title="Reanudar"
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
+          onPress={() => handleContinue()}
+          disabled={isLoading}
+          loading={isLoading}
         />
       )}
+
+      <Dialog
+        isVisible={showDialog}
+        onBackdropPress={() => setShowDialog(false)}
+        overlayStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+          padding: 20,
+        }}
+        dialogStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+        }}
+        dialogContainerStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+        }}
+        dialogTitleStyle={{
+          color: theme.colors.text,
+          fontSize: 18,
+          fontWeight: "bold",
+        }}
+        titleStyle={{ color: theme.colors.text }}
+      >
+        <Dialog.Title title="Pausa" />
+        <Text>Selecciona el motivo de la pausa y añade una descripción.</Text>
+        <View
+          style={{
+            borderWidth: 1,
+            borderRadius: 5,
+            borderColor: "#1E6091", // Color del borde
+            overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
+            height: 40, // Define la altura del contenedor
+            justifyContent: "center", // Centra el contenido dentro del contenedor
+            paddingVertical: 0, // Elimina padding extra
+            marginVertical: 10, // Espacio entre el Picker y el TextInput
+          }}
+        >
+          <Picker
+            selectedValue={motivo_pausa}
+            onValueChange={(itemValue) => {
+              handleInputChange("motivo_pausa", itemValue);
+            }}
+            style={{ width: "100%", height: 50 }}
+            itemStyle={{
+              height: 50,
+              transform: [{ scaleX: 1 }, { scaleY: 1 }],
+            }}
+          >
+            <Picker.Item label="Selecciona un motivo" value="" />
+            {motives.map((motive) => (
+              <Picker.Item
+                key={motive.id}
+                label={motive.label}
+                value={motive.id}
+              />
+            ))}
+          </Picker>
+        </View>
+        <TextInput
+          style={theme.input}
+          placeholder="Descripción"
+          value={description}
+          onChangeText={(description) =>
+            handleInputChange("description", description)
+          }
+          placeholderTextColor={theme.colors.text}
+          multiline={true}
+          numberOfLines={4}
+        />
+
+        <Button
+          title="Enviar"
+          containerStyle={theme.buttonPrimaryContainer}
+          buttonStyle={theme.buttonPrimaryStyle}
+          onPress={() => {
+            setShowDialog(false);
+            handleBreak();
+          }}
+          disabled={isLoadingBreak}
+          loading={isLoadingBreak}
+        />
+      </Dialog>
     </View>
   );
 };

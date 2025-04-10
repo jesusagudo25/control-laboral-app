@@ -12,6 +12,7 @@ const CardSigning = ({
   totalHours,
   actions,
   navigation,
+  motives,
 }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
@@ -53,7 +54,11 @@ const CardSigning = ({
           <Text style={theme.titleSigning}>Total jornada: {totalHours}</Text>
         </View>
 
-        <ActionSigning actions={actions} navigation={navigation} />
+        <ActionSigning
+          actions={actions}
+          navigation={navigation}
+          motives={motives}
+        />
       </View>
     </Card>
   );

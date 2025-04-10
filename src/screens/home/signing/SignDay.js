@@ -6,13 +6,22 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
+import { Dialog } from "@rneui/themed";
 import SignatureCanvas from "react-native-signature-canvas";
 import { Text, useTheme } from "@rneui/themed";
 import { Button } from "@rneui/base";
+import axios from "axios";
 
-const SignDay = ({ navigation }) => {
+const SignDay = ({ navigation, route }) => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+
+  const { fichaje, description, motivo_pausa, long, lat } = route.params || {}; // Desestructuración de los parámetros
+
   const { theme } = useTheme(); // Obtener el tema actual
   const [signature, setSignature] = useState(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const ref = useRef();
 
   const handleSignature = (signature) => {
@@ -20,14 +29,69 @@ const SignDay = ({ navigation }) => {
     setSignature(signature);
   };
 
+  const handleSaveSignature = async (signature) => {
+    console.log("Signature: ", signature);
+    
+    if (!signature) {
+      setShowDialog(true);
+      setMessage("Por favor, firme antes de continuar.");
+      return;
+    }
+
+    const params = {
+      action: "user_fichaje",
+      signature: signature,
+      fichaje: fichaje,
+      description: description,
+      motivo_pausa: motivo_pausa,
+      long: long,
+      lat: lat,
+    };
+
+    console.log("Params: ", params);
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/index.php`, params);
+      //console.log("Response: ", response.data);
+      if (response.data.success) {
+        console.log("Success: ", response.data);
+        setMessage(null);
+        setIsLoading(false);
+
+        //Limpiar la firma
+        ref.current.clearSignature();
+
+        navigation.navigate("Signing", {
+          message: "Salida registrada correctamente.",
+          type: "success",
+        });
+      } else {
+        //Limpiar la firma
+        ref.current.clearSignature();
+        setShowDialog(true);
+        console.log("Error: ", response.data.msg);
+        setMessage(response.data.msg);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      setMessage("Error al registrar la salida. Inténtalo de nuevo.");
+      setIsLoading(false);
+    }
+  };
+
   //Al intentar guardar una firma vacía
   const handleEmpty = () => {
-    console.log("Empty");
+    setShowDialog(true);
+    setMessage("Por favor, firme antes de continuar.");
+    return;
   };
 
   //Al intentar limpiar la firma
   const handleClear = () => {
-    console.log("Clear success!");
+    setShowDialog(true);
+    setMessage("La firma se ha limpiado.");
   };
 
   //Al terminar de firmar
@@ -54,10 +118,12 @@ const SignDay = ({ navigation }) => {
           title="Guardar"
           onPress={() => {
             ref.current.readSignature();
-            console.log(signature);
+            handleSaveSignature(signature);
           }}
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
+          disabled={isLoading}
+          loading={isLoading}
         />
 
         <Button
@@ -69,6 +135,33 @@ const SignDay = ({ navigation }) => {
           buttonStyle={theme.buttonSecondaryStyle}
         />
       </View>
+
+      <Dialog
+        isVisible={showDialog}
+        onBackdropPress={() => setShowDialog(false)}
+        overlayStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+          padding: 20,
+        }}
+        dialogStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+        }}
+        dialogContainerStyle={{
+          backgroundColor: theme.colors.header,
+          borderRadius: 10,
+        }}
+        dialogTitleStyle={{
+          color: theme.colors.text,
+          fontSize: 18,
+          fontWeight: "bold",
+        }}
+        titleStyle={{ color: theme.colors.text }}
+      >
+        <Dialog.Title title="Alerta" />
+        <Text>{message}</Text>
+      </Dialog>
     </View>
   );
 };
