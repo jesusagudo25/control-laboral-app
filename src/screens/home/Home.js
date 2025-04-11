@@ -44,7 +44,8 @@ const Home = ({ navigation }) => {
   const [nameShown, setNameShown] = useState("Cargando...");
 
   const handleLogout = async () => {
-    await axios.delete(`${API_URL}/index.php?action=auth`);
+    const response = await axios.delete(`${API_URL}/index.php?action=auth`);
+    console.log("Logout response: ", response.data);
     logout();
   };
 
@@ -65,6 +66,7 @@ const Home = ({ navigation }) => {
           setUserName(userName);
           setNameShown(`¡Hola, ${userName}!`);
           setWorkingDayStatus(response.data.data.status);
+          console.log(response.data.data.status);
         } catch (error) {
           console.log(error);
         }
@@ -160,7 +162,6 @@ const Home = ({ navigation }) => {
             screen="Calendar"
           />
         )}
-
       </View>
     </ScrollView>
   );

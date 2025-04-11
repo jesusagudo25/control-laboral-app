@@ -14,6 +14,9 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingFinish, setIsLoadingFinish] = useState(false);
+  const [isLoadingContinue, setIsLoadingContinue] = useState(false);
+  
   const [isLoadingBreak, setIsLoadingBreak] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -74,14 +77,14 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
     };
     console.log("ButtonSigning params: ", params);
 
-    setIsLoading(true);
+    setIsLoadingBreak(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
       //console.log("Response: ", response.data);
       if (response.data.success) {
         console.log("Success: ", response.data);
         setErrorMsg(null);
-        setIsLoading(false);
+        setIsLoadingBreak(false);
         setShowDialog(false); // Cerrar el diálogo después de enviar
         handleInputChange("description", ""); // Limpiar el campo de descripción
         handleInputChange("motivo_pausa", ""); // Limpiar el campo de motivo de pausa
@@ -93,12 +96,12 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       } else {
         console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
-        setIsLoading(false);
+        setIsLoadingBreak(false);
       }
     } catch (error) {
       console.error("Error: ", error);
       setErrorMsg("Error al registrar la pausa. Inténtalo de nuevo.");
-      setIsLoading(false);
+      setIsLoadingBreak(false);
     }
   };
 
@@ -113,7 +116,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
     };
     console.log("ButtonSigning params: ", params);
 
-    setIsLoading(true);
+    setIsLoadingContinue(true);
 
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
@@ -121,7 +124,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       if (response.data.success) {
         console.log("Success: ", response.data);
         setErrorMsg(null);
-        setIsLoading(false);
+        setIsLoadingContinue(false);
         navigation.navigate("Signing", {
           message: "Reanudación registrada correctamente.",
           type: "success",
@@ -129,12 +132,12 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       } else {
         console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
-        setIsLoading(false);
+        setIsLoadingContinue(false);
       }
     } catch (error) {
       console.error("Error: ", error);
       setErrorMsg("Error al registrar la reanudación. Inténtalo de nuevo.");
-      setIsLoading(false);
+      setIsLoadingContinue(false);
     }
   };
 
@@ -149,14 +152,14 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
     };
     console.log("ButtonSigning params: ", params);
 
-    setIsLoading(true);
+    setIsLoadingFinish(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
       //console.log("Response: ", response.data);
       if (response.data.success) {
         console.log("Success: ", response.data);
         setErrorMsg(null);
-        setIsLoading(false);
+        setIsLoadingFinish(false);
 
         navigation.navigate("Signing", {
           message: "Salida registrada correctamente.",
@@ -165,12 +168,12 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       } else {
         console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
-        setIsLoading(false);
+        setIsLoadingFinish(false);
       }
     } catch (error) {
       console.error("Error: ", error);
       setErrorMsg("Error al registrar la salida. Inténtalo de nuevo.");
-      setIsLoading(false);
+      setIsLoadingFinish(false);
     }
   };
 
@@ -194,8 +197,8 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
             containerStyle={theme.buttonPrimaryContainer}
             buttonStyle={theme.buttonPrimaryStyle}
             onPress={() => setShowDialog(true)}
-            disabled={isLoading}
-            loading={isLoading}
+            disabled={isLoadingBreak}
+            loading={isLoadingBreak}
           />
 
           <Button
@@ -205,8 +208,8 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
             containerStyle={theme.buttonSecondaryContainer}
             buttonStyle={theme.buttonSecondaryStyle}
             onPress={() => handleFinish()}
-            disabled={isLoading}
-            loading={isLoading}
+            disabled={isLoadingFinish}
+            loading={isLoadingFinish}
           />
         </View>
       )}
@@ -234,8 +237,8 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
           onPress={() => handleContinue()}
-          disabled={isLoading}
-          loading={isLoading}
+          disabled={isLoadingContinue}
+          loading={isLoadingContinue}
         />
       )}
 

@@ -45,14 +45,26 @@ const Signing = ({ route, navigation }) => {
     let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
 
     try {
-      const response = await axios.get(
+      /*const response = await axios.get(
         `${API_URL}/index.php?day=4&action=user_turn&date=2025-04-10`
+      );*/
+      const response = await axios.get(
+        `${API_URL}/index.php?day=5&action=user_turn&date=2025-04-10`
       );
 
-      const turn = response.data.data.horario["thursday"];
-      const marks = response.data.data.marks["thursday"];
-      const countMarks = Object.keys(marks).length;
+      const turn = response.data.data.horario["friday"];
+      const marks = response.data.data.marks["friday"];
+      const time = response.data.data.time;
+      console.log(response.data.data.marks);
 
+      let countMarks = response.data.data.marks.length;
+      console.log("Cantidad de marcas:", countMarks);
+
+      //Validar si es undifened o null
+      if (countMarks === undefined || countMarks === null) {
+        countMarks = Object.keys(marks).length;
+      }
+      
       if (countMarks == 0) {
         //Darle formato a las horas
         Object.keys(turn).forEach((key) => {
@@ -113,6 +125,9 @@ const Signing = ({ route, navigation }) => {
         console.log("Marcas:", marks);
         setCountTurnData(countMarks);
         //Calcular el total de horas, si puede obtenerlas del api mejor
+        //setTotalHours(time.tiempo_faltante);
+        setTotalHours(time.tiempo_trabajado.split(":").slice(0, 2).join(":"));
+        console.log("Total horas:", time.tiempo_trabajado);
       }
     } catch (error) {
       console.log(error);

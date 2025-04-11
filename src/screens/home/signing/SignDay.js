@@ -62,10 +62,20 @@ const SignDay = ({ navigation, route }) => {
         //Limpiar la firma
         ref.current.clearSignature();
 
-        navigation.navigate("Signing", {
-          message: "Salida registrada correctamente.",
-          type: "success",
+        navigation.reset({
+          index: 1,
+          routes: [
+            { name: "Tabs" }, // <== entra al TabNavigator
+            {
+              name: "Signing",
+              params: {
+                message: "Salida registrada correctamente.",
+                type: "success",
+              },
+            },
+          ],
         });
+        
       } else {
         //Limpiar la firma
         ref.current.clearSignature();
@@ -90,8 +100,8 @@ const SignDay = ({ navigation, route }) => {
 
   //Al intentar limpiar la firma
   const handleClear = () => {
-    setShowDialog(true);
-    setMessage("La firma se ha limpiado.");
+    //setShowDialog(true);
+    //setMessage("La firma se ha limpiado.");
   };
 
   //Al terminar de firmar

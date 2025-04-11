@@ -150,21 +150,8 @@ const AppStack = () => {
       <Stack.Screen
         name="SignDay"
         component={SignDay}
-        options={{
-          headerShown: true,
-          title: "Firma del Día",
-          headerStyle: {
-            backgroundColor: theme.colors.accent,
-            height: 45,
-          },
-          headerTintColor: theme.colors.header,
-          headerTitleStyle: {
-            textAlign: "center",
-            fontSize: 16,
-            fontWeight: "ultralight",
-          },
-          headerTitleAlign: "center",
-        }}
+        options={{ headerShown: false }}
+
       />
 
       <Stack.Screen
