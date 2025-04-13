@@ -126,7 +126,7 @@ const Document = ({ navigation }) => {
             nombre: name.split(".")[0], // Nombre del archivo sin extensión
             descripcion,
             fecha: new Date().toLocaleDateString(), // Fecha actual
-            url: "https://pdfobject.com/pdf/sample.pdf", // URL simulada
+            url: response.data.data.document, // URL del archivo subido
           },
         ]); // Agregar el nuevo documento a la lista
 
