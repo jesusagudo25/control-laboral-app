@@ -2,11 +2,15 @@ import { Text } from "@rneui/base";
 import React from "react";
 import { View, Dimensions, ScrollView } from "react-native";
 import { FlatList, ActivityIndicator } from "react-native";
-import { Header } from "@rneui/themed";
+import { Header, Skeleton } from "@rneui/themed";
 
 import { Card, Button, Icon } from "@rneui/themed";
 import { useEffect, useState } from "react";
 import { useTheme } from "@rneui/themed";
+import axios from "axios";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import SkeletonCard from "../../components/SkeletonCard";
 
 const Request = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -22,53 +26,72 @@ const Request = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      //Simular el json de la API
-      const data = {
-        solicitudes: [
-          {
-            referencia: "Solicitud 1",
-            tipo: "Tipo 1",
-            fecha: "2023-10-01",
-            descripcion: "Descripción de la solicitud 1",
-            status: "Aprobado",
-            icono: "check-circle",
-          },
-          {
-            referencia: "Solicitud 2",
-            tipo: "Tipo 2",
-            fecha: "2023-10-02",
-            descripcion: "Descripción de la solicitud 2",
-            status: "Rechazado",
-            icono: "times-circle",
-          },
-        ],
-        hasMore: false, // Cambia esto para simular más datos
-      };
-      // const response = await axios.get(`${API_URL}/index.php`, {
+      const response = await axios.get(
+        `${API_URL}/index.php?action=user_requests&page=${page}`
+      );
+      const data = response.data; // Simular la respuesta de la API
 
-      setSolicitudes((prev) => [...prev, ...data.solicitudes]);
-      setHasMore(data.hasMore); // o data.total > page * limit
+      //Map de la respuesta de la API:  data.data.requests.map
+      const solicitudesMapped = data.data.requests.map((item) => ({
+        referencia: item.referencia,
+        tipo: item.tipo,
+        fecha: item.fecha_creacion.split(" ")[0],
+        descripcion: item.descripcion || "No hay descripción",
+        status: item.status,
+        icono:
+          item.status === "Aprobado"
+            ? "check-circle"
+            : item.status === "Rechazado"
+              ? "times-circle"
+              : "times-circle",
+      }));
+
+      setSolicitudes((prev) => [...prev, ...solicitudesMapped]);
+      setHasMore(data.total_pages > page); // Cambia esto para simular más datos
       setPage((prev) => prev + 1);
     } catch (error) {
       console.error("Error al cargar solicitudes", error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  useEffect(() => {
-    fetchSolicitudes();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setSolicitudes([]); // Reiniciar solicitudes al cargar la pantalla
+      setPage(1); // Reiniciar página al cargar la pantalla
+      setHasMore(true); // Reiniciar hasMore al cargar la pantalla
+
+      fetchSolicitudes(); // Llamar a la función para cargar solicitudes
+    }, [])
+  );
+
+  const renderFooter = () => {
+    return (
+      <View >
+        {/* Simula 2 tarjetas en loading */}
+        {[1, 2, 3, 4].map((_, index) => (
+          <SkeletonCard
+            key={index}
+            height={100}
+            width="100%"
+            style={{ borderRadius: 6, marginBottom: 15 }}
+          />
+        ))}
+      </View>
+    );
+  };
 
   const renderSolicitud = ({ item }) => (
     <Card containerStyle={theme.card}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Icon name={item.icono} type="font-awesome" size={24} color="#1E6091" />
         <View style={{ marginLeft: 10, flex: 1 }}>
-          <Text style={{ fontWeight: "bold" }}>{item.referencia}</Text>
-          <Text>{item.tipo}</Text>
-          <Text>{item.fecha}</Text>
+          <Text style={{ fontWeight: "bold" }}>Ref. {item.referencia}</Text>
+          <Text>Tipo: {item.tipo}</Text>
+          <Text>Fecha: {item.fecha}</Text>
           <Text numberOfLines={2} style={{ color: "#555" }}>
-            {item.descripcion}
+            Descripción: {item.descripcion}
           </Text>
           <Text
             style={{
@@ -80,7 +103,7 @@ const Request = ({ navigation }) => {
                     : "#f7941e",
             }}
           >
-            {item.status}
+            Estado: {item.status}
           </Text>
         </View>
       </View>
@@ -121,16 +144,11 @@ const Request = ({ navigation }) => {
           keyExtractor={(item, index) => index.toString()}
           onEndReached={fetchSolicitudes}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isLoading ? (
-              <ActivityIndicator size="large" color="#1E6091" />
-            ) : null
-          }
+          ListFooterComponent={isLoading ? renderFooter : null}
         />
       </View>
     </>
   );
-  
 };
 
 export default Request;

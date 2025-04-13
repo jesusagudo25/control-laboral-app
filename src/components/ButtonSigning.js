@@ -22,13 +22,19 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
 
   const [showDialog, setShowDialog] = useState(false);
 
-  const { description, motivo_pausa, longitude, latitude, handleInputChange } =
-    useForm({
-      description: "",
-      motivo_pausa: "",
-      longitude: location?.longitude,
-      latitude: location?.latitude,
-    });
+  const {
+    description,
+    motivo_pausa,
+    longitude,
+    latitude,
+    handleInputChange,
+    handleReset,
+  } = useForm({
+    description: "",
+    motivo_pausa: "",
+    longitude: location?.longitude,
+    latitude: location?.latitude,
+  });
 
   const handleSignIn = async () => {
     const params = {
@@ -144,7 +150,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       if (response.data.success) {
         setErrorMsg(null);
         setIsLoadingFinish(false);
-
+        handleReset(); // Limpiar los campos después de enviar
         navigation.navigate("Signing", {
           message: "Salida registrada correctamente.",
           type: "success",

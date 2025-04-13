@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { useTheme } from "@rneui/themed";
 import { StyleSheet } from "react-native";
+import { Icon } from "@rneui/themed";
 
 const DocumentDetail = ({ navigation, route }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -11,8 +12,18 @@ const DocumentDetail = ({ navigation, route }) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.header}>
-        <Text style={styles.title}>{document.nombre}</Text>
-        <Text style={styles.subtitle}>Tipo: {document.tipo}</Text>
+        <Text style={styles.title}>
+          {" "}
+          <Icon
+            name="file-text-o"
+            type="font-awesome"
+            size={24}
+            color="#1E6091"
+            style={{ marginRight: 10 }}
+          />
+          {document.nombre}
+        </Text>
+        <Text style={styles.subtitle}>Descripción: {document.descripcion}</Text>
         <Text style={styles.date}>Fecha: {document.fecha}</Text>
       </View>
       <WebView
