@@ -51,7 +51,11 @@ const theme = createTheme({
   boxHidden: {
     backgroundColor: "#f7941e",
     height: 200,
-    position: "relative",
+    position: "absolute",        // Para que se quede "debajo"
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: -1, 
   },
   containerBoxHidden: {
     flex: 1,
@@ -67,16 +71,15 @@ const theme = createTheme({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: "#1E6091",
-    padding: 11,
+    padding: 12,
     marginBottom: 15,
     color: "#000",
     backgroundColor: "#fff",
   },
   buttonPrimaryContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 5,
+    textAlign: "center",
   },
   buttonPrimaryStyle: {
     backgroundColor: "#f7941e",
@@ -84,12 +87,12 @@ const theme = createTheme({
     paddingHorizontal: 15,
     paddingVertical: 10,
     width: "100%",
+    textAlign: "center",
   },
   buttonSecondaryContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 5,
+    marginTop: 10,
     marginBottom: 20,
+    textAlign: "center",
   },
   buttonSecondaryStyle: {
     borderColor: "#1E6091",
@@ -98,6 +101,7 @@ const theme = createTheme({
     paddingHorizontal: 15,
     paddingVertical: 10,
     width: "100%",
+    textAlign: "center",
   },
   buttonRequest: {
     height: "auto",

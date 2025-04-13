@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,14 @@ import {
   ScrollView,
 } from "react-native";
 import { Button, Image, Dialog, Divider } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
-import Connection from "../../components/Connection";
 import axios from "axios";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 
 const Login = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
-  const { login } = useAuth(); // aquí traes la función de login del contexto
+  const { login, isConnected } = useAuth(); // aquí traes la función de login del contexto
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,8 +22,7 @@ const Login = ({ navigation }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [isConnected, setIsConnected] = useState(true);
-  const [connectionType, setConnectionType] = useState("none");
+  
 
   const handleLogin = async () => {
     if (!isConnected) {
@@ -136,14 +133,9 @@ const Login = ({ navigation }) => {
           }}
           titleStyle={{ color: theme.colors.text }}
         >
-          <Dialog.Title title="Error" />
+          <Dialog.Title title="Alerta" />
           <Text>{message}</Text>
         </Dialog>
-
-        <Connection
-          setIsConnected={setIsConnected}
-          setConnectionType={setConnectionType}
-        />
 
         <TouchableOpacity
           activeOpacity={0.8}
@@ -155,6 +147,7 @@ const Login = ({ navigation }) => {
               fontSize: 15,
               color: theme.colors.text,
               marginTop: 10,
+              marginBottom: 10,
             }}
           >
             ¿Olvidaste tu contraseña?
@@ -163,19 +156,8 @@ const Login = ({ navigation }) => {
 
         <Button
           title="Iniciar sesión"
-          containerStyle={{
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 25,
-            marginBottom: 10,
-          }}
-          buttonStyle={{
-            backgroundColor: theme.colors.accent,
-            borderRadius: 3,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            width: "100%",
-          }}
+          containerStyle={theme.buttonPrimaryContainer}
+          buttonStyle={theme.buttonPrimaryStyle}
           disabledStyle={{
             backgroundColor: theme.colors.disabled,
             borderRadius: 3,
@@ -190,20 +172,8 @@ const Login = ({ navigation }) => {
           title="Crea tu usuario o abre tu cuenta"
           type="outline"
           titleStyle={{ color: theme.colors.primary }}
-          containerStyle={{
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 5,
-            marginBottom: 20,
-          }}
-          buttonStyle={{
-            borderColor: theme.colors.primary,
-            borderWidth: 1.2,
-            borderRadius: 3,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            width: "100%",
-          }}
+          containerStyle={theme.buttonSecondaryContainer}
+          buttonStyle={theme.buttonSecondaryStyle}
           onPress={() => navigation.navigate("Register")}
         />
       </View>

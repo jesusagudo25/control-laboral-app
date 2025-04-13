@@ -25,13 +25,10 @@ const SignDay = ({ navigation, route }) => {
   const ref = useRef();
 
   const handleSignature = (signature) => {
-    //console.log(signature);
     setSignature(signature);
   };
 
   const handleSaveSignature = async (signature) => {
-    console.log("Signature: ", signature);
-    
     if (!signature) {
       setShowDialog(true);
       setMessage("Por favor, firme antes de continuar.");
@@ -48,14 +45,10 @@ const SignDay = ({ navigation, route }) => {
       lat: lat,
     };
 
-    console.log("Params: ", params);
-
     setIsLoading(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
-      //console.log("Response: ", response.data);
       if (response.data.success) {
-        console.log("Success: ", response.data);
         setMessage(null);
         setIsLoading(false);
 
@@ -75,12 +68,10 @@ const SignDay = ({ navigation, route }) => {
             },
           ],
         });
-        
       } else {
         //Limpiar la firma
         ref.current.clearSignature();
         setShowDialog(true);
-        console.log("Error: ", response.data.msg);
         setMessage(response.data.msg);
         setIsLoading(false);
       }
@@ -178,9 +169,10 @@ const SignDay = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: Dimensions.get("window").height - 200,
+    flex: 1,
     backgroundColor: "none",
-    padding: 30,
+    padding: 20,
+    justifyContent: "center",
   },
   buttonContainer: {
     marginTop: 20,
@@ -214,17 +206,29 @@ const styleSignatureCanvas = `
     border: none;
     border-radius: 8px;
     background-color: "none";
-    height: ${Dimensions.get("window").height - 200}px;
+    padding: 0px;
   }
   .m-signature-pad--footer {
     display: none;
     margin: 0px;
     background-color: "none";
+    padding: 0px;s
+  }
+  body,html {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+  }
+  .m-signature-pad--body {
+    background-color: "none";
+    padding: 0px;
   }
   canvas {
     border-radius: 8px;
     border: 1px solid #ccc;
     background-color: "none";
+    padding: 0px;
   }
 `;
 

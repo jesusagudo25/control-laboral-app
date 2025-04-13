@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput } from "react-native";
+import { View, TextInput, Alert } from "react-native";
 import { useTheme } from "@rneui/themed";
-import { Text, Button, Dialog } from "@rneui/base";
+import { Text, Button, Dialog } from "@rneui/themed";
 import axios from "axios";
 
 import { Picker } from "@react-native-picker/picker";
@@ -16,7 +16,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingFinish, setIsLoadingFinish] = useState(false);
   const [isLoadingContinue, setIsLoadingContinue] = useState(false);
-  
+
   const [isLoadingBreak, setIsLoadingBreak] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -39,14 +39,11 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       long: longitude,
       lat: latitude,
     };
-    console.log("ButtonSigning params: ", params);
 
     setIsLoading(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
-      //console.log("Response: ", response.data);
       if (response.data.success) {
-        console.log("Success: ", response.data);
         setErrorMsg(null);
         setIsLoading(false);
 
@@ -55,12 +52,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           type: "success",
         });
       } else {
-        console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("Error: ", error);
       setErrorMsg("Error al registrar la entrada. Inténtalo de nuevo.");
       setIsLoading(false);
     }
@@ -75,14 +70,11 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       long: longitude,
       lat: latitude,
     };
-    console.log("ButtonSigning params: ", params);
 
     setIsLoadingBreak(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
-      //console.log("Response: ", response.data);
       if (response.data.success) {
-        console.log("Success: ", response.data);
         setErrorMsg(null);
         setIsLoadingBreak(false);
         setShowDialog(false); // Cerrar el diálogo después de enviar
@@ -94,7 +86,6 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           type: "success",
         });
       } else {
-        console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
         setIsLoadingBreak(false);
       }
@@ -114,15 +105,12 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       long: longitude,
       lat: latitude,
     };
-    console.log("ButtonSigning params: ", params);
 
     setIsLoadingContinue(true);
 
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
-      //console.log("Response: ", response.data);
       if (response.data.success) {
-        console.log("Success: ", response.data);
         setErrorMsg(null);
         setIsLoadingContinue(false);
         navigation.navigate("Signing", {
@@ -130,7 +118,6 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           type: "success",
         });
       } else {
-        console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
         setIsLoadingContinue(false);
       }
@@ -150,14 +137,11 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       long: longitude,
       lat: latitude,
     };
-    console.log("ButtonSigning params: ", params);
 
     setIsLoadingFinish(true);
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
-      //console.log("Response: ", response.data);
       if (response.data.success) {
-        console.log("Success: ", response.data);
         setErrorMsg(null);
         setIsLoadingFinish(false);
 
@@ -166,7 +150,6 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           type: "success",
         });
       } else {
-        console.log("Error: ", response.data.msg);
         setErrorMsg(response.data.msg);
         setIsLoadingFinish(false);
       }
@@ -175,6 +158,18 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       setErrorMsg("Error al registrar la salida. Inténtalo de nuevo.");
       setIsLoadingFinish(false);
     }
+  };
+
+  const handleNavigateSign = () => {
+    setIsLoading(true);
+    navigation.navigate("SignDay", {
+      fichaje: "ficharfirma",
+      description: description,
+      motivo_pausa: motivo_pausa,
+      long: longitude,
+      lat: latitude,
+    });
+    setIsLoading(false);
   };
 
   return (
@@ -219,15 +214,9 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           title="Firmar"
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
-          onPress={() =>
-            navigation.navigate("SignDay", {
-              fichaje: "ficharfirma",
-              description: description,
-              motivo_pausa: motivo_pausa,
-              long: longitude,
-              lat: latitude,
-            })
-          }
+          onPress={() => handleNavigateSign()}
+          disabled={isLoading}
+          loading={isLoading}
         />
       )}
 
@@ -273,7 +262,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
             borderRadius: 5,
             borderColor: "#1E6091", // Color del borde
             overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-            height: 40, // Define la altura del contenedor
+            height: 45, // Define la altura del contenedor
             justifyContent: "center", // Centra el contenido dentro del contenedor
             paddingVertical: 0, // Elimina padding extra
             marginVertical: 10, // Espacio entre el Picker y el TextInput
@@ -284,9 +273,9 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
             onValueChange={(itemValue) => {
               handleInputChange("motivo_pausa", itemValue);
             }}
-            style={{ width: "100%", height: 50 }}
+            style={{ width: "100%", height: 55 }}
             itemStyle={{
-              height: 50,
+              height: 55,
               transform: [{ scaleX: 1 }, { scaleY: 1 }],
             }}
           >
@@ -317,6 +306,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
           onPress={() => {
+            if (!motivo_pausa) {
+              Alert.alert("Error", "Debes seleccionar un motivo de pausa.");
+              return;
+            }
             setShowDialog(false);
             handleBreak();
           }}

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { View, ScrollView } from "react-native";
-import { Text, useTheme } from "@rneui/themed";
+import { View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, useTheme, Button } from "@rneui/themed";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; // Importar el locale español
@@ -49,11 +49,15 @@ const Signing = ({ route, navigation }) => {
         `${API_URL}/index.php?day=4&action=user_turn&date=2025-04-10`
       );*/
       const response = await axios.get(
-        `${API_URL}/index.php?day=5&action=user_turn&date=2025-04-10`
+        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
 
-      const turn = response.data.data.horario["friday"];
-      const marks = response.data.data.marks["friday"];
+      console.log(
+        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+      );
+
+      const turn = response.data.data.horario[day];
+      const marks = response.data.data.marks[day];
       const time = response.data.data.time;
       console.log(response.data.data.marks);
 
@@ -64,7 +68,7 @@ const Signing = ({ route, navigation }) => {
       if (countMarks === undefined || countMarks === null) {
         countMarks = Object.keys(marks).length;
       }
-      
+
       if (countMarks == 0) {
         //Darle formato a las horas
         Object.keys(turn).forEach((key) => {
@@ -200,50 +204,47 @@ const Signing = ({ route, navigation }) => {
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
-      <View style={theme.boxHidden}>
-        <View style={theme.containerBoxHidden}>
-          {/* Titulo ${date} */}
-          <View
+      <View style={theme.boxHidden} />
+      <View style={theme.containerBoxHidden}>
+        <View
+          style={{
+            marginBottom: 10,
+            marginHorizontal: 10,
+          }}
+        >
+          <Text
             style={{
+              fontSize: 24,
+              fontWeight: "bold",
               marginBottom: 10,
-              marginHorizontal: 10,
+              color: theme.colors.header,
             }}
           >
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                marginBottom: 10,
-                color: theme.colors.header,
-              }}
-            >
-              {/* 30 de Julio de 2021 */}
-              {currentDate}
-            </Text>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "400",
-                color: theme.colors.header,
-              }}
-            >
-              Valida tu jornada laboral
-            </Text>
-          </View>
-
-          {countTurnData > 0 && userName !== "" && actions.length > 0 ? (
-            <CardSigning
-              turnData={turnData}
-              countTurnData={countTurnData}
-              totalHours={totalHours}
-              actions={actions}
-              navigation={navigation}
-              motives={motives}
-            />
-          ) : (
-            <SkeletonSigning />
-          )}
+            {currentDate}
+          </Text>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "400",
+              color: theme.colors.header,
+            }}
+          >
+            Valida tu jornada laboral
+          </Text>
         </View>
+
+        {countTurnData > 0 && userName !== "" && actions.length > 0 ? (
+          <CardSigning
+            turnData={turnData}
+            countTurnData={countTurnData}
+            totalHours={totalHours}
+            actions={actions}
+            navigation={navigation}
+            motives={motives}
+          />
+        ) : (
+          <SkeletonSigning />
+        )}
       </View>
     </ScrollView>
   );

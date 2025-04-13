@@ -19,7 +19,6 @@ const Register = ({ navigation }) => {
   const [email, setEmail] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [checked, setChecked] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -76,25 +75,14 @@ const Register = ({ navigation }) => {
           isVisible={showDialog}
           onBackdropPress={() => setShowDialog(false)}
         >
-          <Dialog.Title title="Error" />
+          <Dialog.Title title="Alerta" />
           <Text>{message}</Text>
         </Dialog>
 
         <Button
           title="Enviar solicitud"
-          containerStyle={{
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 15,
-            marginBottom: 15,
-          }}
-          buttonStyle={{
-            backgroundColor: theme.colors.accent,
-            borderRadius: 3,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            width: "100%",
-          }}
+          containerStyle={theme.buttonPrimaryContainer}
+          buttonStyle={theme.buttonPrimaryStyle}
           loading={loading}
         />
 

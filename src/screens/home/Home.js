@@ -38,7 +38,6 @@ const Home = ({ navigation }) => {
   const { logout, setUserName } = useAuth(); //
 
   const [isVisible, setIsVisible] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
 
   const [workingDayStatus, setWorkingDayStatus] = useState("none");
   const [nameShown, setNameShown] = useState("Cargando...");

@@ -37,7 +37,7 @@ const ActionSigning = ({ actions, navigation, motives }) => {
   }, []);
 
   return (
-    <View>
+    <>
       {isLoading ? (
         <ActivityIndicator size="large" color={theme.colors.accent} />
       ) : errorMsg ? (
@@ -50,7 +50,7 @@ const ActionSigning = ({ actions, navigation, motives }) => {
           motives={motives}
         />
       )}
-    </View>
+    </>
   );
 };
 

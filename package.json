@@ -35,7 +35,12 @@
     "react-native-signature-canvas": "^4.7.2",
     "react-native-svg": "15.8.0",
     "react-native-vector-icons": "^10.2.0",
-    "@react-native-picker/picker": "2.9.0"
+    "@react-native-picker/picker": "2.9.0",
+    "expo-notifications": "~0.29.14",
+    "expo-device": "~7.0.3",
+    "expo-constants": "~17.0.8",
+    "expo-document-picker": "~13.0.3",
+    "react-native-webview": "13.12.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
