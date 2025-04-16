@@ -1,71 +1,89 @@
-import { View, Text } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useRef } from "react";
-import { AppState } from "react-native";
+import { View, Text, AppState } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
 import { Dialog } from "@rneui/themed";
-import useAuth from "../hooks/useAuth"; // Importar el hook useAuth
+import useAuth from "../hooks/useAuth";
 import { useTheme } from "@rneui/themed";
 
-const StatusApp = (props) => {
+const StatusApp = () => {
+  const { logout, setAppStatus, ignoreAppState } = useAuth();
+  const { theme } = useTheme();
+
   const [showDialog, setShowDialog] = useState(false);
-  const { logout, setAppStatus, ignoreAppState } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
-  const { theme } = useTheme(); // Obtener el tema actual
+  const appState = useRef(AppState.currentState);
+  const timeoutRef = useRef(null);
 
-  const handleChange = async (newState) => {
-    console.log("Estado de la app:", newState);
+  const AUTO_LOGOUT_DELAY = 5 * 60 * 1000; // 5 minutos
 
-    if (ignoreAppState.current) {
-      console.log(
-        "Ignorando el cambio de estado de la app por permisos u otra accion temporales."
-      );
+  const handleAppStateChange = (nextAppState) => {
+    console.log("Estado de la app:", nextAppState);
+
+    if (ignoreAppState?.current) {
+      console.log("Cambio de estado ignorado.");
       return;
     }
 
-    if (newState === "active") {
-      setAppStatus(newState);
-    } else {
-      setAppStatus(newState);
+    if (nextAppState === "active") {
+      setAppStatus("active");
+      appState.current = "active";
+      setShowDialog(false);
+
+      // Si el usuario regresa, cancelamos el logout programado
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    } else if (appState.current === "active") {
+      setAppStatus(nextAppState);
+      appState.current = nextAppState;
       setShowDialog(true);
+
+      // Programar logout en 5 minutos si no regresa
+      timeoutRef.current = setTimeout(() => {
+        console.log("Auto logout ejecutado por inactividad.");
+        logout();
+      }, AUTO_LOGOUT_DELAY);
     }
   };
 
   useEffect(() => {
-    const suscription = AppState.addEventListener("change", handleChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
     return () => {
-      suscription.remove();
+      subscription.remove();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  const handleDialogClose = () => {
+    setShowDialog(false);
+    logout();
+  };
 
   return (
     <View>
       <Dialog
         isVisible={showDialog}
-        onBackdropPress={() => {
-          setShowDialog(false);
-          logout();
-        }}
+        onBackdropPress={handleDialogClose}
         overlayStyle={{
           backgroundColor: theme.colors.header,
           borderRadius: 10,
           padding: 20,
         }}
-        dialogStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-        }}
-        dialogContainerStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-        }}
-        dialogTitleStyle={{
-          color: theme.colors.text,
-          fontSize: 18,
-          fontWeight: "bold",
-        }}
-        titleStyle={{ color: theme.colors.text }}
       >
-        <Dialog.Title title="Alerta" />
-        <Text>Has salido de la aplicación, por favor, vuelve a ingresar.</Text>
+        <Dialog.Title
+          title="Alerta"
+          titleStyle={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: "bold",
+          }}
+        />
+        <Text style={{ color: theme.colors.text }}>
+          Has salido de la aplicación. Si no regresas en 5 minutos, cerraremos
+          tu sesión por seguridad.
+        </Text>
       </Dialog>
     </View>
   );
