@@ -1,24 +1,17 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
-  StyleSheet,
-  Linking,
-  Dimensions,
-  ImageBackground,
-  TouchableOpacity,
+  Text,
   ScrollView,
-  AppState,
   ActivityIndicator,
-  FlatList,
-  Alert,
+  StyleSheet,
 } from "react-native";
-import { Calendar as RNCalendar } from "react-native-calendars";
-import { Icon } from "@rneui/themed";
-import { Card, Header } from "@rneui/themed";
+
 import { useTheme } from "@rneui/themed";
-
-import React, { useEffect, useState } from "react";
-
-import { Text } from "@rneui/themed";
+import { Calendar as RNCalendar } from "react-native-calendars";
+import dayjs from "dayjs";
+import axios from "axios";
+import { Icon } from "@rneui/themed";
 
 import { LocaleConfig } from "react-native-calendars";
 
@@ -67,35 +60,86 @@ LocaleConfig.locales["es"] = {
 LocaleConfig.defaultLocale = "es";
 
 const Calendar = () => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
-  const { theme } = useTheme(); // Obtener el tema actual
-
-  const [selectedDate, setSelectedDate] = useState("");
-  const [jornada, setJornada] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
   const [markedDates, setMarkedDates] = useState({});
+  const [selectedDate, setSelectedDate] = useState(
+    dayjs().format("YYYY-MM-DD")
+  );
+  const [dayDetails, setDayDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const fetchJornada = async (date) => {
+  // Simula datos del mes
+  useEffect(() => {
+    const simulateMonthData = () => {
+      const data = {
+        "2025-05-01": { types: ["libre"] },
+        "2025-05-02": { types: ["jornada", "extra"] },
+        "2025-05-03": { types: ["ausencia"] },
+        "2025-05-04": { types: ["jornada"] },
+      };
+
+      const markings = {};
+      Object.entries(data).forEach(([date, { types }]) => {
+        markings[date] = {
+          marked: true,
+          dots: types.map((t) => ({
+            key: t,
+            color: {
+              jornada: "#4caf50",
+              extra: "#ffeb3b",
+              ausencia: "#f44336",
+              libre: "#2196f3",
+            }[t],
+          })),
+        };
+      });
+
+      // Marcar el día actual
+      markings[selectedDate] = {
+        ...markings[selectedDate],
+        selected: true,
+        selectedColor: "#1E6091",
+      };
+
+      // fetch
+      fetchDayDetails(selectedDate);
+
+      setMarkedDates(markings);
+    };
+
+    simulateMonthData();
+  }, []);
+
+  const fetchDayDetails = async (date) => {
     setLoading(true);
-    setJornada(null);
+    setDayDetails(null);
 
     try {
-      // Simulación de petición (sustituye por tu fetch real)
+      // Simula la respuesta
       const res = await new Promise((resolve) =>
         setTimeout(
           () =>
             resolve({
-              entrada: "08:00",
-              salida: "16:00",
-              status: "Registrada",
+              jornada: {
+                inicio: "08:00",
+                fin: "16:00",
+                horas_trabajadas: 8,
+              },
+              horas_extra: {
+                inicio: "16:00",
+                fin: "17:00",
+                horas: 1,
+              },
+              es_dia_libre: date === "2025-05-01",
+              es_dia_ausente: date === "2025-05-03",
             }),
           800
         )
       );
 
-      setJornada(res);
+      setDayDetails(res);
     } catch (error) {
-      console.error("Error cargando jornada:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -103,73 +147,145 @@ const Calendar = () => {
 
   const onDaySelect = (day) => {
     setSelectedDate(day.dateString);
-    fetchJornada(day.dateString);
-    setMarkedDates({
+    fetchDayDetails(day.dateString);
+    // Quitar el dia seleccionado previamente
+    setMarkedDates((prev) => ({
+      ...prev,
+      [selectedDate]: {
+        ...(prev[selectedDate] || {}),
+        selected: false,
+        selectedColor: "#fff",
+      },
+    }));
+    // Marcar el nuevo día seleccionado
+    setMarkedDates((prev) => ({
+      ...prev,
       [day.dateString]: {
+        ...(prev[day.dateString] || {}),
         selected: true,
         selectedColor: "#1E6091",
-        marked: true,
-        dotColor: "#f7941e",
       },
-    });
+    }));
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f4f4f4", padding: 10 }}>
-      <RNCalendar
-        onDayPress={onDaySelect}
-        markedDates={markedDates}
-        theme={{
-          selectedDayBackgroundColor: "#1E6091",
-          todayTextColor: "#f7941e",
-          arrowColor: "#1E6091",
-          textSectionTitleColor: "#1E6091",
-        }}
-      />
-
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color="#1E6091"
-          style={{ marginTop: 20 }}
+    <ScrollView style={{ backgroundColor: theme.colors.background }}>
+      <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
+        <RNCalendar
+          onDayPress={onDaySelect}
+          markedDates={markedDates}
+          markingType="multi-dot"
+          theme={{
+            selectedDayBackgroundColor: "#1E6091",
+            todayTextColor: "#f7941e",
+            arrowColor: "#1E6091",
+            textSectionTitleColor: "#1E6091",
+          }}
         />
-      )}
 
-      {jornada && (
-        <View style={[theme.card, { padding: 20, marginTop: 20 }]}>
-          <Text style={styles.title}>Jornada del {selectedDate}</Text>
-          <Text style={styles.label}>
-            <Icon name="login" type="material-community" size={18} /> Entrada:{" "}
-            {jornada.entrada}
+        {/* Leyenda de tipos */}
+        <View style={styles.legend}>
+          <Text style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: "#4caf50" }]} />{" "}
+            Laboral
           </Text>
-          <Text style={styles.label}>
-            <Icon name="logout" type="material-community" size={18} /> Salida:{" "}
-            {jornada.salida}
+          <Text style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: "#2196f3" }]} /> Libre
           </Text>
-          <Text style={styles.status}>Estado: {jornada.status}</Text>
+          <Text style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: "#ffeb3b" }]} /> Horas
+            extra
+          </Text>
+          <Text style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: "#f44336" }]} />{" "}
+            Ausencia
+          </Text>
         </View>
-      )}
+
+        {/* Detalle del día seleccionado */}
+        <View style={styles.detailBox}>
+          <Text style={styles.detailTitle}>Detalle del {selectedDate}</Text>
+
+          {loading ? (
+            <ActivityIndicator color="#1E6091" style={{ marginTop: 10 }} />
+          ) : dayDetails ? (
+            <>
+              {dayDetails.jornada ? (
+                <Text style={styles.detailText}>
+                  🕒 Jornada: {dayDetails.jornada.inicio} -{" "}
+                  {dayDetails.jornada.fin} (
+                  {dayDetails.jornada.horas_trabajadas} horas)
+                </Text>
+              ) : (
+                <Text style={styles.detailText}>
+                  No hay registro de jornada
+                </Text>
+              )}
+              {dayDetails.horas_extra ? (
+                <Text style={styles.detailText}>
+                  ⏱️ Horas Extra: {dayDetails.horas_extra.inicio} -{" "}
+                  {dayDetails.horas_extra.fin} ({dayDetails.horas_extra.horas}{" "}
+                  horas)
+                </Text>
+              ) : (
+                <Text style={styles.detailText}>
+                  No hay registro de horas extra
+                </Text>
+              )}
+              {dayDetails.es_dia_libre && (
+                <Text style={styles.detailText}>✅ Día Libre</Text>
+              )}
+            </>
+          ) : (
+            <Text style={styles.detailText}>
+              No hay información para este día
+            </Text>
+          )}
+        </View>
+      </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1E6091",
-    marginBottom: 10,
+  legend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 20,
+    justifyContent: "space-around",
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+    marginRight: 10,
+    fontSize: 14,
     color: "#333",
   },
-  status: {
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  detailBox: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  detailTitle: {
     fontSize: 16,
-    marginTop: 10,
-    color: "#f7941e",
-    fontWeight: "500",
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#1E6091",
+  },
+  detailText: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: "#333",
   },
 });
 
