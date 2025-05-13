@@ -11,7 +11,7 @@ import { useTheme } from "@rneui/themed";
 import { Calendar as RNCalendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import axios from "axios";
-import { Icon } from "@rneui/themed";
+import useAuth from "../../../hooks/useAuth"; // Importar el hook useAuth
 
 import { LocaleConfig } from "react-native-calendars";
 
@@ -60,7 +60,10 @@ LocaleConfig.locales["es"] = {
 LocaleConfig.defaultLocale = "es";
 
 const Calendar = () => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const { theme } = useTheme();
+  const { login, isConnected } = useAuth();
+
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(
     dayjs().format("YYYY-MM-DD")
@@ -68,78 +71,76 @@ const Calendar = () => {
   const [dayDetails, setDayDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Simula datos del mes
+  const [currentMonth, setCurrentMonth] = useState(dayjs().format("YYYY-MM"));
+
   useEffect(() => {
-    const simulateMonthData = () => {
-      const data = {
-        "2025-05-01": { types: ["libre"] },
-        "2025-05-02": { types: ["jornada", "extra"] },
-        "2025-05-03": { types: ["ausencia"] },
-        "2025-05-04": { types: ["jornada"] },
-      };
+    fetchMonthData(currentMonth);
+    fetchDayDetails(selectedDate);
+  }, [selectedDate, currentMonth]);
+
+  const fetchMonthData = async (month) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${API_URL}/index.php?action=fetch_month_data&mes=${month}`
+      );
+      const data = res.data.data;
 
       const markings = {};
-      Object.entries(data).forEach(([date, { types }]) => {
+      Object.entries(data).forEach(([date, info]) => {
+        let dots = [];
+
+        if (info.types.includes("jornada"))
+          dots.push({ key: "jornada", color: "#4caf50" });
+        if (info.types.includes("libre"))
+          dots.push({ key: "libre", color: "#2196f3" });
+        if (info.types.includes("extra"))
+          dots.push({ key: "extra", color: "#ffeb3b" });
+        if (info.types.includes("ausencia"))
+          dots.push({ key: "ausencia", color: "#f44336" });
+
         markings[date] = {
+          dots,
           marked: true,
-          dots: types.map((t) => ({
-            key: t,
-            color: {
-              jornada: "#4caf50",
-              extra: "#ffeb3b",
-              ausencia: "#f44336",
-              libre: "#2196f3",
-            }[t],
-          })),
+          selected: date === selectedDate,
+          selectedColor: date === selectedDate ? "#1E6091" : "#fff",
         };
       });
 
-      // Marcar el día actual
-      markings[selectedDate] = {
-        ...markings[selectedDate],
-        selected: true,
-        selectedColor: "#1E6091",
-      };
-
-      // fetch
+      //Fetch
       fetchDayDetails(selectedDate);
 
       setMarkedDates(markings);
-    };
-
-    simulateMonthData();
-  }, []);
+    } catch (error) {
+      console.error("Error al cargar calendario del mes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchDayDetails = async (date) => {
     setLoading(true);
-    setDayDetails(null);
-
     try {
-      // Simula la respuesta
-      const res = await new Promise((resolve) =>
-        setTimeout(
-          () =>
-            resolve({
-              jornada: {
-                inicio: "08:00",
-                fin: "16:00",
-                horas_trabajadas: 8,
-              },
-              horas_extra: {
-                inicio: "16:00",
-                fin: "17:00",
-                horas: 1,
-              },
-              es_dia_libre: date === "2025-05-01",
-              es_dia_ausente: date === "2025-05-03",
-            }),
-          800
-        )
+      const res = await axios.get(
+        `${API_URL}/index.php?action=fetch_day_details&fecha=${date}`
       );
 
-      setDayDetails(res);
+      const jornada = res.data.data.jornada;
+      if (jornada) {
+        const jornadaKeys = Object.keys(jornada).filter((key) => {
+          return jornada[key].in && jornada[key].out;
+        });
+
+        const jornadaDetails = jornadaKeys.map((key) => {
+          return `${jornada[key].in} - ${jornada[key].out}`;
+        });
+        res.data.data.jornadaFormatted = jornadaDetails.join(", ");
+      }
+
+      setDayDetails(res.data.data);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error al cargar detalles del día:", error);
+      setDayDetails(null);
     } finally {
       setLoading(false);
     }
@@ -173,6 +174,10 @@ const Calendar = () => {
       <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
         <RNCalendar
           onDayPress={onDaySelect}
+          onMonthChange={(month) => {
+            const newMonth = dayjs(month.dateString).format("YYYY-MM");
+            setCurrentMonth(newMonth);
+          }}
           markedDates={markedDates}
           markingType="multi-dot"
           theme={{
@@ -212,8 +217,7 @@ const Calendar = () => {
             <>
               {dayDetails.jornada ? (
                 <Text style={styles.detailText}>
-                  🕒 Jornada: {dayDetails.jornada.inicio} -{" "}
-                  {dayDetails.jornada.fin} (
+                  🕒 Jornada: {dayDetails.jornadaFormatted} (
                   {dayDetails.jornada.horas_trabajadas} horas)
                 </Text>
               ) : (
@@ -221,11 +225,9 @@ const Calendar = () => {
                   No hay registro de jornada
                 </Text>
               )}
-              {dayDetails.horas_extra ? (
+              {dayDetails.horas_extra !== 0 ? (
                 <Text style={styles.detailText}>
-                  ⏱️ Horas Extra: {dayDetails.horas_extra.inicio} -{" "}
-                  {dayDetails.horas_extra.fin} ({dayDetails.horas_extra.horas}{" "}
-                  horas)
+                  ⏱️ Horas extra: {dayDetails.horas_extra} horas
                 </Text>
               ) : (
                 <Text style={styles.detailText}>
@@ -234,6 +236,10 @@ const Calendar = () => {
               )}
               {dayDetails.es_dia_libre && (
                 <Text style={styles.detailText}>✅ Día Libre</Text>
+              )}
+
+              {dayDetails.es_dia_ausencia && (
+                <Text style={styles.detailText}>❌ Día de Ausencia</Text>
               )}
             </>
           ) : (

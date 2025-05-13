@@ -10,7 +10,6 @@ const CardGoo = ({
   navigation,
   screen,
 }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
   return (
