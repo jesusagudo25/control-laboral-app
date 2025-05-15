@@ -7,13 +7,16 @@ import {
   StyleSheet,
 } from "react-native";
 
-import { useTheme } from "@rneui/themed";
+import { Divider, useTheme } from "@rneui/themed";
 import { Calendar as RNCalendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import axios from "axios";
-import useAuth from "../../../hooks/useAuth"; // Importar el hook useAuth
 
 import { LocaleConfig } from "react-native-calendars";
+import CardCalendar from "../../../components/CardCalendar";
+import LegendType from "../../../components/LegendType";
+import SkeletonDocument from "../../../components/SkeletonDocument";
+import Accordion from "../../../components/Accordion";
 
 LocaleConfig.locales["es"] = {
   monthNames: [
@@ -62,7 +65,6 @@ LocaleConfig.defaultLocale = "es";
 const Calendar = () => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const { theme } = useTheme();
-  const { login, isConnected } = useAuth();
 
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(
@@ -171,128 +173,112 @@ const Calendar = () => {
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
-      <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
-        <RNCalendar
-          onDayPress={onDaySelect}
-          onMonthChange={(month) => {
-            const newMonth = dayjs(month.dateString).format("YYYY-MM");
-            setCurrentMonth(newMonth);
+      <View style={theme.boxHidden} />
+      <View style={theme.containerBoxHidden}>
+        <View
+          style={{
+            marginBottom: 10,
+            marginHorizontal: 10,
           }}
-          markedDates={markedDates}
-          markingType="multi-dot"
-          theme={{
-            selectedDayBackgroundColor: "#1E6091",
-            todayTextColor: "#f7941e",
-            arrowColor: "#1E6091",
-            textSectionTitleColor: "#1E6091",
-          }}
-        />
-
-        {/* Leyenda de tipos */}
-        <View style={styles.legend}>
-          <Text style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: "#4caf50" }]} />{" "}
-            Laboral
+        >
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              marginBottom: 10,
+              color: theme.colors.header,
+            }}
+          >
+            Calendario
           </Text>
-          <Text style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: "#2196f3" }]} /> Libre
-          </Text>
-          <Text style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: "#ffeb3b" }]} /> Horas
-            extra
-          </Text>
-          <Text style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: "#f44336" }]} />{" "}
-            Ausencia
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "400",
+              color: theme.colors.header,
+            }}
+          >
+            Selecciona un día para ver los detalles
           </Text>
         </View>
+        <CardCalendar>
+          <RNCalendar
+            onDayPress={onDaySelect}
+            onMonthChange={(month) => {
+              const newMonth = dayjs(month.dateString).format("YYYY-MM");
+              setCurrentMonth(newMonth);
+            }}
+            markedDates={markedDates}
+            markingType="multi-dot"
+            theme={{
+              selectedDayBackgroundColor: theme.colors.text,
+              todayTextColor: theme.colors.accent,
+              arrowColor: theme.colors.text,
+              textSectionTitleColor: theme.colors.text,
+              textMonthFontWeight: "bold",
+            }}
+          />
 
-        {/* Detalle del día seleccionado */}
-        <View style={styles.detailBox}>
-          <Text style={styles.detailTitle}>Detalle del {selectedDate}</Text>
+          <Divider
+            style={{
+              backgroundColor: theme.colors.primary,
+              marginVertical: 10,
+            }}
+          />
 
-          {loading ? (
-            <ActivityIndicator color="#1E6091" style={{ marginTop: 10 }} />
-          ) : dayDetails ? (
-            <>
-              {dayDetails.jornada ? (
-                <Text style={styles.detailText}>
-                  🕒 Jornada: {dayDetails.jornadaFormatted} (
-                  {dayDetails.jornada.horas_trabajadas} horas)
-                </Text>
-              ) : (
-                <Text style={styles.detailText}>
-                  No hay registro de jornada
-                </Text>
-              )}
-              {dayDetails.horas_extra !== 0 ? (
-                <Text style={styles.detailText}>
-                  ⏱️ Horas extra: {dayDetails.horas_extra} horas
-                </Text>
-              ) : (
-                <Text style={styles.detailText}>
-                  No hay registro de horas extra
-                </Text>
-              )}
-              {dayDetails.es_dia_libre && (
-                <Text style={styles.detailText}>✅ Día Libre</Text>
-              )}
+          <LegendType />
+        </CardCalendar>
 
-              {dayDetails.es_dia_ausencia && (
-                <Text style={styles.detailText}>❌ Día de Ausencia</Text>
-              )}
-            </>
-          ) : (
-            <Text style={styles.detailText}>
-              No hay información para este día
-            </Text>
-          )}
-        </View>
+        <CardCalendar>
+          <Accordion title={`Detalle del ${selectedDate}`} theme={theme}>
+            {dayDetails ? (
+              <>
+                {dayDetails.jornada &&
+                  Object.keys(dayDetails.jornada).length > 0 && (
+                    <View style={{ marginBottom: 6 }}>
+                      <Text style={{ fontWeight: "bold" }}>
+                        • Jornada laboral
+                      </Text>
+                      <Text style={{ marginLeft: 10 }}>
+                        {dayDetails.jornadaFormatted} (
+                        {dayDetails.jornada.horas_trabajadas} horas)
+                      </Text>
+                    </View>
+                  )}
+
+                {dayDetails.horas_extra !== 0 && (
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ fontWeight: "bold" }}>• Horas extra</Text>
+                    <Text style={{ marginLeft: 10 }}>
+                      {dayDetails.horas_extra} horas
+                    </Text>
+                  </View>
+                )}
+
+                {dayDetails.es_dia_libre === true && (
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ fontWeight: "bold" }}>• Día libre</Text>
+                  </View>
+                )}
+
+                {dayDetails.es_dia_ausencia === true && (
+                  <View>
+                    <Text style={{ fontWeight: "bold" }}>• Ausencia</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={{ marginBottom: 6 }}>
+                <Text style={{ fontWeight: "bold" }}>
+                  No hay datos disponibles
+                </Text>
+              </View>
+            )}
+          </Accordion>
+        </CardCalendar>
       </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  legend: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 20,
-    justifyContent: "space-around",
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-    marginRight: 10,
-    fontSize: 14,
-    color: "#333",
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 6,
-  },
-  detailBox: {
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  detailTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#1E6091",
-  },
-  detailText: {
-    fontSize: 14,
-    marginBottom: 5,
-    color: "#333",
-  },
-});
 
 export default Calendar;

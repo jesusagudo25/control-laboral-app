@@ -1,40 +1,70 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { WebView } from "react-native-webview";
+import { View, Text, ScrollView } from "react-native";
 import { useTheme } from "@rneui/themed";
 import { StyleSheet } from "react-native";
 import { Icon } from "@rneui/themed";
+import { Button } from "@rneui/themed";
+import { Card } from "@rneui/themed";
 
 const DocumentDetail = ({ navigation, route }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { document } = route.params;
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {" "}
-          <Icon
-            name="file-text-o"
-            type="font-awesome"
-            size={24}
-            color="#1E6091"
-            style={{ marginRight: 10 }}
-          />
-          {document.nombre}
-        </Text>
-        <Text style={styles.subtitle}>Descripción: {document.descripcion}</Text>
-        <Text style={styles.date}>Fecha: {document.fecha}</Text>
+    <ScrollView style={{ backgroundColor: theme.colors.background }}>
+      <View style={theme.boxHidden} />
+      <View style={theme.containerBoxHidden}>
+        <View
+          style={{
+            marginBottom: 10,
+            marginHorizontal: 10,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              marginBottom: 10,
+              color: theme.colors.header,
+            }}
+          >
+            Detalle de documento
+          </Text>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "400",
+              color: theme.colors.header,
+            }}
+          >
+            Aquí puedes ver los detalles de tu documento.
+          </Text>
+        </View>
+
+        <Card containerStyle={theme.card}>
+          <View style={theme.headerRequest}>
+            <Icon
+              name="file-text-o"
+              type="font-awesome"
+              size={24}
+              color="#1E6091"
+            />
+
+            <Text style={theme.titleRequest}>{document.nombre}</Text>
+          </View>
+
+          <Text style={theme.subtitleRequest}>
+            Descripción:{" "}
+            <Text style={theme.subtitleTextRequest}>
+              {document.descripcion}
+            </Text>
+          </Text>
+          <Text style={theme.dateRequest}>Fecha: {document.fecha}</Text>
+          <Text style={theme.descriptionRequest}>Descargar:</Text>
+          <Text style={theme.descriptionTextRequest}> {document.url}</Text>
+
+        </Card>
       </View>
-      <WebView
-        source={{
-          uri: `https://docs.google.com/gview?embedded=true&url=${document.url}`,
-        }}
-        style={{ flex: 1 }}
-        originWhitelist={["*"]}
-        useWebKit={true}
-      />
-    </View>
+    </ScrollView>
   );
 };
 

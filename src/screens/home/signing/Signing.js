@@ -62,7 +62,6 @@ const Signing = ({ route, navigation }) => {
       console.log(response.data.data.marks);
 
       let countMarks = response.data.data.marks.length;
-      console.log("Cantidad de marcas:", countMarks);
 
       //Validar si es undifened o null
       if (countMarks === undefined || countMarks === null) {

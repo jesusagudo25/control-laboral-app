@@ -3,6 +3,7 @@ import React from "react";
 import { View, Dimensions, ScrollView } from "react-native";
 import { FlatList, ActivityIndicator } from "react-native";
 import { Header, Skeleton } from "@rneui/themed";
+import { TouchableOpacity } from "react-native";
 
 import { Card, Button, Icon } from "@rneui/themed";
 import { useEffect, useState } from "react";
@@ -68,7 +69,7 @@ const Request = ({ navigation }) => {
 
   const renderFooter = () => {
     return (
-      <View >
+      <View>
         {/* Simula 2 tarjetas en loading */}
         {[1, 2, 3, 4].map((_, index) => (
           <SkeletonCard
@@ -84,35 +85,40 @@ const Request = ({ navigation }) => {
 
   const renderSolicitud = ({ item }) => (
     <Card containerStyle={theme.card}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Icon name={item.icono} type="font-awesome" size={24} color="#1E6091" />
-        <View style={{ marginLeft: 10, flex: 1 }}>
-          <Text style={{ fontWeight: "bold" }}>Ref. {item.referencia}</Text>
-          <Text>Tipo: {item.tipo}</Text>
-          <Text>Fecha: {item.fecha}</Text>
-          <Text numberOfLines={2} style={{ color: "#555" }}>
-            Descripción: {item.descripcion}
-          </Text>
-          <Text
-            style={{
-              color:
-                item.status === "Aprobado"
-                  ? "green"
-                  : item.status === "Rechazado"
-                    ? "red"
-                    : "#f7941e",
-            }}
-          >
-            Estado: {item.status}
-          </Text>
+      <TouchableOpacity onPress={() => verDetalle(item)}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Icon
+            name={item.icono}
+            type="font-awesome"
+            size={24}
+            color="#1E6091"
+          />
+          <View style={{ marginLeft: 10, flex: 1 }}>
+            <Text
+              style={{ fontWeight: "bold", marginBottom: 2, color: "#000" }}
+            >
+              Ref. {item.referencia}
+            </Text>
+            <Text style={{ marginBottom: 2 }}>Tipo: {item.tipo}</Text>
+            <Text style={{ marginBottom: 2 }}>Fecha: {item.fecha}</Text>
+            <Text numberOfLines={2} style={{ color: "#555", marginBottom: 2 }}>
+              Descripción: {item.descripcion}
+            </Text>
+            <Text
+              style={{
+                color:
+                  item.status === "Aprobado"
+                    ? "green"
+                    : item.status === "Rechazado"
+                      ? "red"
+                      : "#f7941e",
+              }}
+            >
+              Estado: {item.status}
+            </Text>
+          </View>
         </View>
-      </View>
-      <Button
-        title="Ver Detalle"
-        containerStyle={theme.buttonPrimaryContainer}
-        buttonStyle={theme.buttonPrimaryStyle}
-        onPress={() => verDetalle(item)}
-      />
+      </TouchableOpacity>
     </Card>
   );
 

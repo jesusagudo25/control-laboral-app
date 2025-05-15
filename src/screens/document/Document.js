@@ -6,10 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ActivityIndicator,
   TextInput,
 } from "react-native";
-import { Card, Icon, Header, Button, Dialog, Skeleton } from "@rneui/themed";
+import { Card, Icon, Header, Button, Dialog } from "@rneui/themed";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
@@ -68,8 +67,6 @@ const Document = ({ navigation }) => {
         url: item.document,
       }));
 
-      console.log("newDocs", newDocs); // Verificar los nuevos documentos antes de agregarlos
-
       setDocuments((prev) => [...prev, ...newDocs]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
       setPage((prev) => prev + 1); // Incrementar la página para la próxima carga
@@ -111,14 +108,23 @@ const Document = ({ navigation }) => {
       file,
     };
 
-    console.log("params", params); // Verificar los parámetros antes de enviar
+    //Validar que el archivo no esté vacío
+    if (!file) {
+      alert("Por favor selecciona un archivo.");
+      setIsLoading(false); // Ocultar el indicador de carga
+      return;
+    }
+
+    //Validar que la descripción no esté vacía
+    if (!descripcion) {
+      alert("Por favor ingresa una descripción.");
+      setIsLoading(false); // Ocultar el indicador de carga
+      return;
+    }
 
     try {
       const response = await axios.post(`${API_URL}/index.php`, params);
       if (response.data.success) {
-        console.log("Documento subido correctamente", response.data.data.msg);
-        console.log(response.data);
-
         setDocuments((prev) => [
           ...prev,
           {
@@ -143,7 +149,7 @@ const Document = ({ navigation }) => {
 
   const renderFooter = () => {
     return (
-      <View >
+      <View>
         {/* Simula 2 tarjetas en loading */}
         {[1, 2, 3, 4].map((_, index) => (
           <SkeletonDocument
@@ -290,10 +296,12 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "bold",
     fontSize: 16,
+    marginBottom: 2,
   },
   subtitle: {
     fontSize: 14,
     color: "#666",
+    marginBottom: 2,
   },
   date: {
     fontSize: 12,

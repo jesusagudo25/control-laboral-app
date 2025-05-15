@@ -51,11 +51,11 @@ const theme = createTheme({
   boxHidden: {
     backgroundColor: "#f7941e",
     height: 200,
-    position: "absolute",        // Para que se quede "debajo"
+    position: "absolute", // Para que se quede "debajo"
     top: 0,
     left: 0,
     right: 0,
-    zIndex: -1, 
+    zIndex: -1,
   },
   containerBoxHidden: {
     flex: 1,
@@ -135,7 +135,7 @@ const theme = createTheme({
     color: "#0D0D0D",
   },
   titleSigning: {
-    fontSize: 14.5,
+    fontSize: 15,
     textAlign: "left",
     color: "#0D0D0D",
     marginVertical: 5,
@@ -163,6 +163,17 @@ const theme = createTheme({
     marginLeft: 0,
     marginRight: 0,
   },
+  cardCalendar: {
+    borderRadius: 6,
+    height: "auto",
+    borderColor: "#1E6091",
+    borderWidth: 1,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    marginBottom: 10,
+    marginLeft: 0,
+    marginRight: 0,
+  },
   showSigning: {
     borderRadius: 6,
     borderColor: "#1E6091",
@@ -178,6 +189,66 @@ const theme = createTheme({
     color: "#E76F51",
     marginTop: 5,
     textAlign: "left",
+    fontWeight: "bold",
+  },
+  legend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 5,
+    justifyContent: "space-around",
+    gap: 5,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+    fontSize: 14,
+    color: "#333",
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  headerRequest: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  titleRequest: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginTop: 10,
+  },
+  subtitleRequest: {
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: "bold",
+  },
+  subtitleTextRequest: {
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: "400",
+  },
+  dateRequest: {
+    fontSize: 15,
+    marginTop: 5,
+    color: "#777",
+  },
+  descriptionRequest: {
+    fontSize: 18,
+    marginTop: 20,
+    fontWeight: "bold",
+  },
+  descriptionTextRequest: {
+    fontSize: 15,
+    marginTop: 5,
+    color: "#555",
+  },
+  statusRequest: {
+    fontSize: 18,
+    marginTop: 20,
     fontWeight: "bold",
   },
 });
