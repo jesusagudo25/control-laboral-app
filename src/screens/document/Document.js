@@ -81,7 +81,7 @@ const Document = ({ navigation }) => {
     ignoreAppState.current = true; // Ignorar el estado de la app
 
     const result = await DocumentPicker.getDocumentAsync({
-      type: "application/pdf", // ← solo permite seleccionar PDF
+      type: "*/*", // Permitir cualquier tipo de archivo
       copyToCacheDirectory: true,
     });
 
