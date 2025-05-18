@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286780339496",
+    "project_id": "control-laboral-app-58e2d",
+    "storage_bucket": "control-laboral-app-58e2d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286780339496:android:159ca7856a4ab938138c1d",
+        "android_client_info": {
+          "package_name": "com.jagudo25.controllaboralapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDChYGAo2Phlm7ZT6ns5aTy5ENQeHSEA2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

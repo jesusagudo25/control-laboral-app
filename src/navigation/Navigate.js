@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
+import * as Notifications from "expo-notifications";
+import { useRef } from "react";
 import useAuth from "../hooks/useAuth"; // Importar el hook useAuth
 
 // Auth Screens
@@ -235,6 +238,38 @@ const AppStack = () => {
 
 const Navigate = () => {
   const { isAuthenticated } = useAuth(); // Consumir el estado de autenticación
+
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
+  useEffect(() => {
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        // Mostrar badge o actualizar ícono
+        console.log("Notificación recibida:", notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        // Navegar al buzón si se toca la notificación
+        console.log("Respuesta del usuario:", response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
 
   return (
     <NavigationContainer>

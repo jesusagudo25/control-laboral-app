@@ -20,7 +20,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jagudo25.controllaboralapp"
+      "package": "com.jagudo25.controllaboralapp",
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +31,7 @@
       "eas": {
         "projectId": "a5a4f6b6-d8fd-45fd-890d-eeca2e570423"
       }
-    }
+    },
+    "plugins": ["expo-notifications"]
   }
 }

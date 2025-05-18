@@ -76,6 +76,7 @@ const Login = ({ navigation }) => {
     (async () => {
       const token = await registerForPushNotificationsAsync();
       console.log("Token obtenido o recuperado:", token);
+      alert(token);
       // Lo puedes enviar al backend aquí si ya hay un usuario autenticado
     })();
   }, []);
