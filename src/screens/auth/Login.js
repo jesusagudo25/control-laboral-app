@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Button, Image, Dialog, Divider } from "@rneui/themed";
+import { Button, Image, Dialog } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
+import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
 
 const Login = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -21,8 +22,6 @@ const Login = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
-
-  
 
   const handleLogin = async () => {
     if (!isConnected) {
@@ -72,6 +71,14 @@ const Login = ({ navigation }) => {
     setMessage(message);
     setShowDialog(true);
   };
+
+  useEffect(() => {
+    (async () => {
+      const token = await registerForPushNotificationsAsync();
+      console.log("Token obtenido o recuperado:", token);
+      // Lo puedes enviar al backend aquí si ya hay un usuario autenticado
+    })();
+  }, []);
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>

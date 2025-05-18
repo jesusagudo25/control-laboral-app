@@ -7,6 +7,7 @@ import { AppState } from "react-native";
 const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState(null);
+  const [geoLocation, setGeoLocation] = useState(null);
 
   const [appStatus, setAppStatus] = useState(AppState.currentState);
 
@@ -21,7 +22,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    console.log("Logout called");
     await AsyncStorage.clear();
     setUserName(null);
     setIsAuthenticated(false);
@@ -34,6 +34,8 @@ const AuthProvider = ({ children }) => {
         isAuthenticated,
         userName,
         setUserName,
+        geoLocation,
+        setGeoLocation,
         
         appStatus,
         ignoreAppState,

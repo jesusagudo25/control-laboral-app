@@ -1,5 +1,3 @@
-import React from "react";
-import { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -18,14 +16,13 @@ import Request from "../screens/request/Request";
 import Document from "../screens/document/Document";
 import More from "../screens/more/More";
 
-// Signing Screens - Acces from Home
+// Screens (Stack) - Acces from Tabs
 import Signing from "../screens/home/signing/Signing";
-
-//Calendar Screens - Acces from Home
 import Calendar from "../screens/home/calendar/Calendar";
 import SignDay from "../screens/home/signing/SignDay";
 import RequestDetail from "../screens/request/RequestDetail";
 import DocumentDetail from "../screens/document/DocumentDetail";
+import Notification from "../screens/home/notification/Notification";
 
 // Importar los componentes de navegación
 const Stack = createStackNavigator();
@@ -33,8 +30,6 @@ const Tab = createBottomTabNavigator();
 
 /** 🚀 1️⃣ Stack de Autenticación */
 const AuthStack = () => {
-  const { theme } = useTheme(); // Obtener el tema actual
-
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -214,12 +209,31 @@ const AppStack = () => {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen
+        name="Notification"
+        component={Notification}
+        options={{
+          headerShown: true,
+          title: "Notificaciones",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack.Navigator>
   );
 };
 
 const Navigate = () => {
-  //const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isAuthenticated } = useAuth(); // Consumir el estado de autenticación
 
   return (

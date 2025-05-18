@@ -45,21 +45,14 @@ const Signing = ({ route, navigation }) => {
     let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
 
     try {
-      /*const response = await axios.get(
-        `${API_URL}/index.php?day=4&action=user_turn&date=2025-04-10`
-      );*/
-      const response = await axios.get(
-        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
-      );
 
-      console.log(
+      const response = await axios.get(
         `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
 
       const turn = response.data.data.horario[day];
       const marks = response.data.data.marks[day];
       const time = response.data.data.time;
-      console.log(response.data.data.marks);
 
       let countMarks = response.data.data.marks.length;
 
@@ -125,12 +118,9 @@ const Signing = ({ route, navigation }) => {
         setTotalHours(formattedTotalHours);
       } else {
         setTurnData(marks);
-        console.log("Marcas:", marks);
         setCountTurnData(countMarks);
-        //Calcular el total de horas, si puede obtenerlas del api mejor
-        //setTotalHours(time.tiempo_faltante);
+
         setTotalHours(time.tiempo_trabajado.split(":").slice(0, 2).join(":"));
-        console.log("Total horas:", time.tiempo_trabajado);
       }
     } catch (error) {
       console.log(error);
@@ -158,7 +148,6 @@ const Signing = ({ route, navigation }) => {
 
       if (response.data?.data?.Pausa) {
         actionsBucket.push(response.data.data.Pausa.action);
-        //[{"id": "1", "label": {"id": "1", "label": "Almuerzo"}}, {"id": "2", "label": {"id": "2", "label": "En espera"}}]
         const motivesData = Object.keys(response.data.data.Pausa.motivos).map(
           (key) => {
             return {

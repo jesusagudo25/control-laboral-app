@@ -11,7 +11,7 @@ import ButtonSigning from "./ButtonSigning";
 
 const ActionSigning = ({ actions, navigation, motives }) => {
   const { theme } = useTheme(); // Obtener el tema actual
-  const { ignoreAppState } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
+  const { ignoreAppState, geoLocation } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
 
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,19 +19,28 @@ const ActionSigning = ({ actions, navigation, motives }) => {
 
   useEffect(() => {
     (async () => {
-      ignoreAppState.current = true; // Ignorar el estado de la app
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      ignoreAppState.current = false; // Dejar de ignorar el estado de la app
-      if (status !== "granted") {
-        setErrorMsg(
-          "Para poder registrar su asistencia, debe permitir el acceso a la ubicación."
-        );
-        setIsLoading(false);
-        return;
+
+      if (geoLocation === "1" || geoLocation === "2") {
+        ignoreAppState.current = true; // Ignorar el estado de la app
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        ignoreAppState.current = false; // Dejar de ignorar el estado de la app
+        if (status !== "granted") {
+          setErrorMsg(
+            "Para poder registrar su asistencia, debe permitir el acceso a la ubicación."
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location.coords);
+      } else {
+        setLocation({
+          latitude: 0,
+          longitude: 0,
+        });
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location.coords);
       setIsLoading(false);
     })();
   }, []);

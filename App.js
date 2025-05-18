@@ -10,7 +10,6 @@ import theme from "./src/theme/theme";
 import Connection from "./src/components/Connection";
 import StatusApp from "./src/components/StatusApp";
 
-
 axios.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("token");

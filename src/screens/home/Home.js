@@ -1,20 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Dimensions,
-  TouchableOpacity,
-  ScrollView,
-  AppState,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Dimensions, TouchableOpacity, ScrollView } from "react-native";
 import { Header, Icon, Image, useTheme } from "@rneui/themed";
 
 import axios from "axios";
-import Connection from "../../components/Connection";
-import StatusApp from "../../components/StatusApp";
 import CardGoo from "../../components/CardGoo";
 import SkeletonCard from "../../components/SkeletonCard";
 import useAuth from "../../hooks/useAuth";
 import { useFocusEffect } from "@react-navigation/native";
+import NotificationIcon from "../../components/NotificationIcon";
 
 const workingDayFinished = {
   uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
@@ -35,7 +28,7 @@ const calendar = {
 const Home = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
-  const { logout, setUserName } = useAuth(); //
+  const { logout, setUserName, setGeoLocation } = useAuth(); //
 
   const [isVisible, setIsVisible] = useState(false);
 
@@ -63,6 +56,7 @@ const Home = ({ navigation }) => {
           userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra
           userName = userName.trim(); // Elimina espacios en blanco al inicio y al final
           setUserName(userName);
+          setGeoLocation(response.data.data.geolocal);
           setNameShown(`¡Hola, ${userName}!`);
           setWorkingDayStatus(response.data.data.status);
           console.log(response.data.data.status);
@@ -89,9 +83,12 @@ const Home = ({ navigation }) => {
         }}
         containerStyle={{ width: Dimensions.get("window").width }}
         leftComponent={
-          <TouchableOpacity onPress={() => setIsVisible(true)}>
-            <Icon name="notifications" color="white" />
-          </TouchableOpacity>
+          <NotificationIcon
+            count={1}
+            onPress={() => {
+              navigation.navigate("Notification");
+            }}
+          />
         }
         placement="center"
         rightComponent={
