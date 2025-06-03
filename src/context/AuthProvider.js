@@ -8,6 +8,7 @@ const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState(null);
   const [geoLocation, setGeoLocation] = useState(null);
+  const [countNotifications, setCountNotifications] = useState(0);
 
   const [appStatus, setAppStatus] = useState(AppState.currentState);
 
@@ -33,21 +34,23 @@ const AuthProvider = ({ children }) => {
         //Attr
         isAuthenticated,
         userName,
-        setUserName,
         geoLocation,
-        setGeoLocation,
+        countNotifications,
         
         appStatus,
         ignoreAppState,
         connectionType,
         isConnected,
-
+        
         //Methods
         login,
         logout,
         setConnectionType,
         setIsConnected,
         setAppStatus,
+        setUserName,
+        setGeoLocation,
+        setCountNotifications,
       }}
     >
       {children}

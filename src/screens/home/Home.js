@@ -28,9 +28,13 @@ const calendar = {
 const Home = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
-  const { logout, setUserName, setGeoLocation } = useAuth(); //
-
-  const [isVisible, setIsVisible] = useState(false);
+  const {
+    logout,
+    setUserName,
+    setGeoLocation,
+    countNotifications,
+    setCountNotifications,
+  } = useAuth(); // Obtener la función de cierre de sesión y el nombre de usuario
 
   const [workingDayStatus, setWorkingDayStatus] = useState("none");
   const [nameShown, setNameShown] = useState("Cargando...");
@@ -59,6 +63,7 @@ const Home = ({ navigation }) => {
           setGeoLocation(response.data.data.geolocal);
           setNameShown(`¡Hola, ${userName}!`);
           setWorkingDayStatus(response.data.data.status);
+          setCountNotifications(response.data.data.notifications);
           console.log(response.data.data.status);
         } catch (error) {
           console.log(error);
@@ -84,7 +89,7 @@ const Home = ({ navigation }) => {
         containerStyle={{ width: Dimensions.get("window").width }}
         leftComponent={
           <NotificationIcon
-            count={1}
+            count={countNotifications}
             onPress={() => {
               navigation.navigate("Notification");
             }}

@@ -7,7 +7,12 @@ const NotificationIcon = ({ count = 0, onPress }) => (
     {count > 0 && (
       <Badge
         value={count}
-        status="error"
+        badgeStyle={{
+          backgroundColor: "white",
+          borderColor: "#1E6091",
+          borderWidth: 1,
+        }}
+        textStyle={{ color: "black", fontWeight: "bold" }}
         containerStyle={styles.badgeContainer}
       />
     )}

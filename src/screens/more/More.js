@@ -6,7 +6,6 @@ import { Divider, Header } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 
-
 const More = () => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
@@ -35,7 +34,7 @@ const More = () => {
             Último acceso: {currentDate.toLocaleDateString()}
           </Text>
         </Card>
-        <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 10 }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 20 }}>
           Opciones
         </Text>
         <Card
@@ -46,10 +45,10 @@ const More = () => {
           }}
         >
           <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-            Configuración
+            Configuración de la cuenta
           </Text>
           <Text style={{ fontSize: 14, color: "#666" }}>
-            Cambiar la configuración de la aplicación
+            Administrar tu perfil y preferencias
           </Text>
         </Card>
         <Card
@@ -64,16 +63,13 @@ const More = () => {
             Obtener ayuda y soporte técnico
           </Text>
         </Card>
-        <Card
-          containerStyle={{
-            borderBottomEndRadius: 10,
-            borderBottomStartRadius: 10,
-            margin: 0,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => logout()}
+        <TouchableOpacity activeOpacity={0.5} onPress={() => logout()}>
+          <Card
+            containerStyle={{
+              borderBottomEndRadius: 10,
+              borderBottomStartRadius: 10,
+              margin: 0,
+            }}
           >
             <Text style={{ fontSize: 16, fontWeight: "bold" }}>
               Cerrar sesión
@@ -81,8 +77,8 @@ const More = () => {
             <Text style={{ fontSize: 14, color: "#666" }}>
               Salir de la aplicación
             </Text>
-          </TouchableOpacity>
-        </Card>
+          </Card>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

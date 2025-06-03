@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   FlatList,
@@ -6,64 +6,65 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  RefreshControl,
 } from "react-native";
+import axios from "axios";
+import { useFocusEffect } from "@react-navigation/native";
+import dayjs from "dayjs";
 
-const PAGE_SIZE = 10;
+const Notification = () => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
 
-// Simula una API de notificaciones
-const fetchNotifications = async (page) => {
-  await new Promise((r) => setTimeout(r, 1000)); // Simular delay
-  const total = 50;
-  const data = Array.from({ length: PAGE_SIZE }, (_, i) => {
-    const id = page * PAGE_SIZE + i + 1;
-    if (id > total) return null;
-    return {
-      id,
-      title: `Notificación #${id}`,
-      message: `Este es el mensaje de la notificación número ${id}.`,
-      read: false,
-    };
-  }).filter(Boolean);
-  return data;
-};
-
-export default function Notification() {
   const [notifications, setNotifications] = useState([]);
-  const [page, setPage] = useState(0);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadNotifications = useCallback(
-    async (reset = false) => {
-      if (loadingMore) return;
+  const fetchNotifications = async () => {
+    console.log("Fetching notifications, page:", page);
 
-      if (reset) {
-        setRefreshing(true);
-        setPage(0);
-      } else {
-        setLoadingMore(true);
-      }
+    if (isLoading || !hasMore) return;
 
-      const newPage = reset ? 0 : page + 1;
-      const newNotifications = await fetchNotifications(newPage);
-
-      setNotifications((prev) =>
-        reset ? newNotifications : [...prev, ...newNotifications]
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${API_URL}/index.php?action=user_notifications&page=${page}`
       );
-      setPage(newPage);
-      setHasMore(newNotifications.length === PAGE_SIZE);
+      const data = response.data; // Simular la respuesta de la API
 
-      setRefreshing(false);
-      setLoadingMore(false);
-    },
-    [page, loadingMore]
+      console.log("Response data:", data);
+
+      //Map de la respuesta de la API:  data.data.requests.map
+      const notificationsMapped = data.data.map((item) => ({
+        title: item.title,
+        created: item.created,
+        message: item.body || "No hay mensaje",
+        read: item.read,
+        id: item.id,
+      }));
+
+      setNotifications((prev) => [...prev, ...notificationsMapped]);
+      setHasMore(data.total_pages > page); // Cambia esto para simular más datos
+      setPage((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error al cargar notificaciones", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setNotifications([]); // Limpiar notificaciones al cargar la pantalla
+      setPage(1); // Reiniciar página al cargar la pantalla
+      setHasMore(true); // Reiniciar hasMore al cargar la pantalla
+
+      fetchNotifications(); // Cargar notificaciones al cargar la pantalla
+    }, [])
   );
 
   const handleMarkAsRead = (id) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: "SI" } : n))
     );
     // Aquí podrías hacer una llamada al backend para marcar como leída
   };
@@ -71,51 +72,35 @@ export default function Notification() {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => handleMarkAsRead(item.id)}
-      style={[styles.item, item.read ? styles.read : styles.unread]}
+      style={[styles.item, item.read === "SI" ? styles.read : styles.unread]}
     >
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.message}>{item.message}</Text>
+      <Text style={{ color: "#888", fontSize: 12 }}>
+        {dayjs(item.created).format("DD/MM/YYYY HH:mm")}
+      </Text>
     </TouchableOpacity>
   );
 
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      loadNotifications();
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications(true);
-  }, []);
-
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.3}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => loadNotifications(true)}
-          />
-        }
-        ListFooterComponent={
-          loadingMore ? <ActivityIndicator color="#1E6091" /> : null
-        }
-        ListEmptyComponent={
-          !refreshing && (
-            <View style={{ padding: 20 }}>
-              <Text style={{ textAlign: "center" }}>No hay notificaciones</Text>
-            </View>
-          )
-        }
-      />
-    </View>
+    <>
+      <View>
+        <FlatList
+          data={notifications}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          onEndReached={fetchNotifications}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoading ? <ActivityIndicator color="#1E6091" /> : null
+          }
+        />
+      </View>
+    </>
   );
-}
+};
+
+export default Notification;
 
 const styles = StyleSheet.create({
   container: {
