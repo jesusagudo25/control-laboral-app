@@ -12,8 +12,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import dayjs from "dayjs";
 import NotificationSkeletonItem from "../../../components/NotificationSkeletonItem";
 
+import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
+
 const Notification = () => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
 
   const [notifications, setNotifications] = useState([]);
   const [page, setPage] = useState(1);
@@ -28,7 +30,7 @@ const Notification = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}/index.php?action=user_notifications&page=${page}`
+        `${apiUrl}/index.php?action=user_notifications&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
 
@@ -72,7 +74,7 @@ const Notification = () => {
 
   const updateNotification = async (id) => {
     try {
-      const response = await axios.patch(`${API_URL}/index.php`, {
+      const response = await axios.patch(`${apiUrl}/index.php`, {
         action: "user_notification",
         notificationId: id,
         read: "SI",

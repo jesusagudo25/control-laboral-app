@@ -18,6 +18,8 @@ import LegendType from "../../../components/LegendType";
 import SkeletonDocument from "../../../components/SkeletonDocument";
 import Accordion from "../../../components/Accordion";
 
+import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
+
 LocaleConfig.locales["es"] = {
   monthNames: [
     "Enero",
@@ -63,7 +65,7 @@ LocaleConfig.locales["es"] = {
 LocaleConfig.defaultLocale = "es";
 
 const Calendar = () => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme();
 
   const [markedDates, setMarkedDates] = useState({});
@@ -84,7 +86,7 @@ const Calendar = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${API_URL}/index.php?action=fetch_month_data&mes=${month}`
+        `${apiUrl}/index.php?action=fetch_month_data&mes=${month}`
       );
       const data = res.data.data;
 
@@ -124,7 +126,7 @@ const Calendar = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${API_URL}/index.php?action=fetch_day_details&fecha=${date}`
+        `${apiUrl}/index.php?action=fetch_day_details&fecha=${date}`
       );
 
       const jornada = res.data.data.jornada;

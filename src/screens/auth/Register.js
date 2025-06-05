@@ -10,6 +10,7 @@ import {
 import { Button, Image, Dialog, Divider } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
+import CustomModal from "../../components/CustomModal";
 
 const Register = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -71,13 +72,13 @@ const Register = ({ navigation }) => {
           value={email}
         />
 
-        <Dialog
+        <CustomModal
           isVisible={showDialog}
           onBackdropPress={() => setShowDialog(false)}
         >
           <Dialog.Title title="Alerta" />
           <Text>{message}</Text>
-        </Dialog>
+        </CustomModal>
 
         <Button
           title="Enviar solicitud"

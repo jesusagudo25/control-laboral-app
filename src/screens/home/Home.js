@@ -9,6 +9,8 @@ import useAuth from "../../hooks/useAuth";
 import { useFocusEffect } from "@react-navigation/native";
 import NotificationIcon from "../../components/NotificationIcon";
 
+import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
+
 const workingDayFinished = {
   uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
 };
@@ -26,7 +28,7 @@ const calendar = {
 };
 
 const Home = ({ navigation }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const {
     logout,
@@ -40,7 +42,7 @@ const Home = ({ navigation }) => {
   const [nameShown, setNameShown] = useState("Cargando...");
 
   const handleLogout = async () => {
-    const response = await axios.delete(`${API_URL}/index.php?action=auth`);
+    const response = await axios.delete(`${apiUrl}/index.php?action=auth`);
     console.log("Logout response: ", response.data);
     logout();
   };
@@ -54,7 +56,7 @@ const Home = ({ navigation }) => {
       const getName = async () => {
         try {
           const response = await axios.get(
-            `${API_URL}/index.php?action=user_info`
+            `${apiUrl}/index.php?action=user_info`
           );
           let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
           userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra

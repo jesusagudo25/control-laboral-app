@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Dialog } from "@rneui/themed";
 import useAuth from "../hooks/useAuth";
 import { useTheme } from "@rneui/themed";
+import CustomModal from "./CustomModal";
 
 const StatusApp = () => {
   const { logout, setAppStatus, ignoreAppState } = useAuth();
@@ -63,15 +64,7 @@ const StatusApp = () => {
 
   return (
     <View>
-      <Dialog
-        isVisible={showDialog}
-        onBackdropPress={handleDialogClose}
-        overlayStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-          padding: 20,
-        }}
-      >
+      <CustomModal isVisible={showDialog} onBackdropPress={handleDialogClose}>
         <Dialog.Title
           title="Alerta"
           titleStyle={{
@@ -84,7 +77,7 @@ const StatusApp = () => {
           Has salido de la aplicación. Si no regresas en 5 minutos, cerraremos
           tu sesión por seguridad.
         </Text>
-      </Dialog>
+      </CustomModal>
     </View>
   );
 };

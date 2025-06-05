@@ -11,9 +11,11 @@ import SignatureCanvas from "react-native-signature-canvas";
 import { Text, useTheme } from "@rneui/themed";
 import { Button } from "@rneui/base";
 import axios from "axios";
+import CustomModal from "../../../components/CustomModal";
+import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
 
 const SignDay = ({ navigation, route }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
 
   const { fichaje, description, motivo_pausa, long, lat } = route.params || {}; // Desestructuración de los parámetros
 
@@ -47,7 +49,7 @@ const SignDay = ({ navigation, route }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/index.php`, params);
+      const response = await axios.post(`${apiUrl}/index.php`, params);
       if (response.data.success) {
         setMessage(null);
         setIsLoading(false);
@@ -137,32 +139,16 @@ const SignDay = ({ navigation, route }) => {
         />
       </View>
 
-      <Dialog
+      <CustomModal
         isVisible={showDialog}
         onBackdropPress={() => setShowDialog(false)}
-        overlayStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-          padding: 20,
-        }}
-        dialogStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-        }}
-        dialogContainerStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-        }}
-        dialogTitleStyle={{
-          color: theme.colors.text,
-          fontSize: 18,
-          fontWeight: "bold",
-        }}
-        titleStyle={{ color: theme.colors.text }}
       >
-        <Dialog.Title title="Alerta" />
+        <Dialog.Title
+          title="Alerta"
+          titleStyle={{ color: theme.colors.text }}
+        />
         <Text>{message}</Text>
-      </Dialog>
+      </CustomModal>
     </View>
   );
 };

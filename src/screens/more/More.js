@@ -7,7 +7,6 @@ import { useTheme } from "@rneui/themed";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 
 const More = () => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName, logout } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
   const currentDate = new Date(); // Obtener la fecha actual

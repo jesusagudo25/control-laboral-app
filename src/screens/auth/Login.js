@@ -6,16 +6,17 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Button, Image, Dialog } from "@rneui/themed";
+import { Button, Image, Dialog, Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
+import useApi from "../../hooks/useApi";
 import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
+import CustomModal from "../../components/CustomModal";
 
 const Login = ({ navigation }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const { login, isConnected } = useAuth(); // aquí traes la función de login del contexto
 
@@ -24,6 +25,37 @@ const Login = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Relacionado a url set engranaje
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newUrl, setNewUrl] = useState("");
+  const { apiUrl, setApiUrl } = useApi(); // Hook para manejar la URL de la API
+
+  const handleSave = () => {
+    // Validar que la URL no esté vacía
+    if (!newUrl.trim()) {
+      showErrorMessage("Por favor, ingresa una URL válida.");
+      return;
+    }
+
+    // Validar que la URL tenga el formato correcto
+    if (!isValidUrl(newUrl)) {
+      showErrorMessage("Por favor, ingresa una URL válida.");
+      return;
+    }
+
+    setApiUrl(newUrl);
+    setModalVisible(false);
+  };
+
+  const isValidUrl = (url) => {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch (e) {
+      return false;
+    }
+  };
 
   const handleLogin = async () => {
     if (!isConnected) {
@@ -59,7 +91,7 @@ const Login = ({ navigation }) => {
   };
 
   const authenticateUser = async (username, password) => {
-    return axios.post(`${API_URL}/index.php`, {
+    return axios.post(`${apiUrl}/index.php`, {
       action: "auth",
       grant_type: "client_credentials",
       client_id: username,
@@ -71,7 +103,7 @@ const Login = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("expo_push_token");
       if (token) {
-        await axios.patch(`${API_URL}/index.php`, {
+        await axios.patch(`${apiUrl}/index.php`, {
           action: "user_token",
           expo_token: token,
         });
@@ -111,11 +143,47 @@ const Login = ({ navigation }) => {
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
       <View style={theme.container}>
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            top: 5,
+            right: 30,
+            zIndex: 1,
+          }}
+          onPress={() => setModalVisible(true)}
+        >
+          <View
+            style={{
+              backgroundColor: theme.colors.background,
+              padding: 10,
+              borderRadius: "50%",
+              borderColor: theme.colors.primary,
+              borderWidth: 1,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
+            <Icon
+              name="cog"
+              type="font-awesome"
+              color={theme.colors.primary}
+              size={24}
+            />
+          </View>
+        </TouchableOpacity>
+
         <View
           style={{
             justifyContent: "center",
             alignItems: "center",
             marginBottom: 20,
+            marginTop: 20,
           }}
         >
           <Image
@@ -145,32 +213,61 @@ const Login = ({ navigation }) => {
           secureTextEntry={true}
         />
 
-        <Dialog
+        <CustomModal
           isVisible={showDialog}
           onBackdropPress={() => setShowDialog(false)}
-          overlayStyle={{
-            backgroundColor: theme.colors.header,
-            borderRadius: 10,
-            padding: 20,
-          }}
-          dialogStyle={{
-            backgroundColor: theme.colors.header,
-            borderRadius: 10,
-          }}
-          dialogContainerStyle={{
-            backgroundColor: theme.colors.header,
-            borderRadius: 10,
-          }}
-          dialogTitleStyle={{
-            color: theme.colors.text,
-            fontSize: 18,
-            fontWeight: "bold",
-          }}
-          titleStyle={{ color: theme.colors.text }}
         >
-          <Dialog.Title title="Alerta" />
-          <Text>{message}</Text>
-        </Dialog>
+          <Dialog.Title
+            title="Alerta"
+            titleStyle={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
+          />
+          <Text style={{ color: theme.colors.text }}>{message}</Text>
+        </CustomModal>
+
+        <CustomModal
+          isVisible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}
+        >
+          <Dialog.Title
+            title="Configurar Acceso"
+            titleStyle={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
+          />
+          <Text style={{ color: theme.colors.text, marginVertical: 10 }}>
+            Ingresa la URL de tu API:
+          </Text>
+          <TextInput
+            placeholder="https://tuempresa.com/api"
+            style={theme.input}
+            value={newUrl}
+            onChangeText={setNewUrl}
+            multiline
+          />
+          <Button
+            containerStyle={{
+              marginTop: 10,
+              marginBottom: 10,
+              width: "100%",
+            }}
+            buttonStyle={theme.buttonPrimaryStyle}
+            disabledStyle={{
+              backgroundColor: theme.colors.disabled,
+              borderRadius: 3,
+              paddingHorizontal: 15,
+            }}
+            loading={loading}
+            disabled={loading}
+            title="Guardar"
+            onPress={handleSave}
+          />
+        </CustomModal>
 
         <TouchableOpacity
           activeOpacity={0.8}

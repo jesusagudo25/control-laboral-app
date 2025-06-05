@@ -10,6 +10,7 @@ import {
 import { Button, Image, Dialog, Divider } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@rneui/themed";
+import CustomModal from "../../components/CustomModal";
 
 const PasswordRecovery = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -52,13 +53,13 @@ const PasswordRecovery = ({ navigation }) => {
           value={email}
         />
 
-        <Dialog
+        <CustomModal
           isVisible={showDialog}
           onBackdropPress={() => setShowDialog(false)}
         >
           <Dialog.Title title="Alerta" />
           <Text>{message}</Text>
-        </Dialog>
+        </CustomModal>
 
         <Button
           title="Recuperar contraseña"

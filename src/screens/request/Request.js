@@ -13,8 +13,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import SkeletonRequest from "../../components/SkeletonRequest";
 
+import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
+
 const Request = ({ navigation }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
   const [solicitudes, setSolicitudes] = useState([]);
@@ -28,7 +30,7 @@ const Request = ({ navigation }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}/index.php?action=user_requests&page=${page}`
+        `${apiUrl}/index.php?action=user_requests&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
 
@@ -65,7 +67,6 @@ const Request = ({ navigation }) => {
 
       fetchSolicitudes(); // Llamar a la función para cargar solicitudes
       console.log("Solicitudes cargadas");
-      
     }, [])
   );
 

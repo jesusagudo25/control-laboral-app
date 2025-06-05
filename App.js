@@ -5,6 +5,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeProvider } from "@rneui/themed";
 import AuthProvider from "./src/context/AuthProvider";
+import ApiProvider from "./src/context/ApiProvider";
 import Navigate from "./src/navigation/Navigate";
 import theme from "./src/theme/theme";
 import Connection from "./src/components/Connection";
@@ -24,17 +25,18 @@ axios.interceptors.request.use(
 );
 
 export default function App() {
-
   return (
     <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <View style={{ marginTop: Constants.statusBarHeight, flexGrow: 1 }}>
-          <Navigate />
-          <StatusBar style="auto" />
-          <StatusApp   />
-          <Connection />
-        </View>
-      </AuthProvider>
+      <ApiProvider>
+        <AuthProvider>
+          <View style={{ marginTop: Constants.statusBarHeight, flexGrow: 1 }}>
+            <Navigate />
+            <StatusBar style="auto" />
+            <StatusApp />
+            <Connection />
+          </View>
+        </AuthProvider>
+      </ApiProvider>
     </ThemeProvider>
   );
 }

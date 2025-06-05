@@ -4,6 +4,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { Dialog } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import useAuth from "../hooks/useAuth";
+import CustomModal from "./CustomModal"; // Asegúrate de que la ruta sea correcta
 
 const Connection = () => {
   const { logout, setIsConnected, setConnectionType } = useAuth();
@@ -35,15 +36,7 @@ const Connection = () => {
 
   return (
     <View>
-      <Dialog
-        isVisible={showDialog}
-        onBackdropPress={handleClose}
-        overlayStyle={{
-          backgroundColor: theme.colors.header,
-          borderRadius: 10,
-          padding: 20,
-        }}
-      >
+      <CustomModal isVisible={showDialog} onBackdropPress={handleClose}>
         <Dialog.Title
           title="Alerta"
           titleStyle={{
@@ -55,7 +48,7 @@ const Connection = () => {
         <Text style={{ color: theme.colors.text }}>
           Por favor, verifica tu conexión a internet.
         </Text>
-      </Dialog>
+      </CustomModal>
     </View>
   );
 };

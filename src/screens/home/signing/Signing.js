@@ -9,6 +9,7 @@ import "dayjs/locale/es"; // Importar el locale español
 import SkeletonSigning from "../../../components/SkeletonSigning";
 import useAuth from "../../../hooks/useAuth";
 import CardSigning from "../../../components/CardSigning";
+import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
 
 dayjs.locale("es"); // Establece español como idioma predeterminado
 
@@ -23,7 +24,7 @@ const dayName = [
 ];
 
 const Signing = ({ route, navigation }) => {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
+  const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
 
@@ -47,7 +48,7 @@ const Signing = ({ route, navigation }) => {
     try {
 
       const response = await axios.get(
-        `${API_URL}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+        `${apiUrl}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
 
       const turn = response.data.data.horario[day];
@@ -130,7 +131,7 @@ const Signing = ({ route, navigation }) => {
   const getUserButtons = async () => {
     try {
       const response = await axios.get(
-        `${API_URL}/index.php?action=user_buttons`
+        `${apiUrl}/index.php?action=user_buttons`
       );
       let actionsBucket = [];
       console.log(response.data.data);
