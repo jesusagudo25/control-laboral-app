@@ -11,7 +11,7 @@ import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-import SkeletonCard from "../../components/SkeletonCard";
+import SkeletonRequest from "../../components/SkeletonRequest";
 
 const Request = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -40,11 +40,11 @@ const Request = ({ navigation }) => {
         descripcion: item.descripcion || "No hay descripción",
         status: item.status,
         icono:
-          item.status === "Aprobado"
+          item.status === "Aprobada"
             ? "check-circle"
-            : item.status === "Rechazado"
+            : item.status === "Rechazada"
               ? "times-circle"
-              : "times-circle",
+              : "exclamation-circle",
       }));
 
       setSolicitudes((prev) => [...prev, ...solicitudesMapped]);
@@ -64,6 +64,8 @@ const Request = ({ navigation }) => {
       setHasMore(true); // Reiniciar hasMore al cargar la pantalla
 
       fetchSolicitudes(); // Llamar a la función para cargar solicitudes
+      console.log("Solicitudes cargadas");
+      
     }, [])
   );
 
@@ -72,7 +74,7 @@ const Request = ({ navigation }) => {
       <View>
         {/* Simula 2 tarjetas en loading */}
         {[1, 2, 3, 4].map((_, index) => (
-          <SkeletonCard
+          <SkeletonRequest
             key={index}
             height={100}
             width="100%"
@@ -100,16 +102,16 @@ const Request = ({ navigation }) => {
               Ref. {item.referencia}
             </Text>
             <Text style={{ marginBottom: 2 }}>Tipo: {item.tipo}</Text>
-            <Text style={{ marginBottom: 2 }}>Fecha: {item.fecha}</Text>
             <Text numberOfLines={2} style={{ color: "#555", marginBottom: 2 }}>
               Descripción: {item.descripcion}
             </Text>
+            <Text style={{ marginBottom: 2 }}>Fecha: {item.fecha}</Text>
             <Text
               style={{
                 color:
-                  item.status === "Aprobado"
+                  item.status === "Aprobada"
                     ? "green"
-                    : item.status === "Rechazado"
+                    : item.status === "Rechazada"
                       ? "red"
                       : "#f7941e",
               }}

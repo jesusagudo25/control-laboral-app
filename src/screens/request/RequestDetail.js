@@ -59,7 +59,12 @@ const RequestDetail = ({ route, navigation }) => {
           <Text style={theme.descriptionRequest}>Descripción:</Text>
           <Text style={theme.descriptionTextRequest}>{item.descripcion}</Text>
 
-          <Text style={[theme.statusRequest, { color: getStatusColor(item.status) }]}>
+          <Text
+            style={[
+              theme.statusRequest,
+              { color: getStatusColor(item.status) },
+            ]}
+          >
             Estado: <Text style={theme.subtitleTextRequest}>{item.status}</Text>
           </Text>
         </Card>
@@ -70,10 +75,9 @@ const RequestDetail = ({ route, navigation }) => {
 
 // Función para obtener el color del estado de la solicitud
 const getStatusColor = (status) => {
-  if (status === "Aprobado") return "green";
-  if (status === "Rechazado") return "red";
+  if (status === "Aprobada") return "green";
+  if (status === "Rechazada") return "red";
   return "#f7941e"; // Default color for pending or others
 };
-
 
 export default RequestDetail;

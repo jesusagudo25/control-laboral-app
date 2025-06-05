@@ -10,6 +10,7 @@ import {
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 import dayjs from "dayjs";
+import NotificationSkeletonItem from "../../../components/NotificationSkeletonItem";
 
 const Notification = () => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -30,8 +31,6 @@ const Notification = () => {
         `${API_URL}/index.php?action=user_notifications&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
-
-      console.log("Response data:", data);
 
       //Map de la respuesta de la API:  data.data.requests.map
       const notificationsMapped = data.data.map((item) => ({
@@ -62,16 +61,31 @@ const Notification = () => {
     }, [])
   );
 
-  const handleMarkAsRead = (id) => {
+  const handleMarkAsRead = (id, read) => {
+    if (read === "SI") return; // Si ya está leída, no hacer nada
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: "SI" } : n))
     );
+    updateNotification(id); // Actualizar notificación en el backend
     // Aquí podrías hacer una llamada al backend para marcar como leída
+  };
+
+  const updateNotification = async (id) => {
+    try {
+      const response = await axios.patch(`${API_URL}/index.php`, {
+        action: "user_notification",
+        notificationId: id,
+        read: "SI",
+      });
+      console.log("Notification updated:", response.data);
+    } catch (error) {
+      console.error("Error updating notification:", error);
+    }
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => handleMarkAsRead(item.id)}
+      onPress={() => handleMarkAsRead(item.id, item.read)}
       style={[styles.item, item.read === "SI" ? styles.read : styles.unread]}
     >
       <Text style={styles.title}>{item.title}</Text>
@@ -91,9 +105,7 @@ const Notification = () => {
           keyExtractor={(item, index) => index.toString()}
           onEndReached={fetchNotifications}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isLoading ? <ActivityIndicator color="#1E6091" /> : null
-          }
+          ListFooterComponent={isLoading ? <NotificationSkeletonItem /> : null}
         />
       </View>
     </>
@@ -110,7 +122,7 @@ const styles = StyleSheet.create({
   item: {
     backgroundColor: "#fff",
     padding: 15,
-    borderBottomColor: "#ccc",
+    borderBottomColor: "#1E6091",
     borderBottomWidth: 1,
   },
   unread: {

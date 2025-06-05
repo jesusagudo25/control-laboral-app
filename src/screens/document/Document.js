@@ -46,6 +46,7 @@ const Document = ({ navigation }) => {
       setHasMore(true); // Reiniciar el estado de más documentos
 
       fetchDocuments(); // Llamar a la función para cargar documentos
+      console.log("Documentos cargados");
     }, [])
   );
 
@@ -179,7 +180,7 @@ const Document = ({ navigation }) => {
           />
           <View style={styles.info}>
             <Text style={styles.title}>{item.nombre}</Text>
-            <Text style={styles.subtitle}>{item.descripcion}</Text>
+            <Text style={styles.subtitle}>Descripción: {item.descripcion}</Text>
             <Text style={styles.date}>Fecha: {item.fecha}</Text>
           </View>
         </View>
@@ -300,12 +301,11 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
+    color: "#555",
     marginBottom: 2,
   },
   date: {
-    fontSize: 12,
-    color: "#999",
+    fontSize: 14,
   },
   uploadButton: {
     flexDirection: "row",

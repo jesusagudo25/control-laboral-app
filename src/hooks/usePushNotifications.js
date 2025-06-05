@@ -1,14 +1,10 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export async function registerForPushNotificationsAsync() {
   try {
     // Verifica si ya lo tienes guardado
-    const storedToken = await AsyncStorage.getItem("expo_push_token");
-    if (storedToken) return storedToken;
-
     let token;
 
     if (Device.isDevice) {
@@ -27,10 +23,7 @@ export async function registerForPushNotificationsAsync() {
       }
 
       token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log("Nuevo token Expo:", token);
 
-      // Guardar en AsyncStorage
-      await AsyncStorage.setItem("expo_push_token", token);
     } else {
       console.log("Debes usar un dispositivo físico para obtener el token.");
       return null;

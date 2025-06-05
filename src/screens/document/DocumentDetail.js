@@ -1,8 +1,6 @@
 import { View, Text, ScrollView } from "react-native";
 import { useTheme } from "@rneui/themed";
-import { StyleSheet } from "react-native";
 import { Icon } from "@rneui/themed";
-import { Button } from "@rneui/themed";
 import { Card } from "@rneui/themed";
 
 const DocumentDetail = ({ navigation, route }) => {
@@ -67,27 +65,5 @@ const DocumentDetail = ({ navigation, route }) => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    padding: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1E6091",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#555",
-  },
-  date: {
-    fontSize: 14,
-    color: "#999",
-  },
-});
 
 export default DocumentDetail;

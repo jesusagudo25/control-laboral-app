@@ -11,6 +11,8 @@ import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device";
 
 const Login = ({ navigation }) => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL; // URL de la API
@@ -40,6 +42,9 @@ const Login = ({ navigation }) => {
       if (response.data && response.data.access_token) {
         // Llamas a login desde el contexto con el token y el nombre de usuario
         await login(response.data.access_token);
+        if (Device.isDevice) {
+          await sendTokenToServer(); // Enviar el token al servidor
+        }
         resetForm();
         navigation.navigate("Home"); // o puedes usar una navegación controlada según auth
       } else {
@@ -62,6 +67,21 @@ const Login = ({ navigation }) => {
     });
   };
 
+  const sendTokenToServer = async () => {
+    try {
+      const token = await AsyncStorage.getItem("expo_push_token");
+      if (token) {
+        await axios.patch(`${API_URL}/index.php`, {
+          action: "user_token",
+          expo_token: token,
+        });
+        console.log("Token enviado al servidor:", token);
+      }
+    } catch (error) {
+      console.error("Error al enviar el token al servidor:", error);
+    }
+  };
+
   const resetForm = () => {
     setUsername("");
     setPassword("");
@@ -76,8 +96,15 @@ const Login = ({ navigation }) => {
     (async () => {
       const token = await registerForPushNotificationsAsync();
       console.log("Token obtenido o recuperado:", token);
-      //alert(token);
-      // Lo puedes enviar al backend aquí si ya hay un usuario autenticado
+      // guardar en el almacenamiento local para usarlo más tarde
+      if (token) {
+        try {
+          await AsyncStorage.setItem("expo_push_token", token);
+          console.log("Token guardado en AsyncStorage");
+        } catch (error) {
+          console.error("Error al guardar el token:", error);
+        }
+      }
     })();
   }, []);
 
