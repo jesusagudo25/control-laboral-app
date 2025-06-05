@@ -63,10 +63,18 @@ const Login = ({ navigation }) => {
       return;
     }
 
+    // Validar que haya una URL configurada
+    if (!apiUrl || !isValidUrl(apiUrl)) {
+      showErrorMessage("Por favor, configura una URL válida en el engranaje.");
+      return;
+    }
+
     if (!username || !password) {
       showErrorMessage("Por favor, completa todos los campos.");
       return;
     }
+
+    console.log(apiUrl);
 
     try {
       setLoading(true);
@@ -137,6 +145,15 @@ const Login = ({ navigation }) => {
           console.error("Error al guardar el token:", error);
         }
       }
+
+      // Cargar la URL de la API desde AsyncStorage al iniciar
+      const storedApiUrl = await AsyncStorage.getItem("apiUrl");
+      if (storedApiUrl) {
+        setApiUrl(storedApiUrl);
+        setNewUrl(storedApiUrl); // Inicializar el campo de entrada con la URL almacenada
+      } else {
+        console.log("No se encontró una URL de API almacenada.");
+      }
     })();
   }, []);
 
@@ -150,7 +167,10 @@ const Login = ({ navigation }) => {
             right: 30,
             zIndex: 1,
           }}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            setModalVisible(true);
+            setNewUrl(apiUrl || ""); // Inicializar con la URL actual o vacía
+          }}
         >
           <View
             style={{
