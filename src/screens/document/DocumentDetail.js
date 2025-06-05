@@ -3,6 +3,8 @@ import { useTheme } from "@rneui/themed";
 import { Icon } from "@rneui/themed";
 import { Card } from "@rneui/themed";
 
+import { Linking } from "react-native";
+
 const DocumentDetail = ({ navigation, route }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { document } = route.params;
@@ -58,8 +60,12 @@ const DocumentDetail = ({ navigation, route }) => {
           </Text>
           <Text style={theme.dateRequest}>Fecha: {document.fecha}</Text>
           <Text style={theme.descriptionRequest}>Descargar:</Text>
-          <Text style={theme.descriptionTextRequest}> {document.url}</Text>
-
+          <Text
+            style={theme.descriptionTextRequest}
+            onPress={() => Linking.openURL(document.url)}
+          >
+            Enlace de descarga
+          </Text>
         </Card>
       </View>
     </ScrollView>
