@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { View, ScrollView, AppState } from "react-native";
+import { View } from "react-native";
 import { Card, Divider, Text, useTheme } from "@rneui/themed";
 
 import "dayjs/locale/es"; // Importar el locale español
@@ -16,7 +15,6 @@ const CardSigning = ({
 }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
-  const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME; // Nombre de la app
 
   return (
     <Card containerStyle={theme.showSigning}>
@@ -29,7 +27,7 @@ const CardSigning = ({
         <View>
           <Text style={theme.textSigning}>{`${userName}`}</Text>
           <Text style={theme.titleSigning}>Empresa</Text>
-          <Text style={theme.textSigning}>{`${APP_NAME}`}</Text>
+          <Text style={theme.textSigning}>BahiaSerena</Text>
         </View>
 
         <View>

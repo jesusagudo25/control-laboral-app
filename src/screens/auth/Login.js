@@ -13,7 +13,6 @@ import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
 import useApi from "../../hooks/useApi";
 import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Device from "expo-device";
 import CustomModal from "../../components/CustomModal";
 
 const Login = ({ navigation }) => {
@@ -57,6 +56,7 @@ const Login = ({ navigation }) => {
     }
   };
 
+  // Función para manejar el inicio de sesión
   const handleLogin = async () => {
     if (!isConnected) {
       showErrorMessage("Por favor, verifica tu conexión a internet.");
@@ -74,17 +74,12 @@ const Login = ({ navigation }) => {
       return;
     }
 
-    console.log(apiUrl);
-
     try {
       setLoading(true);
       const response = await authenticateUser(username, password);
       if (response.data && response.data.access_token) {
         // Llamas a login desde el contexto con el token y el nombre de usuario
         await login(response.data.access_token);
-        if (Device.isDevice) {
-          await sendTokenToServer(); // Enviar el token al servidor
-        }
         resetForm();
         navigation.navigate("Home"); // o puedes usar una navegación controlada según auth
       } else {
@@ -107,21 +102,6 @@ const Login = ({ navigation }) => {
     });
   };
 
-  const sendTokenToServer = async () => {
-    try {
-      const token = await AsyncStorage.getItem("expo_push_token");
-      if (token) {
-        await axios.patch(`${apiUrl}/index.php`, {
-          action: "user_token",
-          expo_token: token,
-        });
-        console.log("Token enviado al servidor:", token);
-      }
-    } catch (error) {
-      console.error("Error al enviar el token al servidor:", error);
-    }
-  };
-
   const resetForm = () => {
     setUsername("");
     setPassword("");
@@ -135,12 +115,10 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       const token = await registerForPushNotificationsAsync();
-      console.log("Token obtenido o recuperado:", token);
       // guardar en el almacenamiento local para usarlo más tarde
       if (token) {
         try {
           await AsyncStorage.setItem("expo_push_token", token);
-          console.log("Token guardado en AsyncStorage");
         } catch (error) {
           console.error("Error al guardar el token:", error);
         }
@@ -151,8 +129,6 @@ const Login = ({ navigation }) => {
       if (storedApiUrl) {
         setApiUrl(storedApiUrl);
         setNewUrl(storedApiUrl); // Inicializar el campo de entrada con la URL almacenada
-      } else {
-        console.log("No se encontró una URL de API almacenada.");
       }
     })();
   }, []);

@@ -8,6 +8,7 @@ import SkeletonCard from "../../components/SkeletonCard";
 import useAuth from "../../hooks/useAuth";
 import { useFocusEffect } from "@react-navigation/native";
 import NotificationIcon from "../../components/NotificationIcon";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 
@@ -47,6 +48,21 @@ const Home = ({ navigation }) => {
     logout();
   };
 
+  const sendTokenToServer = async () => {
+    try {
+      const token = await AsyncStorage.getItem("expo_push_token");
+      if (token) {
+        await axios.patch(`${apiUrl}/index.php`, {
+          action: "user_token",
+          expo_token: token,
+        });
+        console.log("Token enviado al servidor:", token);
+      }
+    } catch (error) {
+      console.error("Error al enviar el token al servidor:", error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       //Set none to workingDayStatus
@@ -73,6 +89,7 @@ const Home = ({ navigation }) => {
       };
 
       getName();
+      sendTokenToServer();
     }, [])
   );
 

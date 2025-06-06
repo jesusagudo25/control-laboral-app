@@ -31,7 +31,7 @@ import Notification from "../screens/home/notification/Notification";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-/** 🚀 1️⃣ Stack de Autenticación */
+/** 1. Stack de Autenticación */
 const AuthStack = () => {
   return (
     <Stack.Navigator>
@@ -59,7 +59,7 @@ const AuthStack = () => {
   );
 };
 
-/** 🚀 2️⃣ Tabs de la App después del Login */
+/** 2. Tabs de la App después del Login */
 const TabNavigator = () => {
   const { theme } = useTheme(); // Obtener el tema actual
 
@@ -118,7 +118,7 @@ const TabNavigator = () => {
   );
 };
 
-///** 🚀 3️⃣ AppStack de la App después del Login */
+///** 3. AppStack de la App después del Login */
 const AppStack = () => {
   const { theme } = useTheme();
 
