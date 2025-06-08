@@ -30,9 +30,20 @@ const Request = ({ navigation }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${apiUrl}/index.php?action=user_requests&page=${page}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_requests&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
+
+      if (
+        !data ||
+        !data.data ||
+        !data.data.requests ||
+        data.success === false
+      ) {
+        setHasMore(false);
+        setIsLoading(false);
+        return;
+      }
 
       //Map de la respuesta de la API:  data.data.requests.map
       const solicitudesMapped = data.data.requests.map((item) => ({
@@ -154,6 +165,25 @@ const Request = ({ navigation }) => {
           onEndReached={fetchSolicitudes}
           onEndReachedThreshold={0.5}
           ListFooterComponent={isLoading ? renderFooter : null}
+          ListEmptyComponent={
+            !isLoading && solicitudes.length === 0 ? (
+              <>
+                <Icon
+                  name="exclamation-circle"
+                  type="font-awesome"
+                  size={25}
+                  color="#1E6091"
+                  style={{ alignSelf: "center", marginTop: 10 }}
+                />
+
+                <Text
+                  style={{ textAlign: "center", marginTop: 10, fontSize: 14 }}
+                >
+                  No hay solicitudes disponibles.
+                </Text>
+              </>
+            ) : null
+          }
         />
       </View>
     </>

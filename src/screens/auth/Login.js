@@ -94,7 +94,7 @@ const Login = ({ navigation }) => {
   };
 
   const authenticateUser = async (username, password) => {
-    return axios.post(`${apiUrl}/index.php`, {
+    return axios.post(`${apiUrl}/custom/fichajes/api/index.php`, {
       action: "auth",
       grant_type: "client_credentials",
       client_id: username,
@@ -265,7 +265,7 @@ const Login = ({ navigation }) => {
           />
         </CustomModal>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => navigation.navigate("PasswordRecovery")}
         >
@@ -280,7 +280,7 @@ const Login = ({ navigation }) => {
           >
             ¿Olvidaste tu contraseña?
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Button
           title="Iniciar sesión"
@@ -296,14 +296,14 @@ const Login = ({ navigation }) => {
           disabled={loading}
         />
 
-        <Button
+        {/* <Button
           title="Crea tu usuario o abre tu cuenta"
           type="outline"
           titleStyle={{ color: theme.colors.primary }}
           containerStyle={theme.buttonSecondaryContainer}
           buttonStyle={theme.buttonSecondaryStyle}
           onPress={() => navigation.navigate("Register")}
-        />
+        /> */}
       </View>
     </ScrollView>
   );

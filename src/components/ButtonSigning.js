@@ -50,7 +50,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setErrorMsg(null);
         setIsLoading(false);
@@ -81,7 +84,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
 
     setIsLoadingBreak(true);
     try {
-      const response = await axios.post(`${API_URL}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setErrorMsg(null);
         setIsLoadingBreak(false);
@@ -117,7 +123,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
     setIsLoadingContinue(true);
 
     try {
-      const response = await axios.post(`${API_URL}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setErrorMsg(null);
         setIsLoadingContinue(false);
@@ -148,7 +157,10 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
 
     setIsLoadingFinish(true);
     try {
-      const response = await axios.post(`${apiUrl}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setErrorMsg(null);
         setIsLoadingFinish(false);

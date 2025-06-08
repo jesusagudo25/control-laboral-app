@@ -49,7 +49,10 @@ const SignDay = ({ navigation, route }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(`${apiUrl}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setMessage(null);
         setIsLoading(false);

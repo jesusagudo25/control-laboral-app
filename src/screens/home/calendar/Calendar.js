@@ -86,7 +86,7 @@ const Calendar = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/index.php?action=fetch_month_data&mes=${month}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=fetch_month_data&mes=${month}`
       );
       const data = res.data.data;
 
@@ -126,7 +126,7 @@ const Calendar = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/index.php?action=fetch_day_details&fecha=${date}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=fetch_day_details&fecha=${date}`
       );
 
       const jornada = res.data.data.jornada;

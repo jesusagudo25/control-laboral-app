@@ -46,9 +46,8 @@ const Signing = ({ route, navigation }) => {
     let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
 
     try {
-
       const response = await axios.get(
-        `${apiUrl}/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
+        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
 
       const turn = response.data.data.horario[day];
@@ -65,9 +64,14 @@ const Signing = ({ route, navigation }) => {
       if (countMarks == 0) {
         //Darle formato a las horas
         Object.keys(turn).forEach((key) => {
-          const item = turn[key];
+          let item = turn[key];
+
+          item.in = item.in || "00:00"; // Si in es undefined o null, asignar "00:00"
+          item.out = item.out || "00:00"; // Si out es undefined o null, asignar "00:00"
+
           const inTime = item.in.split(":").map(Number);
           const outTime = item.out.split(":").map(Number);
+
           const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
           const outDate = new Date(0, 0, 0, outTime[0], outTime[1]);
           const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
@@ -99,7 +103,11 @@ const Signing = ({ route, navigation }) => {
         //Obtener el total de horas, en base a los turnos
         let totalHours = 0;
         Object.keys(turn).forEach((key) => {
-          const item = turn[key];
+          let item = turn[key];
+
+          item.in = item.in || "00:00"; // Si in es undefined o null, asignar "00:00"
+          item.out = item.out || "00:00"; // Si out es undefined o null, asignar "00:00"
+
           const inTime = item.in.split(":").map(Number);
           const outTime = item.out.split(":").map(Number);
           const inDate = new Date(0, 0, 0, inTime[0], inTime[1]);
@@ -120,8 +128,9 @@ const Signing = ({ route, navigation }) => {
       } else {
         setTurnData(marks);
         setCountTurnData(countMarks);
-
-        setTotalHours(time.tiempo_trabajado.split(":").slice(0, 2).join(":"));
+        let timeWorked = time.tiempo_trabajado || "00:00"; // Si tiempo_trabajado es undefined o null, asignar "00:00"
+        console.log("Tiempo trabajado:", timeWorked);
+        setTotalHours(timeWorked.split(":").slice(0, 2).join(":"));
       }
     } catch (error) {
       console.log(error);
@@ -131,7 +140,7 @@ const Signing = ({ route, navigation }) => {
   const getUserButtons = async () => {
     try {
       const response = await axios.get(
-        `${apiUrl}/index.php?action=user_buttons`
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_buttons`
       );
       let actionsBucket = [];
       console.log(response.data.data);

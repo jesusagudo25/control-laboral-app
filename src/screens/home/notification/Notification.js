@@ -4,7 +4,6 @@ import {
   FlatList,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import axios from "axios";
@@ -13,6 +12,7 @@ import dayjs from "dayjs";
 import NotificationSkeletonItem from "../../../components/NotificationSkeletonItem";
 
 import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
+import { Icon } from "@rneui/base";
 
 const Notification = () => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
@@ -30,9 +30,16 @@ const Notification = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${apiUrl}/index.php?action=user_notifications&page=${page}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_notifications&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
+      console.log("Response data:", data);
+
+      if (!data || !data.data || data.success === false || !data.data.length) {
+        setHasMore(false);
+        setIsLoading(false);
+        return;
+      }
 
       //Map de la respuesta de la API:  data.data.requests.map
       const notificationsMapped = data.data.map((item) => ({
@@ -74,11 +81,14 @@ const Notification = () => {
 
   const updateNotification = async (id) => {
     try {
-      const response = await axios.patch(`${apiUrl}/index.php`, {
-        action: "user_notification",
-        notificationId: id,
-        read: "SI",
-      });
+      const response = await axios.patch(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        {
+          action: "user_notification",
+          notificationId: id,
+          read: "SI",
+        }
+      );
       console.log("Notification updated:", response.data);
     } catch (error) {
       console.error("Error updating notification:", error);
@@ -100,7 +110,7 @@ const Notification = () => {
 
   return (
     <>
-      <View>
+      <View style={{ flex: 1, paddingTop: 3 }}>
         <FlatList
           data={notifications}
           renderItem={renderItem}
@@ -108,6 +118,24 @@ const Notification = () => {
           onEndReached={fetchNotifications}
           onEndReachedThreshold={0.5}
           ListFooterComponent={isLoading ? <NotificationSkeletonItem /> : null}
+          ListEmptyComponent={
+            !isLoading && notifications.length === 0 ? (
+              <>
+                <Icon
+                  name="bell-slash"
+                  type="font-awesome"
+                  size={25}
+                  color="#1E6091"
+                  style={{ alignSelf: "center", marginTop: 10 }}
+                />
+                <Text
+                  style={{ textAlign: "center", marginTop: 10, fontSize: 14 }}
+                >
+                  No hay notificaciones disponibles.
+                </Text>
+              </>
+            ) : null
+          }
         />
       </View>
     </>

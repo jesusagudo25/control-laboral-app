@@ -58,9 +58,20 @@ const Document = ({ navigation }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${apiUrl}/index.php?action=user_documents&page=${page}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
+
+      if (
+        !data ||
+        !data.data ||
+        !data.data.documents ||
+        data.success === false
+      ) {
+        setHasMore(false);
+        setIsLoading(false);
+        return;
+      }
 
       //Map de la respuesta de la API:  data.data.documents.map
       const newDocs = data.data.documents.map((item) => ({
@@ -126,8 +137,13 @@ const Document = ({ navigation }) => {
       return;
     }
 
+    console.log(`${apiUrl}/custom/fichajes/api/index.php`);
+
     try {
-      const response = await axios.post(`${apiUrl}/index.php`, params);
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params
+      );
       if (response.data.success) {
         setDocuments((prev) => [
           ...prev,
@@ -214,8 +230,25 @@ const Document = ({ navigation }) => {
           onEndReached={fetchDocuments}
           onEndReachedThreshold={0.5}
           ListFooterComponent={isLoading ? renderFooter : null}
+          ListEmptyComponent={
+            !isLoading && documents.length === 0 ? (
+              <>
+                <Icon
+                  name="file-text-o"
+                  type="font-awesome"
+                  size={25}
+                  color="#1E6091"
+                  style={{ alignSelf: "center", marginTop: 10 }}
+                />
+                <Text
+                  style={{ textAlign: "center", marginTop: 10, fontSize: 14 }}
+                >
+                  No hay documentos disponibles.
+                </Text>
+              </>
+            ) : null
+          }
         />
-        {/* Before onPress={handleUpload} */}
         <TouchableOpacity
           style={styles.uploadButton}
           onPress={() => setShowDialog(true)}

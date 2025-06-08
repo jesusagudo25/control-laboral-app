@@ -6,7 +6,7 @@ const NotificationSkeletonItem = () => {
   const skeletonCommonStyle = { backgroundColor: "#F0F0F0" };
 
   return (
-    <>
+    <View style={{ flex: 1, paddingTop: 3 }}>
       {[1, 2, 3, 4].map((_, index) => (
         <View style={styles.item} key={index}>
           <Skeleton
@@ -26,7 +26,7 @@ const NotificationSkeletonItem = () => {
           />
         </View>
       ))}
-    </>
+    </View>
   );
 };
 

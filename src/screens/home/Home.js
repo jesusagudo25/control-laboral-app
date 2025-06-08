@@ -43,7 +43,9 @@ const Home = ({ navigation }) => {
   const [nameShown, setNameShown] = useState("Cargando...");
 
   const handleLogout = async () => {
-    const response = await axios.delete(`${apiUrl}/index.php?action=auth`);
+    const response = await axios.delete(
+      `${apiUrl}/custom/fichajes/api/index.php?action=auth`
+    );
     console.log("Logout response: ", response.data);
     logout();
   };
@@ -52,7 +54,7 @@ const Home = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("expo_push_token");
       if (token) {
-        await axios.patch(`${apiUrl}/index.php`, {
+        await axios.patch(`${apiUrl}/custom/fichajes/api/index.php`, {
           action: "user_token",
           expo_token: token,
         });
@@ -72,7 +74,7 @@ const Home = ({ navigation }) => {
       const getName = async () => {
         try {
           const response = await axios.get(
-            `${apiUrl}/index.php?action=user_info`
+            `${apiUrl}/custom/fichajes/api/index.php?action=user_info`
           );
           let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
           userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra

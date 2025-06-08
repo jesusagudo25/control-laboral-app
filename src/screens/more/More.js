@@ -36,7 +36,7 @@ const More = () => {
         <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 20 }}>
           Opciones
         </Text>
-        <Card
+        {/* <Card
           containerStyle={{
             borderTopEndRadius: 10,
             borderTopStartRadius: 10,
@@ -61,12 +61,11 @@ const More = () => {
           <Text style={{ fontSize: 14, color: "#666" }}>
             Obtener ayuda y soporte técnico
           </Text>
-        </Card>
+        </Card> */}
         <TouchableOpacity activeOpacity={0.5} onPress={() => logout()}>
           <Card
             containerStyle={{
-              borderBottomEndRadius: 10,
-              borderBottomStartRadius: 10,
+              borderRadius: 10,
               margin: 0,
             }}
           >
