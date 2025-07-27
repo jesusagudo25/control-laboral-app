@@ -13,7 +13,21 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.jagudo25.controllaboralapp",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library.",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location to provide location-based features.",
+        "NSUserTrackingUsageDescription": "This app uses your data to provide personalized experiences.",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification",
+          "fetch",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +46,8 @@
         "projectId": "a5a4f6b6-d8fd-45fd-890d-eeca2e570423"
       }
     },
-    "plugins": ["expo-notifications"]
+    "plugins": [
+      "expo-notifications"
+    ]
   }
 }
