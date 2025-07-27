@@ -60,12 +60,18 @@ const DocumentDetail = ({ navigation, route }) => {
           </Text>
           <Text style={theme.dateRequest}>Fecha: {document.fecha}</Text>
           <Text style={theme.descriptionRequest}>Descargar:</Text>
-          <Text
-            style={theme.descriptionTextRequest}
-            onPress={() => Linking.openURL(document.url)}
-          >
-            Enlace de descarga
-          </Text>
+          {document.url ? (
+            <Text
+              style={theme.descriptionTextRequest}
+              onPress={() => Linking.openURL(document.url)}
+            >
+              Enlace de descarga
+            </Text>
+          ) : (
+            <Text style={theme.descriptionTextRequest}>
+              No hay enlace de descarga disponible.
+            </Text>
+          )}
         </Card>
       </View>
     </ScrollView>

@@ -56,12 +56,15 @@ const Document = ({ navigation }) => {
   const fetchDocuments = async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
+
     try {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
 
+      console.log("Response data:", data);
+      
       if (
         !data ||
         !data.data ||
@@ -81,6 +84,9 @@ const Document = ({ navigation }) => {
         fecha: item.date.split(" ")[0],
         url: item.document,
       }));
+
+      console.log("Documentos obtenidos:", newDocs);
+      
 
       setDocuments((prev) => [...prev, ...newDocs]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
@@ -136,8 +142,6 @@ const Document = ({ navigation }) => {
       setIsLoading(false); // Ocultar el indicador de carga
       return;
     }
-
-    console.log(`${apiUrl}/custom/fichajes/api/index.php`);
 
     try {
       const response = await axios.post(
