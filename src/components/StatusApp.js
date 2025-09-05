@@ -6,7 +6,7 @@ import { useTheme } from "@rneui/themed";
 import CustomModal from "./CustomModal";
 
 const StatusApp = () => {
-  const { logout, setAppStatus, ignoreAppState } = useAuth();
+  const { logout, setAppStatus, ignoreAppState, isAuthenticated } = useAuth();
   const { theme } = useTheme();
 
   const [showDialog, setShowDialog] = useState(false);
@@ -16,10 +16,12 @@ const StatusApp = () => {
   const AUTO_LOGOUT_DELAY = 5 * 60 * 1000; // 5 minutos
 
   const handleAppStateChange = (nextAppState) => {
-    console.log("Estado de la app:", nextAppState);
+
+    if (!isAuthenticated) {
+      return;
+    }
 
     if (ignoreAppState?.current) {
-      console.log("Cambio de estado ignorado.");
       return;
     }
 
@@ -40,7 +42,6 @@ const StatusApp = () => {
 
       // Programar logout en 5 minutos si no regresa
       timeoutRef.current = setTimeout(() => {
-        console.log("Auto logout ejecutado por inactividad.");
         logout();
       }, AUTO_LOGOUT_DELAY);
     }

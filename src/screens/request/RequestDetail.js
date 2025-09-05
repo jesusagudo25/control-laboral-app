@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from "react-native";
 import { Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import { Card } from "@rneui/themed";
-import { Button } from "@rneui/themed";
+import Accordion from "../../components/Accordion";
 
 const RequestDetail = ({ route, navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -67,6 +67,15 @@ const RequestDetail = ({ route, navigation }) => {
           >
             Estado: <Text style={theme.subtitleTextRequest}>{item.status}</Text>
           </Text>
+        </Card>
+
+        {/* Documentos adjuntos */}
+        <Card containerStyle={theme.card}>
+          <Accordion title={`Documentos Adjuntos`} theme={theme}>
+            <Text style={{ color: theme.colors.text }}>
+              (Funcionalidad en desarrollo)
+            </Text>
+          </Accordion>
         </Card>
       </View>
     </ScrollView>

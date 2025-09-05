@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Button, Image, Dialog, Icon } from "@rneui/themed";
+import { Button, Image, Dialog, Icon, CheckBox } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
@@ -17,7 +17,7 @@ import CustomModal from "../../components/CustomModal";
 
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
-  const { login, isConnected } = useAuth(); // aquí traes la función de login del contexto
+  const { login, isConnected, rememberMe, setRememberMe } = useAuth(); // aquí traes la función de login del contexto
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -208,6 +208,27 @@ const Login = ({ navigation }) => {
           value={password}
           secureTextEntry={true}
         />
+
+        {/* Remember me checkbox*/}
+        <CheckBox
+          title="Recordarme"
+          checkedColor={theme.colors.primary}
+          uncheckedColor={theme.colors.primary}
+          containerStyle={{
+            backgroundColor: theme.colors.background,
+            borderColor: theme.colors.background,
+            margin: 0,
+            padding: 0,
+            marginBottom: 2,
+            marginTop: 2,
+            alignSelf: "flex-start",
+          }}
+          textStyle={{ color: theme.colors.text }}
+          checked={rememberMe}
+          onPress={() => setRememberMe(!rememberMe)}
+        />
+
+        {/* Modals */}
 
         <CustomModal
           isVisible={showDialog}

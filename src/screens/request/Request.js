@@ -58,7 +58,10 @@ const Request = ({ navigation }) => {
             : item.status === "Rechazada"
               ? "times-circle"
               : "exclamation-circle",
+        ...item,
       }));
+
+      console.log("Solicitudes cargadas:", solicitudesMapped);
 
       setSolicitudes((prev) => [...prev, ...solicitudesMapped]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
@@ -117,7 +120,9 @@ const Request = ({ navigation }) => {
             <Text numberOfLines={2} style={{ color: "#555", marginBottom: 2 }}>
               Descripción: {item.descripcion}
             </Text>
-            <Text style={{ marginBottom: 2 }}>Fecha: {item.fecha}</Text>
+            <Text style={{ marginBottom: 2 }}>Fecha de creación: {item.fecha} / Días: {item.dias_utilizados}</Text>
+
+
             <Text
               style={{
                 color:

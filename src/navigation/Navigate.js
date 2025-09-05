@@ -94,7 +94,7 @@ const TabNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Document"
         component={Document}
         options={{
@@ -103,7 +103,7 @@ const TabNavigator = () => {
             <Icon name="folder" type="font-awesome" color={color} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="More"
         component={More}

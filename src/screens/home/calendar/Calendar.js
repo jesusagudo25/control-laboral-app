@@ -15,7 +15,6 @@ import axios from "axios";
 import { LocaleConfig } from "react-native-calendars";
 import CardCalendar from "../../../components/CardCalendar";
 import LegendType from "../../../components/LegendType";
-import SkeletonDocument from "../../../components/SkeletonDocument";
 import Accordion from "../../../components/Accordion";
 
 import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
@@ -89,7 +88,8 @@ const Calendar = () => {
         `${apiUrl}/custom/fichajes/api/index.php?action=fetch_month_data&mes=${month}`
       );
       const data = res.data.data;
-
+      console.log(data);
+      
       const markings = {};
       Object.entries(data).forEach(([date, info]) => {
         let dots = [];
