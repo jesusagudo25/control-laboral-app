@@ -23,7 +23,9 @@ import CustomModal from "../../components/CustomModal";
 
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 
-const Document = ({ navigation }) => {
+const Document = ({ route, navigation }) => {
+
+  const { item } = route.params; // Desestructuración de los parámetros
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const { ignoreAppState } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
@@ -49,7 +51,6 @@ const Document = ({ navigation }) => {
       setHasMore(true); // Reiniciar el estado de más documentos
 
       fetchDocuments(); // Llamar a la función para cargar documentos
-      console.log("Documentos cargados");
     }, [])
   );
 
@@ -59,7 +60,7 @@ const Document = ({ navigation }) => {
 
     try {
       const response = await axios.get(
-        `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&page=${page}`
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&request=${item.id}&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
 
@@ -127,6 +128,7 @@ const Document = ({ navigation }) => {
       name,
       descripcion,
       file,
+      request: item.id,
     };
 
     //Validar que el archivo no esté vacío
@@ -213,19 +215,6 @@ const Document = ({ navigation }) => {
 
   return (
     <>
-      <Header
-        backgroundColor={theme.colors.accent}
-        barStyle="default"
-        centerComponent={{
-          text: `Documentos`,
-          style: {
-            color: theme.colors.header,
-            fontSize: 16,
-          },
-        }}
-        containerStyle={{ width: Dimensions.get("window").width }}
-        placement="center"
-      />
       <View style={[theme.container, { marginTop: 0, paddingTop: 10 }]}>
         <FlatList
           data={documents}

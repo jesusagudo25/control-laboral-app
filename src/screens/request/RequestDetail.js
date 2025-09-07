@@ -3,6 +3,8 @@ import { Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import { Card } from "@rneui/themed";
 import Accordion from "../../components/Accordion";
+import CardCalendar from "../../components/CardCalendar";
+import ButtonDocs from "../../components/ButtonDocs";
 
 const RequestDetail = ({ route, navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -70,13 +72,15 @@ const RequestDetail = ({ route, navigation }) => {
         </Card>
 
         {/* Documentos adjuntos */}
-        <Card containerStyle={theme.card}>
-          <Accordion title={`Documentos Adjuntos`} theme={theme}>
-            <Text style={{ color: theme.colors.text }}>
-              (Funcionalidad en desarrollo)
-            </Text>
-          </Accordion>
-        </Card>
+        <CardCalendar>
+          <ButtonDocs
+            title={`Documentos Adjuntos`}
+            theme={theme}
+            navigation={navigation}
+            screen="Document"
+            params={{ item }}
+          />
+        </CardCalendar>
       </View>
     </ScrollView>
   );

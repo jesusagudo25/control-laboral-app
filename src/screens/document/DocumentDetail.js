@@ -2,12 +2,70 @@ import { View, Text, ScrollView } from "react-native";
 import { useTheme } from "@rneui/themed";
 import { Icon } from "@rneui/themed";
 import { Card } from "@rneui/themed";
+import { Button } from "@rneui/themed";
+import { useState } from "react";
 
-import { Linking } from "react-native";
+import * as FileSystem from "expo-file-system";
+import { shareAsync } from "expo-sharing";
+import { Platform } from "react-native";
 
 const DocumentDetail = ({ navigation, route }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { document } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const getFileNameFromUrl = (url) => {
+    try {
+      return url.split("/").pop(); // obtiene el nombre del archivo de la URL
+    } catch {
+      return "archivo.descargado";
+    }
+  };
+
+  const downloadFile = async (url) => {
+    try {
+      setIsLoading(true);
+      const fileName = getFileNameFromUrl(url);
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      const { uri, headers } = await FileSystem.downloadAsync(url, fileUri);
+
+      save(uri, fileName, headers["Content-Type"]);
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error al descargar archivo:", error);
+    }
+  };
+
+  const save = async (uri, filename, mimetype) => {
+    if (Platform.OS === "android") {
+      const permissions =
+        await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+      if (permissions.granted) {
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        await FileSystem.StorageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          filename,
+          mimetype
+        )
+          .then(async (uri) => {
+            await FileSystem.writeAsStringAsync(uri, base64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+          })
+          .catch((e) => console.log(e));
+        setIsLoading(false);
+      } else {
+        shareAsync(uri);
+        setIsLoading(false);
+      }
+    } else {
+      shareAsync(uri);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -59,17 +117,19 @@ const DocumentDetail = ({ navigation, route }) => {
             </Text>
           </Text>
           <Text style={theme.dateRequest}>Fecha: {document.fecha}</Text>
-          <Text style={theme.descriptionRequest}>Descargar:</Text>
+          <Text style={theme.descriptionRequest}>Archivo:</Text>
           {document.url ? (
-            <Text
-              style={theme.descriptionTextRequest}
-              onPress={() => Linking.openURL(document.url)}
-            >
-              Enlace de descarga
-            </Text>
+            <Button
+              title="Descargar archivo"
+              onPress={() => downloadFile(document.url)}
+              containerStyle={theme.buttonPrimaryContainer}
+              buttonStyle={theme.buttonPrimaryStyle}
+              disabled={isLoading}
+              loading={isLoading}
+            />
           ) : (
             <Text style={theme.descriptionTextRequest}>
-              No hay enlace de descarga disponible.
+              No hay archivo disponible.
             </Text>
           )}
         </Card>

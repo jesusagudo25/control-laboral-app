@@ -232,6 +232,27 @@ const AppStack = () => {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen
+        name="Document"
+        component={Document}
+        options={{
+          headerShown: true,
+          title: "Documentos",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+      />
+      
     </Stack.Navigator>
   );
 };
