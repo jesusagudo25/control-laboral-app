@@ -118,14 +118,14 @@ const TabNavigator = () => {
   );
 };
 
-///** 3. AppStack de la App después del Login */
+///** 3. Stack de la App después del Login (Navegación Principal) */
 const AppStack = () => {
   const { theme } = useTheme();
 
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Tabs"
+        name="Inicio"
         component={TabNavigator}
         options={{ headerShown: false }}
       />

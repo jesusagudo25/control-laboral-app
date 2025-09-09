@@ -13,6 +13,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 
 import { useTheme } from "@rneui/themed";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
@@ -24,7 +25,6 @@ import CustomModal from "../../components/CustomModal";
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 
 const Document = ({ route, navigation }) => {
-
   const { item } = route.params; // Desestructuración de los parámetros
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
@@ -65,7 +65,7 @@ const Document = ({ route, navigation }) => {
       const data = response.data; // Simular la respuesta de la API
 
       console.log("Response data:", data);
-      
+
       if (
         !data ||
         !data.data ||
@@ -87,7 +87,6 @@ const Document = ({ route, navigation }) => {
       }));
 
       console.log("Documentos obtenidos:", newDocs);
-      
 
       setDocuments((prev) => [...prev, ...newDocs]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
@@ -250,50 +249,64 @@ const Document = ({ route, navigation }) => {
           <Text style={styles.uploadText}>Subir nuevo documento</Text>
         </TouchableOpacity>
       </View>
+
       <CustomModal
         isVisible={showDialog}
         onBackdropPress={() => setShowDialog(false)}
       >
-        <Dialog.Title
-          title="Nuevo Documento"
-          titleStyle={{ color: theme.colors.text }}
-        />
-        <Text>Selecciona el documento que deseas subir.</Text>
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            borderWidth: 1,
-            borderRadius: 5,
-            borderColor: "#1E6091",
-            padding: 12,
-            marginVertical: 15,
-          }}
-          onPress={handleUpload}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={200} // ajusta este valor según tu Header
         >
-          <Icon name="upload" type="font-awesome" color="#0D0D0D" size={20} />
-          <Text style={styles.uploadTextModal}>
-            {file ? `Archivo: ${name}` : "Seleccionar archivo"}
-          </Text>
-        </TouchableOpacity>
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <Dialog.Title
+              title="Nuevo Documento"
+              titleStyle={{ color: theme.colors.text }}
+            />
+            <Text>Selecciona el documento que deseas subir.</Text>
 
-        <TextInput
-          style={theme.input}
-          placeholder="Descripción"
-          placeholderTextColor={theme.colors.text}
-          multiline={true}
-          numberOfLines={4}
-          value={descripcion}
-          onChangeText={(text) => handleInputChange("descripcion", text)}
-        />
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                borderWidth: 1,
+                borderRadius: 5,
+                borderColor: "#1E6091",
+                padding: 12,
+                marginVertical: 15,
+              }}
+              onPress={handleUpload}
+            >
+              <Icon
+                name="upload"
+                type="font-awesome"
+                color="#0D0D0D"
+                size={20}
+              />
+              <Text style={styles.uploadTextModal}>
+                {file ? `Archivo: ${name}` : "Seleccionar archivo"}
+              </Text>
+            </TouchableOpacity>
 
-        <Button
-          title="Guardar"
-          containerStyle={theme.buttonPrimaryContainer}
-          buttonStyle={theme.buttonPrimaryStyle}
-          onPress={handleSave}
-          disabled={isLoading}
-          loading={isLoading}
-        />
+            <TextInput
+              style={theme.input}
+              placeholder="Descripción"
+              placeholderTextColor={theme.colors.text}
+              multiline={true}
+              numberOfLines={4}
+              value={descripcion}
+              onChangeText={(text) => handleInputChange("descripcion", text)}
+            />
+
+            <Button
+              title="Guardar"
+              containerStyle={theme.buttonPrimaryContainer}
+              buttonStyle={theme.buttonPrimaryStyle}
+              onPress={handleSave}
+              disabled={isLoading}
+              loading={isLoading}
+            />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </CustomModal>
     </>
   );

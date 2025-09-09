@@ -63,7 +63,7 @@ const SignDay = ({ navigation, route }) => {
         navigation.reset({
           index: 1,
           routes: [
-            { name: "Tabs" }, // <== entra al TabNavigator
+            { name: "Inicio" },
             {
               name: "Signing",
               params: {

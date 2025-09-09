@@ -17,7 +17,9 @@ import CustomModal from "../../components/CustomModal";
 
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
+
   const { login, isConnected, rememberMe, setRememberMe } = useAuth(); // aquí traes la función de login del contexto
+  const { apiUrl, setApiUrl, saveCompanyInfo } = useApi();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +30,6 @@ const Login = ({ navigation }) => {
   // Relacionado a url set engranaje
   const [modalVisible, setModalVisible] = useState(false);
   const [newUrl, setNewUrl] = useState("");
-  const { apiUrl, setApiUrl } = useApi(); // Hook para manejar la URL de la API
 
   const handleSave = () => {
     // Validar que la URL no esté vacía
@@ -80,6 +81,7 @@ const Login = ({ navigation }) => {
       if (response.data && response.data.access_token) {
         // Llamas a login desde el contexto con el token y el nombre de usuario
         await login(response.data.access_token);
+        await saveCompanyInfo();
         resetForm();
         navigation.navigate("Home"); // o puedes usar una navegación controlada según auth
       } else {

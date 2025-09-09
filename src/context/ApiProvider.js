@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import ApiContext from "./ApiContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const ApiProvider = ({ children }) => {
   const [apiUrl, setApiUrl] = useState(null);
+  const [companyName, setCompanyName] = useState(null);
 
   useEffect(() => {
     AsyncStorage.getItem("apiUrl").then((url) => {
@@ -19,11 +21,39 @@ const ApiProvider = ({ children }) => {
   const clearApiUrl = async () => {
     await AsyncStorage.removeItem("apiUrl");
     setApiUrl(null);
+    setCompanyName(null);
+  };
+
+  const saveCompanyInfo = async () => {
+    // get axios
+    axios
+      .get(`${apiUrl}/custom/fichajes/api/index.php?action=company_info`)
+      .then((response) => {
+        console.log("Company info response: ", response.data);
+        if (response.data && response.data.data && response.data.data.name) {
+          setCompanyName(response.data.data.name);
+        } else {
+          setCompanyName("Nombre de la empresa no disponible");
+        }
+      })
+      .catch((error) => {
+        console.log("Error fetching company info:", error);
+        setCompanyName("Nombre de la empresa no disponible");
+      });
   };
 
   return (
     <ApiContext.Provider
-      value={{ apiUrl, setApiUrl: updateApiUrl, clearApiUrl }}
+      value={{
+        //Attr
+        apiUrl,
+        companyName,
+
+        //Methods
+        setApiUrl: updateApiUrl,
+        clearApiUrl,
+        saveCompanyInfo,
+      }}
     >
       {children}
     </ApiContext.Provider>
