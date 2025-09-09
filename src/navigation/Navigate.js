@@ -26,6 +26,7 @@ import SignDay from "../screens/home/signing/SignDay";
 import RequestDetail from "../screens/request/RequestDetail";
 import DocumentDetail from "../screens/document/DocumentDetail";
 import Notification from "../screens/home/notification/Notification";
+import RequestCreate from "../screens/request/RequestCreate";
 
 // Importar los componentes de navegación
 const Stack = createStackNavigator();
@@ -94,16 +95,7 @@ const TabNavigator = () => {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="Document"
-        component={Document}
-        options={{
-          tabBarLabel: "Documentos",
-          tabBarIcon: ({ color }) => (
-            <Icon name="folder" type="font-awesome" color={color} />
-          ),
-        }}
-      /> */}
+
       <Tab.Screen
         name="More"
         component={More}
@@ -171,6 +163,26 @@ const AppStack = () => {
           headerTitleAlign: "center",
         }}
         component={RequestDetail}
+      />
+
+      <Stack.Screen
+        name="RequestCreate"
+        options={{
+          headerShown: true,
+          title: "Crear Solicitud",
+          headerStyle: {
+            backgroundColor: theme.colors.accent,
+            height: 45,
+          },
+          headerTintColor: theme.colors.header,
+          headerTitleStyle: {
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "ultralight",
+          },
+          headerTitleAlign: "center",
+        }}
+        component={RequestCreate}
       />
 
       <Stack.Screen
@@ -252,7 +264,6 @@ const AppStack = () => {
           headerTitleAlign: "center",
         }}
       />
-      
     </Stack.Navigator>
   );
 };

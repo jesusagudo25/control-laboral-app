@@ -41,6 +41,8 @@ const Document = ({ route, navigation }) => {
 
   const [hasMore, setHasMore] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [showDialogInfo, setShowDialogInfo] = useState(false);
+  const [message, setMessage] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -59,6 +61,10 @@ const Document = ({ route, navigation }) => {
     setIsLoading(true);
 
     try {
+      console.log(
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&request=${item.id}&page=${page}`
+      );
+
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_documents&request=${item.id}&page=${page}`
       );
@@ -150,16 +156,14 @@ const Document = ({ route, navigation }) => {
         params
       );
       if (response.data.success) {
-        setDocuments((prev) => [
-          ...prev,
-          {
-            id: response.data.data.file_id, // ID del archivo subido
-            nombre: name.split(".")[0], // Nombre del archivo sin extensión
-            descripcion,
-            fecha: new Date().toLocaleDateString(), // Fecha actual
-            url: response.data.data.document, // URL del archivo subido
-          },
-        ]); // Agregar el nuevo documento a la lista
+        // Si la subida fue exitosa, recargar los documentos
+        setDocuments([]);
+        setPage(1);
+        setHasMore(true);
+        fetchDocuments();
+
+        setMessage("Documento subido con éxito.");
+        setShowDialogInfo(true);
 
         setIsLoading(false); // Ocultar el indicador de carga
         handleReset(); // Limpiar el formulario
@@ -263,7 +267,10 @@ const Document = ({ route, navigation }) => {
               title="Nuevo Documento"
               titleStyle={{ color: theme.colors.text }}
             />
-            <Text>Selecciona el documento que deseas subir.</Text>
+
+            <Text style={[theme.label, { marginTop: 10 }]}>
+              Nombre del archivo
+            </Text>
 
             <TouchableOpacity
               style={{
@@ -272,7 +279,7 @@ const Document = ({ route, navigation }) => {
                 borderRadius: 5,
                 borderColor: "#1E6091",
                 padding: 12,
-                marginVertical: 15,
+                marginBottom: 15,
               }}
               onPress={handleUpload}
             >
@@ -287,6 +294,7 @@ const Document = ({ route, navigation }) => {
               </Text>
             </TouchableOpacity>
 
+            <Text style={theme.label}>Descripción</Text>
             <TextInput
               style={theme.input}
               placeholder="Descripción"
@@ -307,6 +315,15 @@ const Document = ({ route, navigation }) => {
             />
           </ScrollView>
         </KeyboardAvoidingView>
+      </CustomModal>
+
+      {/* Modal de mensajes */}
+      <CustomModal
+        isVisible={showDialogInfo}
+        onBackdropPress={() => setShowDialogInfo(false)}
+      >
+        <Dialog.Title title="Aviso" />
+        <Text>{message}</Text>
       </CustomModal>
     </>
   );

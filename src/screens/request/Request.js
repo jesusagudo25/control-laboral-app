@@ -1,21 +1,23 @@
 import { Text } from "@rneui/base";
 import React from "react";
-import { View, Dimensions, ScrollView } from "react-native";
-import { FlatList, ActivityIndicator } from "react-native";
-import { Header, Skeleton } from "@rneui/themed";
+import { View, Dimensions } from "react-native";
+import { FlatList } from "react-native";
+import { Header } from "@rneui/themed";
 import { TouchableOpacity } from "react-native";
 
-import { Card, Button, Icon } from "@rneui/themed";
-import { useEffect, useState } from "react";
+import { Card, Icon, Dialog } from "@rneui/themed";
+import { useState } from "react";
 import { useTheme } from "@rneui/themed";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import SkeletonRequest from "../../components/SkeletonRequest";
+import CustomModal from "../../components/CustomModal";
 
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 
-const Request = ({ navigation }) => {
+const Request = ({ route, navigation }) => {
+  const { newRequest } = route.params || {}; // Obtener el parámetro newRequest si existe
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
 
@@ -23,6 +25,9 @@ const Request = ({ navigation }) => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [message, setMessage] = useState("");
 
   const fetchSolicitudes = async () => {
     if (isLoading || !hasMore) return;
@@ -61,8 +66,6 @@ const Request = ({ navigation }) => {
         ...item,
       }));
 
-      console.log("Solicitudes cargadas:", solicitudesMapped);
-
       setSolicitudes((prev) => [...prev, ...solicitudesMapped]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
       setPage((prev) => prev + 1);
@@ -80,8 +83,20 @@ const Request = ({ navigation }) => {
       setHasMore(true); // Reiniciar hasMore al cargar la pantalla
 
       fetchSolicitudes(); // Llamar a la función para cargar solicitudes
-      console.log("Solicitudes cargadas");
     }, [])
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route.params?.newRequest) {
+        // hacer lo que necesites (ej: recargar solicitudes)
+        setMessage("Solicitud creada con éxito.");
+        setShowDialog(true);
+
+        // limpiar el parámetro
+        navigation.setParams({ newRequest: undefined });
+      }
+    }, [route.params?.newRequest])
   );
 
   const renderFooter = () => {
@@ -117,11 +132,12 @@ const Request = ({ navigation }) => {
               Ref. {item.referencia}
             </Text>
             <Text style={{ marginBottom: 2 }}>Tipo: {item.tipo}</Text>
+            <Text style={{ marginBottom: 2 }}>
+              Fecha de creación: {item.fecha} / Días: {item.dias_utilizados}
+            </Text>
             <Text numberOfLines={2} style={{ color: "#555", marginBottom: 2 }}>
               Descripción: {item.descripcion}
             </Text>
-            <Text style={{ marginBottom: 2 }}>Fecha de creación: {item.fecha} / Días: {item.dias_utilizados}</Text>
-
 
             <Text
               style={{
@@ -144,7 +160,6 @@ const Request = ({ navigation }) => {
   const verDetalle = (item) => {
     // Aquí navegas a la pantalla de detalle
     navigation.navigate("RequestDetail", { item });
-    console.log("Detalle de", item.referencia);
   };
 
   return (
@@ -191,6 +206,37 @@ const Request = ({ navigation }) => {
           }
         />
       </View>
+
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          backgroundColor: theme.colors.accent,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 3,
+          elevation: 5,
+        }}
+        onPress={() => navigation.navigate("RequestCreate")}
+      >
+        <Icon name="plus" type="font-awesome" color="#fff" size={24} />
+      </TouchableOpacity>
+
+      {/* Modal de mensajes */}
+      <CustomModal
+        isVisible={showDialog}
+        onBackdropPress={() => setShowDialog(false)}
+      >
+        <Dialog.Title title="Aviso" />
+        <Text>{message}</Text>
+      </CustomModal>
     </>
   );
 };

@@ -131,7 +131,6 @@ const Login = ({ navigation }) => {
 
       // Cargar la URL de la API desde AsyncStorage al iniciar
       const storedApiUrl = await AsyncStorage.getItem("apiUrl");
-      console.log("Stored API URL:", storedApiUrl);
 
       if (storedApiUrl) {
         setApiUrl(storedApiUrl);
@@ -140,7 +139,6 @@ const Login = ({ navigation }) => {
 
       // Cargar las últimas credenciales si "Recordarme" está activado
       const storedRememberMe = await AsyncStorage.getItem("rememberMe");
-      console.log("Stored rememberMe:", storedRememberMe);
       if (storedRememberMe === "true") {
         saveRememberMe(true);
         const lastUsername = await AsyncStorage.getItem("lastUsername");
@@ -226,6 +224,7 @@ const Login = ({ navigation }) => {
           />
         </View>
 
+        <Text style={theme.label}>Usuario</Text>
         <TextInput
           style={theme.input}
           placeholder="Ingresa tu usuario"
@@ -233,6 +232,8 @@ const Login = ({ navigation }) => {
           placeholderTextColor={theme.colors.text}
           value={username}
         />
+
+        <Text style={theme.label}>Contraseña</Text>
         <TextInput
           style={theme.input}
           placeholder="Ingresa tu contraseña"

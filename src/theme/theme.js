@@ -76,6 +76,11 @@ const theme = createTheme({
     color: "#000",
     backgroundColor: "#fff",
   },
+  label: {
+    marginBottom: 8,
+    color: "#000",
+    fontWeight: "bold",
+  },
   buttonPrimaryContainer: {
     marginTop: 15,
     marginBottom: 5,
