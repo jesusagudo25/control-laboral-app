@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Button, Image, Dialog, Icon, CheckBox } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
@@ -18,12 +19,13 @@ import CustomModal from "../../components/CustomModal";
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
 
-  const { login, isConnected, rememberMe, setRememberMe } = useAuth(); // aquí traes la función de login del contexto
+  const { login, isConnected, rememberMe, saveRememberMe } = useAuth();
   const { apiUrl, setApiUrl, saveCompanyInfo } = useApi();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -80,7 +82,7 @@ const Login = ({ navigation }) => {
       const response = await authenticateUser(username, password);
       if (response.data && response.data.access_token) {
         // Llamas a login desde el contexto con el token y el nombre de usuario
-        await login(response.data.access_token);
+        await login(response.data.access_token, rememberMe, username, password);
         await saveCompanyInfo();
         resetForm();
         navigation.navigate("Home"); // o puedes usar una navegación controlada según auth
@@ -116,6 +118,7 @@ const Login = ({ navigation }) => {
 
   useEffect(() => {
     (async () => {
+      setLoadingForm(true);
       const token = await registerForPushNotificationsAsync();
       // guardar en el almacenamiento local para usarlo más tarde
       if (token) {
@@ -128,12 +131,40 @@ const Login = ({ navigation }) => {
 
       // Cargar la URL de la API desde AsyncStorage al iniciar
       const storedApiUrl = await AsyncStorage.getItem("apiUrl");
+      console.log("Stored API URL:", storedApiUrl);
+
       if (storedApiUrl) {
         setApiUrl(storedApiUrl);
         setNewUrl(storedApiUrl); // Inicializar el campo de entrada con la URL almacenada
       }
+
+      // Cargar las últimas credenciales si "Recordarme" está activado
+      const storedRememberMe = await AsyncStorage.getItem("rememberMe");
+      console.log("Stored rememberMe:", storedRememberMe);
+      if (storedRememberMe === "true") {
+        saveRememberMe(true);
+        const lastUsername = await AsyncStorage.getItem("lastUsername");
+        const lastPassword = await AsyncStorage.getItem("lastPassword");
+        if (lastUsername) setUsername(lastUsername);
+        if (lastPassword) setPassword(lastPassword);
+      } else {
+        saveRememberMe(false);
+        setUsername("");
+        setPassword("");
+      }
+      setLoadingForm(false);
     })();
   }, []);
+
+  if (loadingForm) {
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#f7941e"
+        style={{ flex: 1, justifyContent: "center" }}
+      />
+    );
+  }
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
@@ -227,7 +258,7 @@ const Login = ({ navigation }) => {
           }}
           textStyle={{ color: theme.colors.text }}
           checked={rememberMe}
-          onPress={() => setRememberMe(!rememberMe)}
+          onPress={() => saveRememberMe(!rememberMe)}
         />
 
         {/* Modals */}

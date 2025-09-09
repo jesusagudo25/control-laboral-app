@@ -7,13 +7,9 @@ const ApiProvider = ({ children }) => {
   const [apiUrl, setApiUrl] = useState(null);
   const [companyName, setCompanyName] = useState(null);
 
-  useEffect(() => {
-    AsyncStorage.getItem("apiUrl").then((url) => {
-      if (url) setApiUrl(url);
-    });
-  }, []);
-
   const updateApiUrl = async (newUrl) => {
+    console.log("Setting new API URL:", newUrl);
+    
     await AsyncStorage.setItem("apiUrl", newUrl);
     setApiUrl(newUrl);
   };
@@ -41,6 +37,12 @@ const ApiProvider = ({ children }) => {
         setCompanyName("Nombre de la empresa no disponible");
       });
   };
+
+  useEffect(() => {
+    AsyncStorage.getItem("apiUrl").then((url) => {
+      if (url) setApiUrl(url);
+    });
+  }, []);
 
   return (
     <ApiContext.Provider
