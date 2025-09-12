@@ -166,12 +166,7 @@ const RequestCreate = ({ navigation }) => {
 
         {/* Tipo de solicitud */}
         <Text style={theme.label}>Tipo de solicitud</Text>
-        <View
-          style={[
-            theme.input,
-            { padding: 0, margin: 0, height: 50, justifyContent: "center" },
-          ]}
-        >
+        <View style={theme.input}>
           <Picker
             selectedValue={type}
             onValueChange={(value) => setType(value)}
@@ -206,12 +201,7 @@ const RequestCreate = ({ navigation }) => {
 
         {/* Jornada inicio */}
         <Text style={theme.label}>Jornada de inicio</Text>
-        <View
-          style={[
-            theme.input,
-            { padding: 0, margin: 0, height: 50, justifyContent: "center" },
-          ]}
-        >
+        <View style={theme.input}>
           <Picker
             selectedValue={startShift}
             onValueChange={(value) => setStartShift(value)}
@@ -245,12 +235,7 @@ const RequestCreate = ({ navigation }) => {
 
         {/* Jornada fin */}
         <Text style={theme.label}>Jornada de fin</Text>
-        <View
-          style={[
-            theme.input,
-            { padding: 0, margin: 0, height: 50, justifyContent: "center" },
-          ]}
-        >
+        <View style={theme.input}>
           <Picker
             selectedValue={endShift}
             onValueChange={(value) => setEndShift(value)}
@@ -264,12 +249,7 @@ const RequestCreate = ({ navigation }) => {
 
         {/* Revisor */}
         <Text style={theme.label}>Revisor</Text>
-        <View
-          style={[
-            theme.input,
-            { padding: 0, margin: 0, height: 50, justifyContent: "center" },
-          ]}
-        >
+        <View style={theme.input}>
           <Picker
             selectedValue={reviewer}
             onValueChange={(value) => setReviewer(value)}

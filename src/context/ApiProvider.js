@@ -8,8 +8,6 @@ const ApiProvider = ({ children }) => {
   const [companyName, setCompanyName] = useState(null);
 
   const updateApiUrl = async (newUrl) => {
-    console.log("Setting new API URL:", newUrl);
-    
     await AsyncStorage.setItem("apiUrl", newUrl);
     setApiUrl(newUrl);
   };

@@ -14,6 +14,7 @@ import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import { useTheme } from "@rneui/themed";
 import useAuth from "../../hooks/useAuth"; // Importar el hook useAuth
@@ -23,6 +24,7 @@ import SkeletonDocument from "../../components/SkeletonDocument";
 import CustomModal from "../../components/CustomModal";
 
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
+import CustomModalScroll from "../../components/CustomModalScroll";
 
 const Document = ({ route, navigation }) => {
   const { item } = route.params; // Desestructuración de los parámetros
@@ -70,8 +72,6 @@ const Document = ({ route, navigation }) => {
       );
       const data = response.data; // Simular la respuesta de la API
 
-      console.log("Response data:", data);
-
       if (
         !data ||
         !data.data ||
@@ -91,8 +91,6 @@ const Document = ({ route, navigation }) => {
         fecha: item.date.split(" ")[0],
         url: item.document,
       }));
-
-      console.log("Documentos obtenidos:", newDocs);
 
       setDocuments((prev) => [...prev, ...newDocs]);
       setHasMore(data.total_pages > page); // Cambia esto para simular más datos
@@ -254,15 +252,21 @@ const Document = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <CustomModal
+      {/* Modal para subir nuevo documento */}
+      <CustomModalScroll
         isVisible={showDialog}
         onBackdropPress={() => setShowDialog(false)}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={200} // ajusta este valor según tu Header
+          keyboardVerticalOffset={200}
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <KeyboardAwareScrollView
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
             <Dialog.Title
               title="Nuevo Documento"
               titleStyle={{ color: theme.colors.text }}
@@ -313,9 +317,9 @@ const Document = ({ route, navigation }) => {
               disabled={isLoading}
               loading={isLoading}
             />
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </KeyboardAvoidingView>
-      </CustomModal>
+      </CustomModalScroll>
 
       {/* Modal de mensajes */}
       <CustomModal
@@ -333,6 +337,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 5, // agrega respiro interno
   },
   info: {
     marginLeft: 10,
