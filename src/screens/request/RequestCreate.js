@@ -7,13 +7,15 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Button, Image, Dialog, Divider } from "@rneui/themed";
+import { Button, Dialog } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 import axios from "axios";
 import CustomModal from "../../components/CustomModal";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 const RequestCreate = ({ navigation }) => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
@@ -160,128 +162,202 @@ const RequestCreate = ({ navigation }) => {
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
       <View style={theme.container}>
-        <Text style={[theme.textSecondary, { marginBottom: 20 }]}>
-          Completa los siguientes datos para crear una nueva solicitud.
-        </Text>
-
-        {/* Tipo de solicitud */}
-        <Text style={theme.label}>Tipo de solicitud</Text>
-        <View style={theme.input}>
-          <Picker
-            selectedValue={type}
-            onValueChange={(value) => setType(value)}
-            style={{ color: "#000" }} // solo color de texto aquí
-            dropdownIconColor="#1E6091" // opcional: cambia el color del ícono ▼
+        <View>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={200}
           >
-            {types.map((t) => (
-              <Picker.Item key={t.id} label={t.name} value={t.id} />
-            ))}
-          </Picker>
+            <KeyboardAwareScrollView
+              enableOnAndroid={true}
+              extraScrollHeight={20}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <Text style={[theme.textSecondary, { marginBottom: 20 }]}>
+                Completa los siguientes datos para crear una nueva solicitud.
+              </Text>
+
+              {/* Tipo de solicitud */}
+              <Text style={theme.label}>Tipo de solicitud</Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderColor: "#1E6091", // Color del borde
+                  overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
+                  height: 45, // Define la altura del contenedor
+                  justifyContent: "center", // Centra el contenido dentro del contenedor
+                  paddingVertical: 0, // Elimina padding extra
+                  marginVertical: 10, // Espacio entre el Picker y el TextInput
+                }}
+              >
+                <Picker
+                  selectedValue={type}
+                  onValueChange={(value) => setType(value)}
+                  style={{ width: "100%", height: 55 }}
+                  itemStyle={{
+                    height: 55,
+                    transform: [{ scaleX: 1 }, { scaleY: 1 }],
+                  }}
+                >
+                  {types.map((t) => (
+                    <Picker.Item key={t.id} label={t.name} value={t.id} />
+                  ))}
+                </Picker>
+              </View>
+
+              {/* Fecha inicio */}
+              <Text style={theme.label}>Fecha de inicio</Text>
+              <TouchableOpacity
+                style={theme.input}
+                onPress={() => setShowInicioPicker(true)}
+              >
+                <Text>{formatDate(startDate)}</Text>
+              </TouchableOpacity>
+              {showInicioPicker && (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    setShowInicioPicker(false);
+                    if (date) setStartDate(date);
+                  }}
+                />
+              )}
+
+              {/* Jornada inicio */}
+              <Text style={theme.label}>Jornada de inicio</Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderColor: "#1E6091", // Color del borde
+                  overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
+                  height: 45, // Define la altura del contenedor
+                  justifyContent: "center", // Centra el contenido dentro del contenedor
+                  paddingVertical: 0, // Elimina padding extra
+                  marginVertical: 10, // Espacio entre el Picker y el TextInput
+                }}
+              >
+                <Picker
+                  selectedValue={startShift}
+                  onValueChange={(value) => setStartShift(value)}
+                  style={{ width: "100%", height: 55 }}
+                  itemStyle={{
+                    height: 55,
+                    transform: [{ scaleX: 1 }, { scaleY: 1 }],
+                  }}
+                >
+                  <Picker.Item label="Mañana" value="morning" />
+                  <Picker.Item label="Tarde" value="afternoon" />
+                </Picker>
+              </View>
+
+              {/* Fecha fin */}
+              <Text style={theme.label}>Fecha de fin</Text>
+              <TouchableOpacity
+                style={theme.input}
+                onPress={() => setShowFinPicker(true)}
+              >
+                <Text>{formatDate(endDate)}</Text>
+              </TouchableOpacity>
+              {showFinPicker && (
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    setShowFinPicker(false);
+                    if (date) setEndDate(date);
+                  }}
+                />
+              )}
+
+              {/* Jornada fin */}
+              <Text style={theme.label}>Jornada de fin</Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderColor: "#1E6091", // Color del borde
+                  overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
+                  height: 45, // Define la altura del contenedor
+                  justifyContent: "center", // Centra el contenido dentro del contenedor
+                  paddingVertical: 0, // Elimina padding extra
+                  marginVertical: 10, // Espacio entre el Picker y el TextInput
+                }}
+              >
+                <Picker
+                  selectedValue={endShift}
+                  onValueChange={(value) => setEndShift(value)}
+                  style={{ width: "100%", height: 55 }}
+                  itemStyle={{
+                    height: 55,
+                    transform: [{ scaleX: 1 }, { scaleY: 1 }],
+                  }}
+                >
+                  <Picker.Item label="Mañana" value="morning" />
+                  <Picker.Item label="Tarde" value="afternoon" />
+                </Picker>
+              </View>
+
+              {/* Revisor */}
+              <Text style={theme.label}>Revisor</Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderColor: "#1E6091", // Color del borde
+                  overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
+                  height: 45, // Define la altura del contenedor
+                  justifyContent: "center", // Centra el contenido dentro del contenedor
+                  paddingVertical: 0, // Elimina padding extra
+                  marginVertical: 10, // Espacio entre el Picker y el TextInput
+                }}
+              >
+                <Picker
+                  selectedValue={reviewer}
+                  onValueChange={(value) => setReviewer(value)}
+                  style={{ width: "100%", height: 55 }}
+                  itemStyle={{
+                    height: 55,
+                    transform: [{ scaleX: 1 }, { scaleY: 1 }],
+                  }}
+                >
+                  {reviewers.map((r) => (
+                    <Picker.Item
+                      key={r.id}
+                      label={r.name.trim()}
+                      value={r.id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+
+              {/* Descripción */}
+              <Text style={theme.label}>Descripción</Text>
+              <TextInput
+                style={[theme.input, { height: 100, textAlignVertical: "top" }]}
+                placeholder="Escribe el motivo de la solicitud"
+                multiline
+                numberOfLines={4}
+                value={description}
+                onChangeText={setDescription}
+              />
+
+              {/* Botón */}
+              <Button
+                title="Crear Solicitud"
+                containerStyle={theme.buttonPrimaryContainer}
+                buttonStyle={theme.buttonPrimaryStyle}
+                loading={loading}
+                onPress={handleSubmit}
+                disabled={loading}
+              />
+            </KeyboardAwareScrollView>
+          </KeyboardAvoidingView>
         </View>
-
-        {/* Fecha inicio */}
-        <Text style={theme.label}>Fecha de inicio</Text>
-        <TouchableOpacity
-          style={theme.input}
-          onPress={() => setShowInicioPicker(true)}
-        >
-          <Text>{formatDate(startDate)}</Text>
-        </TouchableOpacity>
-        {showInicioPicker && (
-          <DateTimePicker
-            value={startDate}
-            mode="date"
-            display="default"
-            onChange={(event, date) => {
-              setShowInicioPicker(false);
-              if (date) setStartDate(date);
-            }}
-          />
-        )}
-
-        {/* Jornada inicio */}
-        <Text style={theme.label}>Jornada de inicio</Text>
-        <View style={theme.input}>
-          <Picker
-            selectedValue={startShift}
-            onValueChange={(value) => setStartShift(value)}
-            style={{ color: "#000" }} // solo color de texto aquí
-            dropdownIconColor="#1E6091" // opcional: cambia el color del ícono ▼
-          >
-            <Picker.Item label="Mañana" value="morning" />
-            <Picker.Item label="Tarde" value="afternoon" />
-          </Picker>
-        </View>
-
-        {/* Fecha fin */}
-        <Text style={theme.label}>Fecha de fin</Text>
-        <TouchableOpacity
-          style={theme.input}
-          onPress={() => setShowFinPicker(true)}
-        >
-          <Text>{formatDate(endDate)}</Text>
-        </TouchableOpacity>
-        {showFinPicker && (
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="default"
-            onChange={(event, date) => {
-              setShowFinPicker(false);
-              if (date) setEndDate(date);
-            }}
-          />
-        )}
-
-        {/* Jornada fin */}
-        <Text style={theme.label}>Jornada de fin</Text>
-        <View style={theme.input}>
-          <Picker
-            selectedValue={endShift}
-            onValueChange={(value) => setEndShift(value)}
-            style={{ color: "#000" }} // solo color de texto aquí
-            dropdownIconColor="#1E6091" // opcional: cambia el color del ícono ▼
-          >
-            <Picker.Item label="Mañana" value="morning" />
-            <Picker.Item label="Tarde" value="afternoon" />
-          </Picker>
-        </View>
-
-        {/* Revisor */}
-        <Text style={theme.label}>Revisor</Text>
-        <View style={theme.input}>
-          <Picker
-            selectedValue={reviewer}
-            onValueChange={(value) => setReviewer(value)}
-            style={{ color: "#000" }} // solo color de texto aquí
-            dropdownIconColor="#1E6091" // opcional: cambia el color del ícono ▼
-          >
-            {reviewers.map((r) => (
-              <Picker.Item key={r.id} label={r.name.trim()} value={r.id} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* Descripción */}
-        <Text style={theme.label}>Descripción</Text>
-        <TextInput
-          style={[theme.input, { height: 100, textAlignVertical: "top" }]}
-          placeholder="Escribe el motivo de la solicitud"
-          multiline
-          numberOfLines={4}
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        {/* Botón */}
-        <Button
-          title="Crear Solicitud"
-          containerStyle={theme.buttonPrimaryContainer}
-          buttonStyle={theme.buttonPrimaryStyle}
-          loading={loading}
-          onPress={handleSubmit}
-          disabled={loading}
-        />
 
         {/* Modal de mensajes */}
         <CustomModal

@@ -1,5 +1,3 @@
-import React from "react";
-import { View } from "react-native";
 import { Dialog, useTheme } from "@rneui/themed";
 
 const CustomModalScroll = ({ isVisible, onBackdropPress, children }) => {
