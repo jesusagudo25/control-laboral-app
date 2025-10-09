@@ -19,7 +19,6 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "NSPhotoLibraryUsageDescription": "This app requires access to your photo library.",
         "NSLocationWhenInUseUsageDescription": "This app requires access to your location to provide location-based features.",
-        "NSUserTrackingUsageDescription": "This app uses your data to provide personalized experiences.",
         "UIBackgroundModes": [
           "fetch",
           "remote-notification",
