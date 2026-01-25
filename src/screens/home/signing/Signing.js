@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { Text, useTheme, Button } from "@rneui/themed";
+import { View, ScrollView } from "react-native";
+import { Text, useTheme } from "@rneui/themed";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; // Importar el locale español
@@ -95,10 +95,8 @@ const Signing = ({ route, navigation }) => {
 
         setTurnData(turn);
 
-        console.log(response.data.data.horario[day]);
         const count = Object.keys(turn).length;
         setCountTurnData(count);
-        console.log(count);
 
         //Obtener el total de horas, en base a los turnos
         let totalHours = 0;

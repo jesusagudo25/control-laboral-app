@@ -34,19 +34,21 @@ const Login = ({ navigation }) => {
   const [newUrl, setNewUrl] = useState("");
 
   const handleSave = () => {
+    const newUrlClear = newUrl.trim().toLowerCase();
+
     // Validar que la URL no esté vacía
-    if (!newUrl.trim()) {
+    if (!newUrlClear) {
       showErrorMessage("Por favor, ingresa una URL válida.");
       return;
     }
 
     // Validar que la URL tenga el formato correcto
-    if (!isValidUrl(newUrl)) {
+    if (!isValidUrl(newUrlClear)) {
       showErrorMessage("Por favor, ingresa una URL válida.");
       return;
     }
 
-    setApiUrl(newUrl);
+    setApiUrl(newUrlClear);
     setModalVisible(false);
   };
 

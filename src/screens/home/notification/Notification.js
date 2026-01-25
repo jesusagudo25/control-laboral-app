@@ -33,7 +33,6 @@ const Notification = () => {
         `${apiUrl}/custom/fichajes/api/index.php?action=user_notifications&page=${page}`
       );
       const data = response.data; // Simular la respuesta de la API
-      console.log("Response data:", data);
 
       if (!data || !data.data || data.success === false || !data.data.length) {
         setHasMore(false);

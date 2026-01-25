@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, Dimensions, TouchableOpacity, ScrollView } from "react-native";
+import { View, Dimensions, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Header, Icon, Image, useTheme } from "@rneui/themed";
 
 import axios from "axios";
@@ -87,6 +87,11 @@ const Home = ({ navigation }) => {
           console.log(response.data.data.status);
         } catch (error) {
           console.log(error);
+          logout();
+          Alert.alert(
+            "Error",
+            "No se pudo obtener la información del usuario. Por favor, inicie sesión de nuevo."
+          );
         }
       };
 
