@@ -58,7 +58,6 @@ const Home = ({ navigation }) => {
           action: "user_token",
           expo_token: token,
         });
-        console.log("Token enviado al servidor:", token);
       }
     } catch (error) {
       console.error("Error al enviar el token al servidor:", error);
@@ -84,7 +83,6 @@ const Home = ({ navigation }) => {
           setNameShown(`¡Hola, ${userName}!`);
           setWorkingDayStatus(response.data.data.status);
           setCountNotifications(response.data.data.notifications);
-          console.log(response.data.data.status);
         } catch (error) {
           console.log(error);
           logout();

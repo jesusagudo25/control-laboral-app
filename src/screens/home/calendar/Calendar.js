@@ -88,7 +88,6 @@ const Calendar = () => {
         `${apiUrl}/custom/fichajes/api/index.php?action=fetch_month_data&mes=${month}`
       );
       const data = res.data.data;
-      console.log(data);
       
       const markings = {};
       Object.entries(data).forEach(([date, info]) => {

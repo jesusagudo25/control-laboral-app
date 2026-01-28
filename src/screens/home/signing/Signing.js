@@ -9,6 +9,7 @@ import "dayjs/locale/es"; // Importar el locale español
 import SkeletonSigning from "../../../components/SkeletonSigning";
 import useAuth from "../../../hooks/useAuth";
 import CardSigning from "../../../components/CardSigning";
+import CardSelectTurn from "../../../components/CardSelectTurn";
 import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la API
 
 dayjs.locale("es"); // Establece español como idioma predeterminado
@@ -16,7 +17,7 @@ dayjs.locale("es"); // Establece español como idioma predeterminado
 const dayName = [
   "sunday", // Spanish: domingo
   "monday", // Spanish: lunes
-  "tuesday",
+  "tuesday",  
   "wednesday",
   "thursday",
   "friday",
@@ -26,12 +27,10 @@ const dayName = [
 const Signing = ({ route, navigation }) => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
-  const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
+  const { userName, logout } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
 
   const { message, type } = route.params || {}; // Desestructuración de los parámetros
-
   const [motives, setMotives] = useState([]);
-
   const [currentDate, setCurrentDate] = useState(
     dayjs().format("DD [de] MMMM [de] YYYY")
   );
@@ -40,7 +39,50 @@ const Signing = ({ route, navigation }) => {
   const [totalHours, setTotalHours] = useState(0);
   const [actions, setActions] = useState([]);
 
-  const getUserTurn = async () => {
+  const [isUserMultipleTurn, setIsUserMultipleTurn] = useState(false);
+  const [selectedTurn, setSelectedTurn] = useState(null);
+  const [isLoadingTurn, setIsLoadingTurn] = useState(false);
+  const [multipleTurnsData, setMultipleTurnsData] = useState([]);
+  
+  //Debemos crear una funcion previa a getUserTurn para obtener si el usuario tiene un turno multiple, para que haga la seleccion.
+  //Esta funcion previa va a llamar el mismo endpoint pero solamente validara si existe el campo: "multiples": true
+  //Si no existe o es false, se procede a llamar getUserTurn normalmente. Si existe, se debe mostrar un modal para que el usuario seleccione el turno.
+  //Se utiliza el mismo endpoint por una mala practica del backend, que no separa las funcionalidades en diferentes endpoints.
+  //la funcion se llamara: getUserTurnPreliminary
+
+  const getUserTurnPreliminary = async () => {
+    const dayWeek = new Date().getDay();
+    try {
+      const response = await axios.get(
+        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`
+      );
+      const isMultiple = response.data.data.multiples || false;
+      if (isMultiple) {
+        //Mostrar modal para seleccionar turno
+        setIsUserMultipleTurn(true);
+        // Guardar los datos de los turnos múltiples
+        setMultipleTurnsData(response.data.data.horarios || []);
+      } else {
+        getUserTurn();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSelectTurn = async (selectedTurnData) => {
+    setIsLoadingTurn(true);
+    setSelectedTurn(selectedTurnData);
+    // Aquí puedes procesesar el turno seleccionado
+    // Por ejemplo, hacer una llamada a la API para confirmar la selección
+    console.log("Turno seleccionado:", selectedTurnData);
+    
+    // Después de seleccionar, llamar a getUserTurn para cargar los datos del turno
+    // setIsLoadingTurn(false);
+    // setIsUserMultipleTurn(false);
+  };
+
+  /* const getUserTurn = async () => {
     const dayWeek = new Date().getDay();
     const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
     let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
@@ -49,6 +91,8 @@ const Signing = ({ route, navigation }) => {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`
       );
+
+      console.log("User Turn Response:", response.data);
 
       const turn = response.data.data.horario[day];
       const marks = response.data.data.marks[day];
@@ -133,15 +177,16 @@ const Signing = ({ route, navigation }) => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }; */
 
+  /*
   const getUserButtons = async () => {
     try {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_buttons`
       );
       let actionsBucket = [];
-      console.log(response.data.data);
+      console.log(response.data);
       if (response.data?.data?.Firma) {
         actionsBucket.push(response.data.data.Firma.action);
       }
@@ -180,21 +225,20 @@ const Signing = ({ route, navigation }) => {
     } catch (error) {
       console.log(error);
     }
-  };
+  };*/
 
-  /* Control Laboral App */
   useFocusEffect(
     useCallback(() => {
-      getUserTurn();
-      getUserButtons();
+      getUserTurnPreliminary();
+      //getUserButtons();
     }, [])
   );
 
   //Si se recibe una actualizacion por parametros, se actualiza el estado de las funciones: getUserTurn y getUserButtons
   useEffect(() => {
     if (message) {
-      getUserTurn();
-      getUserButtons();
+      getUserTurnPreliminary();
+      //getUserButtons();
     }
   }, [message, type]);
 
@@ -237,8 +281,15 @@ const Signing = ({ route, navigation }) => {
             actions={actions}
             navigation={navigation}
             motives={motives}
+          />  
+        ) : isUserMultipleTurn ? (
+          <CardSelectTurn
+            turnData={multipleTurnsData}
+            onSelectTurn={handleSelectTurn}
+            isLoading={isLoadingTurn}
           />
-        ) : (
+        ) : 
+        (
           <SkeletonSigning />
         )}
       </View>

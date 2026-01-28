@@ -23,7 +23,6 @@ const ApiProvider = ({ children }) => {
     axios
       .get(`${apiUrl}/custom/fichajes/api/index.php?action=company_info`)
       .then((response) => {
-        console.log("Company info response: ", response.data);
         if (response.data && response.data.data && response.data.data.name) {
           setCompanyName(response.data.data.name);
         } else {
