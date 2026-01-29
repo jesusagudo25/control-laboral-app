@@ -13,6 +13,7 @@ const CardSigning = ({
   actions,
   navigation,
   motives,
+  dateUserTurn,
 }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
@@ -58,6 +59,7 @@ const CardSigning = ({
           actions={actions}
           navigation={navigation}
           motives={motives}
+          dateUserTurn={dateUserTurn}
         />
       </View>
     </Card>

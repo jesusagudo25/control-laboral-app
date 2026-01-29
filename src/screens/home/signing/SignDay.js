@@ -2,9 +2,6 @@ import React, { useRef, useState } from "react";
 import {
   StyleSheet,
   View,
-  Image,
-  TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { Dialog } from "@rneui/themed";
 import SignatureCanvas from "react-native-signature-canvas";
@@ -17,7 +14,7 @@ import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la AP
 const SignDay = ({ navigation, route }) => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
 
-  const { fichaje, description, motivo_pausa, long, lat } = route.params || {}; // Desestructuración de los parámetros
+  const { fichaje, description, motivo_pausa, long, lat, dateUserTurn } = route.params || {}; // Desestructuración de los parámetros
 
   const { theme } = useTheme(); // Obtener el tema actual
   const [signature, setSignature] = useState(null);
@@ -45,6 +42,7 @@ const SignDay = ({ navigation, route }) => {
       motivo_pausa: motivo_pausa,
       long: long,
       lat: lat,
+      date: dateUserTurn,
     };
 
     setIsLoading(true);

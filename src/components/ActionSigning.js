@@ -9,7 +9,7 @@ import "dayjs/locale/es"; // Importar el locale español
 
 import ButtonSigning from "./ButtonSigning";
 
-const ActionSigning = ({ actions, navigation, motives }) => {
+const ActionSigning = ({ actions, navigation, motives, dateUserTurn }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { ignoreAppState, geoLocation } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
 
@@ -57,6 +57,7 @@ const ActionSigning = ({ actions, navigation, motives }) => {
           actions={actions}
           navigation={navigation}
           motives={motives}
+          dateUserTurn={dateUserTurn}
         />
       )}
     </>

@@ -1,26 +1,38 @@
-import { View, TouchableOpacity, FlatList, ScrollView } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  FlatList,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { Button } from "@rneui/base";
 import { Card, Divider, Text, useTheme, Icon } from "@rneui/themed";
 import { useState } from "react";
 import useAuth from "../hooks/useAuth";
 import useApi from "../hooks/useApi";
+import axios from "axios";
 
-const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
+import { Dimensions } from "react-native";
+
+const MAX_LIST_HEIGHT = Dimensions.get("window").height * 0.55;
+//Armado de datos iniciales y ademas renderizado de turnos
+const dayName = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
   const { theme } = useTheme();
-  const { userName } = useAuth();
-  const { companyName } = useApi();
+  const { logout } = useAuth();
+  const { apiUrl } = useApi();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedTurnId, setSelectedTurnId] = useState(null);
-
-  const dayName = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
 
   // Normalizar turnData a array
   const getTurnsArray = () => {
@@ -62,7 +74,7 @@ const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
 
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
-      "0"
+      "0",
     )}`;
   };
 
@@ -80,7 +92,6 @@ const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
         activeOpacity={0.8}
         onPress={() => {
           setSelectedTurnId(item.id);
-          onSelectTurn(item);
         }}
         style={{ marginVertical: 6 }}
       >
@@ -106,7 +117,7 @@ const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
               marginBottom: 6,
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: "700" }}>{titulo}</Text>
+            <Text style={{ fontSize: 14.5, fontWeight: "700" }}>{titulo}</Text>
 
             {isSelected && (
               <Icon
@@ -119,36 +130,31 @@ const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
           </View>
 
           {/* Turnos */}
-          <ScrollView
-            style={{ marginTop: 4, maxHeight: 90 }}
-            showsVerticalScrollIndicator={false}
-            >
-            {Object.keys(turnosAMostrar).map((key) => {
-                const turno = turnosAMostrar[key];
-                if (turno.in && turno.out) {
-                return (
-                    <Text
-                    key={key}
-                    style={{
-                        fontSize: 12,
-                        color: theme.colors.grey1,
-                        marginBottom: 4,
-                    }}
-                    >
-                    • Turno {key}: {turno.in} – {turno.out}
-                    </Text>
-                );
-                }
-                return null;
-            })}
-            </ScrollView>
 
+          {Object.keys(turnosAMostrar).map((key) => {
+            const turno = turnosAMostrar[key];
+            if (turno.in && turno.out) {
+              return (
+                <Text
+                  key={key}
+                  style={{
+                    fontSize: 14,
+                    color: theme.colors.grey1,
+                    marginBottom: 4,
+                  }}
+                >
+                  • Turno {key}: {turno.in} – {turno.out}
+                </Text>
+              );
+            }
+            return null;
+          })}
 
           <Divider style={{ marginVertical: 8 }} />
 
           <Text
             style={{
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: "600",
               color: theme.colors.primary,
             }}
@@ -160,29 +166,77 @@ const CardSelectTurn = ({ turnData, onSelectTurn, isLoading }) => {
     );
   };
 
+  // Procesar la selección del turno
+  const handleSelectTurn = async (turnId) => {
+    if (!turnId) {
+      Alert.alert("Por favor, selecciona un horario antes de continuar.");
+      return;
+    }
+    setIsLoading(true);
+    const params = {
+      action: "user_turn",
+      date: dateUserTurn,
+      idHorarioM: turnId,
+    };
+
+    console.log("Seleccionando turno con params:", params);
+
+    try {
+      const response = await axios.post(
+        `${apiUrl}/custom/fichajes/api/index.php`,
+        params,
+      );
+      console.log(
+        "Respuesta del servidor al seleccionar turno:",
+        response.data,
+      );
+      if (response.data.success) {
+        setIsLoading(false);
+        navigation.navigate("Signing", {
+          message: "Entrada registrada correctamente.",
+          type: "success",
+        });
+      } else {
+        Alert.alert(
+          "Error",
+          "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+        );
+
+        setIsLoading(false);
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+      );
+      logout();
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card containerStyle={theme.showSigning}>
       <View style={{ width: "100%" }}>
         <View style={{ marginBottom: 12 }}>
           <Text style={theme.titleSigning}>
-            Tienes múltiples turnos asignados. Por favor, selecciona tu turno
-            para continuar.
+            Tienes múltiples horarios asignados. Por favor, selecciona tu
+            horario para continuar.
           </Text>
         </View>
 
-        <FlatList
-          data={turns}
-          renderItem={renderTurnCard}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-        />
+        <ScrollView style={{ maxHeight: MAX_LIST_HEIGHT }}>
+          {turns.map((item) => (
+            <View key={item.id}>{renderTurnCard({ item })}</View>
+          ))}
+        </ScrollView>
 
         <Button
-        title="Confirmar turno seleccionado"
+          title="Confirmar horario seleccionado"
           containerStyle={theme.buttonPrimaryContainer}
           buttonStyle={theme.buttonPrimaryStyle}
-          disabled={ !selectedTurnId}
-
+          onPress={() => handleSelectTurn(selectedTurnId)}
+          disabled={isLoading || !selectedTurnId}
+          loading={isLoading}
         />
       </View>
     </Card>

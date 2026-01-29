@@ -12,7 +12,13 @@ import "dayjs/locale/es"; // Importar el locale español
 
 import useForm from "../hooks/useForm";
 
-const ButtonSigning = ({ location, actions, navigation, motives }) => {
+const ButtonSigning = ({
+  location,
+  actions,
+  navigation,
+  motives,
+  dateUserTurn,
+}) => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
   const { theme } = useTheme(); // Obtener el tema actual
   const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +52,14 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       motivo_pausa,
       long: longitude,
       lat: latitude,
+      date: dateUserTurn,
     };
 
     setIsLoading(true);
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        params
+        params,
       );
       if (response.data.success) {
         setErrorMsg(null);
@@ -80,13 +87,14 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       motivo_pausa,
       long: longitude,
       lat: latitude,
+      date: dateUserTurn,
     };
 
     setIsLoadingBreak(true);
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        params
+        params,
       );
       if (response.data.success) {
         setErrorMsg(null);
@@ -118,6 +126,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       motivo_pausa,
       long: longitude,
       lat: latitude,
+      date: dateUserTurn,
     };
 
     setIsLoadingContinue(true);
@@ -125,7 +134,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        params
+        params,
       );
       if (response.data.success) {
         setErrorMsg(null);
@@ -153,13 +162,14 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       motivo_pausa,
       long: longitude,
       lat: latitude,
+      date: dateUserTurn,
     };
 
     setIsLoadingFinish(true);
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        params
+        params,
       );
       if (response.data.success) {
         setErrorMsg(null);
@@ -188,6 +198,7 @@ const ButtonSigning = ({ location, actions, navigation, motives }) => {
       motivo_pausa: motivo_pausa,
       long: longitude,
       lat: latitude,
+      date: dateUserTurn,
     });
     setIsLoading(false);
   };
