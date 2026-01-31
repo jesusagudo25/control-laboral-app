@@ -14,6 +14,7 @@ const CardSigning = ({
   navigation,
   motives,
   dateUserTurn,
+  titleTurn,
 }) => {
   const { theme } = useTheme(); // Obtener el tema actual
   const { userName } = useAuth(); // Obtener el nombre de usuario y la función de cierre de sesión
@@ -28,9 +29,12 @@ const CardSigning = ({
         }}
       >
         <View>
+          <Text style={theme.titleSigning}>Usuario</Text>
           <Text style={theme.textSigning}>{`${userName}`}</Text>
           <Text style={theme.titleSigning}>Empresa</Text>
           <Text style={theme.textSigning}>{companyName}</Text>
+          <Text style={theme.titleSigning}>Título del horario</Text>
+          <Text style={theme.textSigning}>{titleTurn}</Text>
         </View>
 
         <View>

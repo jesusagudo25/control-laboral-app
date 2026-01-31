@@ -1,5 +1,11 @@
 import React, { useCallback, useState } from "react";
-import { View, Dimensions, TouchableOpacity, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Dimensions,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { Header, Icon, Image, useTheme } from "@rneui/themed";
 
 import axios from "axios";
@@ -44,7 +50,7 @@ const Home = ({ navigation }) => {
 
   const handleLogout = async () => {
     const response = await axios.delete(
-      `${apiUrl}/custom/fichajes/api/index.php?action=auth`
+      `${apiUrl}/custom/fichajes/api/index.php?action=auth`,
     );
     console.log("Logout response: ", response.data);
     logout();
@@ -73,7 +79,7 @@ const Home = ({ navigation }) => {
       const getName = async () => {
         try {
           const response = await axios.get(
-            `${apiUrl}/custom/fichajes/api/index.php?action=user_info`
+            `${apiUrl}/custom/fichajes/api/index.php?action=user_info`,
           );
           let userName = `${response.data.data.firstname} ${response.data.data.lastname}`;
           userName = userName.replace(/^\w/, (c) => c.toUpperCase()); // Capitaliza la primera letra
@@ -84,18 +90,21 @@ const Home = ({ navigation }) => {
           setWorkingDayStatus(response.data.data.status);
           setCountNotifications(response.data.data.notifications);
         } catch (error) {
-          console.log(error);
-          logout();
-          Alert.alert(
-            "Error",
-            "No se pudo obtener la información del usuario. Por favor, inicie sesión de nuevo."
-          );
+          if (error.response) {
+            if (error.response.status === 500) {
+              Alert.alert(
+                "Error",
+                "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+              );
+              logout();
+            }
+          }
         }
       };
 
       getName();
       sendTokenToServer();
-    }, [])
+    }, []),
   );
 
   return (

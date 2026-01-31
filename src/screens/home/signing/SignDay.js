@@ -1,8 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  StyleSheet,
-  View,
-} from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Dialog } from "@rneui/themed";
 import SignatureCanvas from "react-native-signature-canvas";
 import { Text, useTheme } from "@rneui/themed";
@@ -14,7 +11,8 @@ import useApi from "../../../hooks/useApi"; // Hook para manejar la URL de la AP
 const SignDay = ({ navigation, route }) => {
   const { apiUrl } = useApi(); // Hook para manejar la URL de la API
 
-  const { fichaje, description, motivo_pausa, long, lat, dateUserTurn } = route.params || {}; // Desestructuración de los parámetros
+  const { fichaje, description, motivo_pausa, long, lat, dateUserTurn } =
+    route.params || {}; // Desestructuración de los parámetros
 
   const { theme } = useTheme(); // Obtener el tema actual
   const [signature, setSignature] = useState(null);
@@ -49,7 +47,7 @@ const SignDay = ({ navigation, route }) => {
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        params
+        params,
       );
       if (response.data.success) {
         setMessage(null);
@@ -77,6 +75,11 @@ const SignDay = ({ navigation, route }) => {
         setShowDialog(true);
         setMessage(response.data.msg);
         setIsLoading(false);
+
+        navigation.reset({
+          index: 1,
+          routes: [{ name: "Inicio" }],
+        });
       }
     } catch (error) {
       console.error("Error: ", error);
@@ -130,14 +133,16 @@ const SignDay = ({ navigation, route }) => {
           loading={isLoading}
         />
 
-        <Button
-          title="Limpiar"
-          type="outline"
-          onPress={() => ref.current.clearSignature()}
-          titleStyle={{ color: theme.colors.primary }}
-          containerStyle={theme.buttonSecondaryContainer}
-          buttonStyle={theme.buttonSecondaryStyle}
-        />
+        {!isLoading && (
+          <Button
+            title="Limpiar"
+            type="outline"
+            onPress={() => ref.current.clearSignature()}
+            titleStyle={{ color: theme.colors.primary }}
+            containerStyle={theme.buttonSecondaryContainer}
+            buttonStyle={theme.buttonSecondaryStyle}
+          />
+        )}
       </View>
 
       <CustomModal

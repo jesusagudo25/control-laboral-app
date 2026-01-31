@@ -24,10 +24,7 @@ const ButtonSigning = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingFinish, setIsLoadingFinish] = useState(false);
   const [isLoadingContinue, setIsLoadingContinue] = useState(false);
-
   const [isLoadingBreak, setIsLoadingBreak] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
-
   const [showDialog, setShowDialog] = useState(false);
 
   const {
@@ -62,19 +59,23 @@ const ButtonSigning = ({
         params,
       );
       if (response.data.success) {
-        setErrorMsg(null);
-        setIsLoading(false);
+        console.log("Entrada registrada correctamente:", response.data);
 
         navigation.navigate("Signing", {
           message: "Entrada registrada correctamente.",
           type: "success",
         });
+        setIsLoading(false);
       } else {
-        setErrorMsg(response.data.msg);
+        Alert.alert("Error", response.data.msg);
         setIsLoading(false);
       }
     } catch (error) {
-      setErrorMsg("Error al registrar la entrada. Inténtalo de nuevo.");
+      console.error("Error: ", error);
+      Alert.alert(
+        "Error",
+        "Error al registrar la entrada. Inténtalo de nuevo.",
+      );
       setIsLoading(false);
     }
   };
@@ -91,29 +92,28 @@ const ButtonSigning = ({
     };
 
     setIsLoadingBreak(true);
+
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
         params,
       );
       if (response.data.success) {
-        setErrorMsg(null);
-        setIsLoadingBreak(false);
-        setShowDialog(false); // Cerrar el diálogo después de enviar
-        handleInputChange("description", ""); // Limpiar el campo de descripción
-        handleInputChange("motivo_pausa", ""); // Limpiar el campo de motivo de pausa
-
         navigation.navigate("Signing", {
           message: "Pausa registrada correctamente.",
           type: "success",
         });
+        setIsLoadingBreak(false);
+        setShowDialog(false); // Cerrar el diálogo después de enviar
+        handleInputChange("description", ""); // Limpiar el campo de descripción
+        handleInputChange("motivo_pausa", ""); // Limpiar el campo de motivo de pausa
       } else {
-        setErrorMsg(response.data.msg);
+        Alert.alert("Error", response.data.msg);
         setIsLoadingBreak(false);
       }
     } catch (error) {
       console.error("Error: ", error);
-      setErrorMsg("Error al registrar la pausa. Inténtalo de nuevo.");
+      Alert.alert("Error", "Error al registrar la pausa. Inténtalo de nuevo.");
       setIsLoadingBreak(false);
     }
   };
@@ -137,19 +137,21 @@ const ButtonSigning = ({
         params,
       );
       if (response.data.success) {
-        setErrorMsg(null);
-        setIsLoadingContinue(false);
         navigation.navigate("Signing", {
           message: "Reanudación registrada correctamente.",
           type: "success",
         });
+        setIsLoadingContinue(false);
       } else {
-        setErrorMsg(response.data.msg);
+        Alert.alert("Error", response.data.msg);
         setIsLoadingContinue(false);
       }
     } catch (error) {
       console.error("Error: ", error);
-      setErrorMsg("Error al registrar la reanudación. Inténtalo de nuevo.");
+      Alert.alert(
+        "Error",
+        "Error al registrar la reanudación. Inténtalo de nuevo.",
+      );
       setIsLoadingContinue(false);
     }
   };
@@ -172,20 +174,19 @@ const ButtonSigning = ({
         params,
       );
       if (response.data.success) {
-        setErrorMsg(null);
-        setIsLoadingFinish(false);
-        handleReset(); // Limpiar los campos después de enviar
         navigation.navigate("Signing", {
           message: "Salida registrada correctamente.",
           type: "success",
         });
+        setIsLoadingFinish(false);
+        handleReset(); // Limpiar los campos después de enviar
       } else {
-        setErrorMsg(response.data.msg);
+        Alert.alert("Error", response.data.msg);
         setIsLoadingFinish(false);
       }
     } catch (error) {
       console.error("Error: ", error);
-      setErrorMsg("Error al registrar la salida. Inténtalo de nuevo.");
+      Alert.alert("Error", "Error al registrar la salida. Inténtalo de nuevo.");
       setIsLoadingFinish(false);
     }
   };
@@ -217,27 +218,34 @@ const ButtonSigning = ({
       )}
 
       {actions.includes("ficharpausa") && (
-        <View>
-          <Button
-            title="Pausar"
-            containerStyle={theme.buttonPrimaryContainer}
-            buttonStyle={theme.buttonPrimaryStyle}
-            onPress={() => setShowDialog(true)}
-            disabled={isLoadingBreak}
-            loading={isLoadingBreak}
-          />
-
-          <Button
-            title="Finalizar"
-            type="outline"
-            titleStyle={{ color: theme.colors.primary }}
-            containerStyle={theme.buttonSecondaryContainer}
-            buttonStyle={theme.buttonSecondaryStyle}
-            onPress={() => handleFinish()}
-            disabled={isLoadingFinish}
-            loading={isLoadingFinish}
-          />
-        </View>
+        <>
+          <View>
+            {!isLoadingFinish && (
+              <Button
+                title="Pausar"
+                containerStyle={theme.buttonPrimaryContainer}
+                buttonStyle={theme.buttonPrimaryStyle}
+                onPress={() => setShowDialog(true)}
+                disabled={isLoadingBreak}
+                loading={isLoadingBreak}
+              />
+            )}
+          </View>
+          <View>
+            {!isLoadingBreak && (
+              <Button
+                title="Finalizar"
+                type="outline"
+                titleStyle={{ color: theme.colors.primary }}
+                containerStyle={theme.buttonSecondaryContainer}
+                buttonStyle={theme.buttonSecondaryStyle}
+                onPress={() => handleFinish()}
+                disabled={isLoadingFinish}
+                loading={isLoadingFinish}
+              />
+            )}
+          </View>
+        </>
       )}
 
       {actions.includes("ficharfirma") && (
@@ -322,7 +330,6 @@ const ButtonSigning = ({
               Alert.alert("Error", "Debes seleccionar un motivo de pausa.");
               return;
             }
-            setShowDialog(false);
             handleBreak();
           }}
           disabled={isLoadingBreak}

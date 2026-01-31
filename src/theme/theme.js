@@ -136,7 +136,7 @@ const theme = createTheme({
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "left",
-    marginBottom: 20,
+    marginBottom: 10,
     color: "#0D0D0D",
   },
   titleSigning: {

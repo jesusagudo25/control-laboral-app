@@ -36,10 +36,12 @@ const Signing = ({ route, navigation }) => {
   );
   const [turnData, setTurnData] = useState([]);
   const [dateUserTurn, setDateUserTurn] = useState(null);
+  const [titleTurn, setTitleTurn] = useState("");
   const [countTurnData, setCountTurnData] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
   const [actions, setActions] = useState([]);
 
+  const [isUserFreeTurn, setIsUserFreeTurn] = useState(false);
   const [isUserMultipleTurn, setIsUserMultipleTurn] = useState(false);
   const [multipleTurnsData, setMultipleTurnsData] = useState([]);
 
@@ -52,6 +54,8 @@ const Signing = ({ route, navigation }) => {
   const getUserTurnPreliminary = async () => {
     const dayWeek = new Date().getDay();
     try {
+      console.log("Fetching preliminary user turn for day JESUS:", dayWeek);
+      
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
       );
@@ -72,29 +76,34 @@ const Signing = ({ route, navigation }) => {
 
   const getUserTurn = async () => {
     const dayWeek = new Date().getDay();
-    const day = dayName[dayWeek]; // 0-6 -> sunday-saturday
-    let currentDate = dayjs().format("YYYY-MM-DD"); // YYYY-MM-DD
+    const day = dayName[dayWeek];
+    console.log("Fetching user turn for day:", day);
 
     try {
       const response = await axios.get(
-        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn&date=${currentDate}`,
+        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
       );
 
-      console.log("User Turn Response:", response.data);
+      console.log("User Turn Response:", response.data.data);
 
-      const turn = response.data.data.horario[day];
+      let turn = response.data.data.horario[day];
       const marks = response.data.data.marks[day];
       const time = response.data.data.time;
+      const isFree = response.data.data.id == -1;
+      setIsUserFreeTurn(isFree);
+
+
+      setTitleTurn(response.data.data.titulo || "N/A");
 
       let countMarks = response.data.data.marks.length;
 
-      //Validar si es undifened o null
       if (countMarks === undefined || countMarks === null) {
         countMarks = Object.keys(marks).length;
       }
 
-      if (countMarks == 0) {
+      if (countMarks == 0 && !isFree) {
         //Darle formato a las horas
+        console.log("Turn before formatting:", turn);
         Object.keys(turn).forEach((key) => {
           let item = turn[key];
 
@@ -122,8 +131,6 @@ const Signing = ({ route, navigation }) => {
           turn[key].out = formattedOutTime;
           turn[key].total = formattedTotalHours;
         });
-
-        console.log("Turnos:", turn);
 
         setTurnData(turn);
 
@@ -159,21 +166,38 @@ const Signing = ({ route, navigation }) => {
         setTurnData(marks);
         setCountTurnData(countMarks);
         let timeWorked = time.tiempo_trabajado || "00:00"; // Si tiempo_trabajado es undefined o null, asignar "00:00"
-        console.log("Tiempo trabajado:", timeWorked);
         setTotalHours(timeWorked.split(":").slice(0, 2).join(":"));
       }
+
+      if (isFree && countMarks == 0) {
+        //Se debe simular un turno libre, con un solo turno de --:-- a --:--
+        turn = {
+          0: {
+            in: "--:--",
+            out: "--:--",
+          },
+        };
+        setTurnData(turn);
+        setCountTurnData(1);
+        setTotalHours("00:00");
+        
+      }
     } catch (error) {
-      logout();
-      Alert.alert(
-        "Error",
-        "No se pudo obtener la información del usuario. Por favor, inicie sesión de nuevo."
-      );
-      console.log(error);
+      if (error.response) {
+        if (error.response.status === 500) {
+          Alert.alert(
+            "Error",
+            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+          );
+          logout();
+        }
+      }
     }
   };
 
   const getUserButtons = async () => {
     try {
+      console.log("Fetching user buttons...");
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_buttons`,
       );
@@ -215,12 +239,15 @@ const Signing = ({ route, navigation }) => {
 
       setActions(actionsBucket);
     } catch (error) {
-          logout();
+      if (error.response) {
+        if (error.response.status === 500) {
           Alert.alert(
             "Error",
-            "No se pudo obtener la información del usuario. Por favor, inicie sesión de nuevo."
-          );      
-          console.log(error);
+            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+          );
+          logout();
+        }
+      }
     }
   };
 
@@ -232,6 +259,7 @@ const Signing = ({ route, navigation }) => {
 
   //Si se recibe una actualizacion por parametros, se actualiza el estado de las funciones: getUserTurn y getUserButtons
   useEffect(() => {
+    console.log("Route params changed:", route.params);
     if (message) {
       getUserTurnPreliminary();
     }
@@ -277,12 +305,25 @@ const Signing = ({ route, navigation }) => {
             navigation={navigation}
             motives={motives}
             dateUserTurn={dateUserTurn}
+            titleTurn={titleTurn}
           />
         ) : isUserMultipleTurn ? (
           <CardSelectTurn
             turnData={multipleTurnsData}
             dateUserTurn={dateUserTurn}
             navigation={navigation}
+          />
+        ) : isUserFreeTurn ? (
+          <CardSigning
+            turnData={turnData}
+            countTurnData={countTurnData}
+            totalHours={totalHours}
+            actions={actions}
+            navigation={navigation}
+            motives={motives}
+            dateUserTurn={dateUserTurn}
+            titleTurn={titleTurn}
+            isFreeTurn={isUserFreeTurn}
           />
         ) : (
           <SkeletonSigning />

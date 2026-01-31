@@ -179,8 +179,6 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
       idHorarioM: turnId,
     };
 
-    console.log("Seleccionando turno con params:", params);
-
     try {
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
@@ -193,7 +191,7 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
       if (response.data.success) {
         setIsLoading(false);
         navigation.navigate("Signing", {
-          message: "Entrada registrada correctamente.",
+          message: "Horario seleccionado correctamente.",
           type: "success",
         });
       } else {
@@ -205,11 +203,16 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
         setIsLoading(false);
       }
     } catch (error) {
-      Alert.alert(
-        "Error",
-        "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
-      );
-      logout();
+      if (error.response) {
+        if (error.response.status === 500) {
+          Alert.alert(
+            "Error",
+            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+          );
+          logout();
+        }
+      }
+
       setIsLoading(false);
     }
   };
