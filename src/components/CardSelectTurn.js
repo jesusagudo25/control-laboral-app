@@ -227,11 +227,14 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
           </Text>
         </View>
 
-        <ScrollView style={{ maxHeight: MAX_LIST_HEIGHT }}>
-          {turns.map((item) => (
-            <View key={item.id}>{renderTurnCard({ item })}</View>
-          ))}
-        </ScrollView>
+        <FlatList
+          data={turns}
+          keyExtractor={(item) => item.id}
+          renderItem={renderTurnCard}
+          style={{ maxHeight: MAX_LIST_HEIGHT }}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          showsVerticalScrollIndicator={true}
+        />
 
         <Button
           title="Confirmar horario seleccionado"

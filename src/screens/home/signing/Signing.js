@@ -265,72 +265,77 @@ const Signing = ({ route, navigation }) => {
     }
   }, [message, type]);
 
-  return (
-    <ScrollView style={{ backgroundColor: theme.colors.background }}>
-      <View style={theme.boxHidden} />
-      <View style={theme.containerBoxHidden}>
-        <View
+  const Wrapper = isUserMultipleTurn ? View : ScrollView;
+
+return (
+  <Wrapper style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <View style={theme.boxHidden} />
+
+    <View style={theme.containerBoxHidden}>
+      <View
+        style={{
+          marginBottom: 10,
+          marginHorizontal: 10,
+        }}
+      >
+        <Text
           style={{
+            fontSize: 24,
+            fontWeight: "bold",
             marginBottom: 10,
-            marginHorizontal: 10,
+            color: theme.colors.header,
           }}
         >
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "bold",
-              marginBottom: 10,
-              color: theme.colors.header,
-            }}
-          >
-            {currentDate}
-          </Text>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "400",
-              color: theme.colors.header,
-            }}
-          >
-            Valida tu jornada laboral
-          </Text>
-        </View>
+          {currentDate}
+        </Text>
 
-        {countTurnData > 0 && userName !== "" && actions.length > 0 ? (
-          <CardSigning
-            turnData={turnData}
-            countTurnData={countTurnData}
-            totalHours={totalHours}
-            actions={actions}
-            navigation={navigation}
-            motives={motives}
-            dateUserTurn={dateUserTurn}
-            titleTurn={titleTurn}
-          />
-        ) : isUserMultipleTurn ? (
-          <CardSelectTurn
-            turnData={multipleTurnsData}
-            dateUserTurn={dateUserTurn}
-            navigation={navigation}
-          />
-        ) : isUserFreeTurn ? (
-          <CardSigning
-            turnData={turnData}
-            countTurnData={countTurnData}
-            totalHours={totalHours}
-            actions={actions}
-            navigation={navigation}
-            motives={motives}
-            dateUserTurn={dateUserTurn}
-            titleTurn={titleTurn}
-            isFreeTurn={isUserFreeTurn}
-          />
-        ) : (
-          <SkeletonSigning />
-        )}
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "400",
+            color: theme.colors.header,
+          }}
+        >
+          Valida tu jornada laboral
+        </Text>
       </View>
-    </ScrollView>
-  );
+
+      {countTurnData > 0 && userName !== "" && actions.length > 0 ? (
+        <CardSigning
+          turnData={turnData}
+          countTurnData={countTurnData}
+          totalHours={totalHours}
+          actions={actions}
+          navigation={navigation}
+          motives={motives}
+          dateUserTurn={dateUserTurn}
+          titleTurn={titleTurn}
+        />
+      ) : isUserMultipleTurn ? (
+        <CardSelectTurn
+          turnData={multipleTurnsData}
+          dateUserTurn={dateUserTurn}
+          navigation={navigation}
+        />
+      ) : isUserFreeTurn ? (
+        <CardSigning
+          turnData={turnData}
+          countTurnData={countTurnData}
+          totalHours={totalHours}
+          actions={actions}
+          navigation={navigation}
+          motives={motives}
+          dateUserTurn={dateUserTurn}
+          titleTurn={titleTurn}
+          isFreeTurn={isUserFreeTurn}
+        />
+      ) : (
+        <SkeletonSigning />
+      )}
+    </View>
+  </Wrapper>
+);
+
 };
 
 export default Signing;
