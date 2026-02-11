@@ -18,17 +18,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import useApi from "../../hooks/useApi"; // Hook para manejar la URL de la API
 
-const workingDayFinished = {
-  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135752.png",
-};
+const workingDayFinished = require("../../../assets/3135752.png");
+const checkInWorkingDay = require("../../../assets/3135715.png");
+const workingDayInProgress = require("../../../assets/3135738.png");
 
-const checkInWorkingDay = {
-  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-};
-
-const woringDayInProgress = {
-  uri: "https://cdn-icons-png.flaticon.com/512/3135/3135738.png",
-};
 
 const calendar = {
   uri: "https://cdn-icons-png.flaticon.com/512/3135/3135705.png",
@@ -169,7 +162,7 @@ const Home = ({ navigation }) => {
             title="Control Laboral"
             subtitle="Ver jornada laboral"
             description="Tu jornada laboral está en progreso. Revisa tus horas trabajadas."
-            icon={woringDayInProgress}
+            icon={workingDayInProgress}
             navigation={navigation}
             screen="Signing"
           />
