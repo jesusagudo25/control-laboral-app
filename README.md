@@ -45,14 +45,9 @@ npx expo start
 
 ---
 
-## 🔐 Variables de entorno
+## 🔐 API
 
-Crea un archivo `.env` en la raíz del proyecto con tu URL base del API:
-
-```env
-API_URL=https://tudominio.com/api
-```
-
+Utiliza un modulo backend de Dolibarr para gestionar la autenticación y el registro de fichajes. Asegúrate de habilitar los endpoints necesarios en tu instancia.
 ---
 
 ## 👨‍💻 Autor
