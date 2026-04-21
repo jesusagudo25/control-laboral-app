@@ -45,7 +45,6 @@ const Home = ({ navigation }) => {
     const response = await axios.delete(
       `${apiUrl}/custom/fichajes/api/index.php?action=auth`,
     );
-    console.log("Logout response: ", response.data);
     logout();
   };
 
@@ -87,7 +86,7 @@ const Home = ({ navigation }) => {
             if (error.response.status === 500) {
               Alert.alert(
                 "Error",
-                "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+                error.response.data.msg || "No se pudo obtener la información del usuario. Por favor, inténtalo de nuevo.",
               );
               logout();
             }

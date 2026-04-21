@@ -83,8 +83,10 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
     const isSelected = selectedTurnId === item.id;
 
     const titulo = item.titulo || `Turno ID: ${item.id}`;
-    const turnosDelDia = item.horario?.[dayName[dayWeek]] || {};
-    const turnosAMostrar =
+    //const turnosDelDia = item.horario?.[dayName[dayWeek]] || {};
+    //Obtener el dia en base a: dateUserTurn
+    const turnosDelDia = item.horario?.[dayName[dayjs(dateUserTurn).day()]] || {};
+    
       Object.keys(turnosDelDia).length > 0 ? turnosDelDia : item;
 
     return (
@@ -184,10 +186,7 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
         `${apiUrl}/custom/fichajes/api/index.php`,
         params,
       );
-      console.log(
-        "Respuesta del servidor al seleccionar turno:",
-        response.data,
-      );
+      
       if (response.data.success) {
         setIsLoading(false);
         navigation.navigate("Signing", {
@@ -197,7 +196,7 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
       } else {
         Alert.alert(
           "Error",
-          "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+          response.data.msg || "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
         );
 
         setIsLoading(false);
@@ -207,7 +206,7 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
         if (error.response.status === 500) {
           Alert.alert(
             "Error",
-            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+            error.response.data.msg || "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
           );
           logout();
         }

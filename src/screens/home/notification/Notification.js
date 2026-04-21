@@ -23,7 +23,6 @@ const Notification = () => {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchNotifications = async () => {
-    console.log("Fetching notifications, page:", page);
 
     if (isLoading || !hasMore) return;
 
@@ -88,7 +87,6 @@ const Notification = () => {
           read: "SI",
         }
       );
-      console.log("Notification updated:", response.data);
     } catch (error) {
       console.error("Error updating notification:", error);
     }

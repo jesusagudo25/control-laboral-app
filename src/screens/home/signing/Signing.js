@@ -45,17 +45,9 @@ const Signing = ({ route, navigation }) => {
   const [isUserMultipleTurn, setIsUserMultipleTurn] = useState(false);
   const [multipleTurnsData, setMultipleTurnsData] = useState([]);
 
-  //Debemos crear una funcion previa a getUserTurn para obtener si el usuario tiene un turno multiple, para que haga la seleccion.
-  //Esta funcion previa va a llamar el mismo endpoint pero solamente validara si existe el campo: "multiples": true
-  //Si no existe o es false, se procede a llamar getUserTurn normalmente. Si existe, se debe mostrar un modal para que el usuario seleccione el turno.
-  //Se utiliza el mismo endpoint por una mala practica del backend, que no separa las funcionalidades en diferentes endpoints.
-  //la funcion se llamara: getUserTurnPreliminary
-
   const getUserTurnPreliminary = async () => {
     const dayWeek = new Date().getDay();
     try {
-      console.log("Fetching preliminary user turn for day JESUS:", dayWeek);
-      
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
       );
@@ -76,16 +68,18 @@ const Signing = ({ route, navigation }) => {
 
   const getUserTurn = async () => {
     const dayWeek = new Date().getDay();
-    const day = dayName[dayWeek];
-    console.log("Fetching user turn for day:", day);
 
     try {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
       );
 
-      console.log("User Turn Response:", response.data.data);
+      setDateUserTurn(response.data.data.date || null);
 
+      // Obtener el dia en base a: response.data.data.date
+
+      const day = dayName[dayjs(response.data.data.date).day()];
+      
       let turn = response.data.data.horario[day];
       const marks = response.data.data.marks[day];
       const time = response.data.data.time;
@@ -103,7 +97,6 @@ const Signing = ({ route, navigation }) => {
 
       if (countMarks == 0 && !isFree) {
         //Darle formato a las horas
-        console.log("Turn before formatting:", turn);
         Object.keys(turn).forEach((key) => {
           let item = turn[key];
 
@@ -152,14 +145,12 @@ const Signing = ({ route, navigation }) => {
           const diff = (outDate - inDate) / (1000 * 60 * 60); // Diferencia en horas
           totalHours += diff;
         });
-        console.log("Total horas:", totalHours);
         // Formatear el total de horas a formato HH:MM
         const hours = Math.floor(totalHours);
         const minutes = Math.round((totalHours - hours) * 60);
         const formattedTotalHours = `${String(hours).padStart(2, "0")}:${String(
           minutes,
         ).padStart(2, "0")}`;
-        console.log("Total horas formateadas:", formattedTotalHours);
 
         setTotalHours(formattedTotalHours);
       } else {
@@ -187,7 +178,7 @@ const Signing = ({ route, navigation }) => {
         if (error.response.status === 500) {
           Alert.alert(
             "Error",
-            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+            error.response.data.msg || "No se pudo obtener el turno. Por favor, inténtalo de nuevo.",
           );
           logout();
         }
@@ -197,12 +188,10 @@ const Signing = ({ route, navigation }) => {
 
   const getUserButtons = async () => {
     try {
-      console.log("Fetching user buttons...");
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_buttons`,
       );
       let actionsBucket = [];
-      console.log(response.data);
       if (response.data?.data?.Firma) {
         actionsBucket.push(response.data.data.Firma.action);
       }
@@ -243,7 +232,7 @@ const Signing = ({ route, navigation }) => {
         if (error.response.status === 500) {
           Alert.alert(
             "Error",
-            "No se pudo seleccionar el horario. Por favor, inténtalo de nuevo.",
+            error.response.data.msg || "No se pudieron obtener las acciones. Por favor, inténtalo de nuevo.",
           );
           logout();
         }
@@ -259,7 +248,6 @@ const Signing = ({ route, navigation }) => {
 
   //Si se recibe una actualizacion por parametros, se actualiza el estado de las funciones: getUserTurn y getUserButtons
   useEffect(() => {
-    console.log("Route params changed:", route.params);
     if (message) {
       getUserTurnPreliminary();
     }
@@ -286,7 +274,11 @@ return (
             color: theme.colors.header,
           }}
         >
-          {currentDate}
+          {
+          dayjs(
+              dateUserTurn || new Date(), // Usar dateUserTurn si está disponible, de lo contrario usar la fecha actual
+            ).format("DD [de] MMMM [de] YYYY")
+          }
         </Text>
 
         <Text
