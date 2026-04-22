@@ -11,6 +11,7 @@ import { useState } from "react";
 import useAuth from "../hooks/useAuth";
 import useApi from "../hooks/useApi";
 import axios from "axios";
+import dayjs from "dayjs";
 
 import { Dimensions } from "react-native";
 
@@ -86,7 +87,7 @@ const CardSelectTurn = ({ turnData, dateUserTurn, navigation }) => {
     //const turnosDelDia = item.horario?.[dayName[dayWeek]] || {};
     //Obtener el dia en base a: dateUserTurn
     const turnosDelDia = item.horario?.[dayName[dayjs(dateUserTurn).day()]] || {};
-    
+    const turnosAMostrar =
       Object.keys(turnosDelDia).length > 0 ? turnosDelDia : item;
 
     return (
