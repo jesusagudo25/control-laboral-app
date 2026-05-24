@@ -49,7 +49,7 @@ const Signing = ({ route, navigation }) => {
     const dayWeek = new Date().getDay();
     try {
       const response = await axios.get(
-        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_turn`,
       );
       const isMultiple = response.data.data.multiples || false;
       setDateUserTurn(response.data.data.date || null);
@@ -71,16 +71,19 @@ const Signing = ({ route, navigation }) => {
 
     try {
       const response = await axios.get(
-        `${apiUrl}/custom/fichajes/api/index.php?day=${dayWeek}&action=user_turn`,
+        `${apiUrl}/custom/fichajes/api/index.php?action=user_turn`,
       );
 
       setDateUserTurn(response.data.data.date || null);
+
+      console.log(response.data.data)
 
       // Obtener el dia en base a: response.data.data.date
 
       const day = dayName[dayjs(response.data.data.date).day()];
       
       let turn = response.data.data.horario[day];
+      console.log(response.data.data.horario[day])
       const marks = response.data.data.marks[day];
       const time = response.data.data.time;
       const isFree = response.data.data.id == -1;
