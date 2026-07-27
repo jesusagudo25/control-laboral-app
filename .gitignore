@@ -19,7 +19,6 @@ expo-env.d.ts
 
 # Metro
 .metro-health-check*
-.agents
 
 # debug
 npm-debug.*
