@@ -76,7 +76,26 @@ de lint usa `--fix`).
    `1.23.1`; Expo `52.0.40`, esperado `~52.0.49`; `expo-location` `18.0.8`,
    esperado `~18.0.10`; React Native `0.76.7`, esperado `0.76.9`.
 
-Los hallazgos se documentaron, pero no se corrigieron.
+## Corrección mínima de Puerta 0
+
+Se corrigieron los puntos de alineación de SDK 52 sin migrar a SDK 53:
+
+- Se eliminó `android.useNextNotificationsApi` de `app.json`.
+- Mediante `npx expo install` se alinearon Expo a `~52.0.49`, React Native a
+  `0.76.9`, `expo-location` a `~18.0.10` y AsyncStorage a `1.23.1`.
+
+`react-native-keyboard-aware-scroll-view@0.9.5` se conserva sin reemplazo. Se
+usa en:
+
+- `src/screens/request/RequestCreate.js`, en el formulario de creación de
+  solicitudes.
+- `src/screens/document/Document.js`, en el modal de carga de documentos.
+
+Riesgo pendiente: React Native Directory la marca como no probada con Nueva
+Arquitectura y el proyecto tiene `newArchEnabled: true`. Por ello deben
+probarse en Android e iOS el enfoque de campos, el desplazamiento automático,
+la persistencia de toques y el cierre del teclado en esos dos flujos. No se
+modificó su implementación durante Puerta 0.
 
 ## Estado del arranque
 
