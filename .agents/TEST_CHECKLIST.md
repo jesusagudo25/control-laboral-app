@@ -13,12 +13,15 @@ aplica.
 - [ ] Versión de Android o iOS registrada.
 - [ ] Tipo de build registrado: Expo Go, development, preview o release.
 - [ ] Fecha y responsable registrados.
+- [ ] Rama, estado de Git, Node, npm, Expo CLI, EAS CLI y lockfile registrados.
+- [ ] Resultado o limitación de cada comando diagnóstico documentado.
 
 ## Diagnóstico y arranque
 
 - [ ] Instalación limpia de dependencias.
 - [ ] `npx expo-doctor` sin errores bloqueantes.
 - [ ] `npx expo install --check` conforme.
+- [ ] Configuración Expo efectiva proviene de la fuente esperada.
 - [ ] Bundler inicia sin errores.
 - [ ] Instalación limpia de la aplicación.
 - [ ] Arranque en frío sin cierre inesperado.
@@ -35,6 +38,10 @@ aplica.
 - [ ] Recuperación de contraseña.
 - [ ] Expiración o rechazo de sesión.
 - [ ] No se imprimen credenciales ni tokens en logs.
+- [ ] El flujo “recordarme” no deja la contraseña almacenada directamente en
+  AsyncStorage.
+- [ ] Un usuario no autenticado no puede acceder a `Home` ni a rutas
+  protegidas.
 
 ## Navegación
 
@@ -90,6 +97,11 @@ aplica.
 - [ ] Acceso al archivo después de seleccionarlo.
 - [ ] Compartir documento.
 - [ ] Manejo de archivo inexistente o descarga fallida.
+- [ ] `documentDirectory` funciona o su migración/uso legacy está documentado.
+- [ ] `downloadAsync` funciona o su migración/uso legacy está documentado.
+- [ ] `readAsStringAsync` funciona o su migración/uso legacy está documentado.
+- [ ] `writeAsStringAsync` funciona o su migración/uso legacy está documentado.
+- [ ] `StorageAccessFramework` funciona en los dispositivos Android objetivo.
 - [ ] No se solicitan permisos amplios de almacenamiento sin necesidad.
 
 ## Notificaciones
@@ -105,6 +117,8 @@ aplica.
 - [ ] Notificación con aplicación cerrada.
 - [ ] Toque de notificación.
 - [ ] Sonido, alerta y badge según comportamiento esperado.
+- [ ] Los logs no exponen payloads completos, datos personales, respuestas de
+  API ni objetos de error sensibles.
 
 ## Conectividad
 
@@ -115,6 +129,20 @@ aplica.
 - [ ] Red lenta.
 - [ ] Timeout o error de servidor.
 - [ ] No se duplican transacciones al reintentar.
+- [ ] Respuestas y errores de red no dejan datos sensibles en logs.
+
+## Configuración y datos sensibles
+
+- [ ] `.env` y otros archivos de entorno versionados están inventariados sin
+  copiar sus valores.
+- [ ] Cada variable `EXPO_PUBLIC_*` fue revisada como dato público incorporable
+  al bundle.
+- [ ] Ninguna clave, contraseña o secreto depende de
+  `react-native-dotenv`/`EXPO_PUBLIC_*` para su protección.
+- [ ] La ausencia de referencias `process.env` fue reconfirmada o los usos
+  nuevos fueron auditados.
+- [ ] No se imprimen notificaciones completas, datos de horarios, respuestas
+  de API ni objetos de error con información sensible.
 
 ## Interfaz Android 15/16
 
@@ -137,6 +165,8 @@ aplica.
 - [ ] Selectores de fecha y documentos.
 - [ ] Descripciones de permisos correctas y localizadas según necesidad.
 - [ ] Modos de segundo plano justificados y sin duplicados.
+- [ ] Cámara y fototeca tienen consumidor funcional confirmado o sus permisos
+  fueron retirados mediante cambio autorizado.
 - [ ] Privacy Manifest/APIs con motivo requerido revisados.
 - [ ] Build candidato generado con Xcode 26.2 o posterior.
 - [ ] iPhone físico con versión soportada.
@@ -152,6 +182,8 @@ aplica.
 - [ ] IPA de distribución se genera.
 - [ ] Firma y credenciales válidas sin modificarlas.
 - [ ] Política OTA/runtime compatible con el binario.
+- [ ] Ausencia o configuración explícita de `runtimeVersion` y `expo-updates`
+  registrada.
 - [ ] Google Play pista interna/cerrada validada.
 - [ ] TestFlight validado.
 - [ ] Sin crashes bloqueantes ni regresiones críticas.
