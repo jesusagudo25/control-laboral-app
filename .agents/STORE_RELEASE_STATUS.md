@@ -2,7 +2,7 @@
 
 ## Referencia actual
 
-- Fecha de actualización: 2026-08-01.
+- Fecha de actualización: 2026-08-02.
 - Rama: `main`.
 - Commit: `ee97cca` (`chore: refactor Signing component state management and cleanup`).
 - Base técnica: Expo SDK 55.
@@ -10,9 +10,9 @@
 - `npx expo-doctor`: 19/19 comprobaciones aprobadas.
 
 El build Android `preview` anterior con SDK 55 se completó, instaló y arrancó
-correctamente. Después se aplicó una mejora puntual en `Signing.js`; por ello,
-ese artefacto no representa exactamente el commit actual y debe generarse un
-nuevo build `preview` desde `main` antes de avanzar hacia publicación.
+correctamente. Posteriormente se generó exitosamente desde `main` el AAB Android
+de producción con `versionCode` 24. El artefacto está listo para Google Play,
+pero su carga depende de que la consola permita crear la versión de producción.
 
 ## Estado de iOS / App Store Connect
 
@@ -25,6 +25,9 @@ nuevo build `preview` desde `main` antes de avanzar hacia publicación.
   actual compatible con SDK 55 ni su validación en TestFlight.
 
 ### Próximos pasos de iOS
+
+El build iOS sigue pendiente por respuesta y autenticación 2FA del dueño de
+la cuenta Apple.
 
 1. Generar desde `main` un build iOS compatible con Expo SDK 55.
 2. Validar instalación y flujos funcionales en TestFlight, con atención especial
@@ -48,17 +51,25 @@ nuevo build `preview` desde `main` antes de avanzar hacia publicación.
 - Existe evidencia de un build Android `preview` previo con SDK 55 que compiló,
   se instaló y arrancó correctamente, pero fue generado antes del cambio puntual
   de `Signing.js` y no valida el commit actual.
+- El 2026-08-02 se ejecutó desde la rama `main` el build Android de producción
+  con `eas build -p android --profile production` y finalizó exitosamente.
+- EAS incrementó automáticamente el `versionCode` de 23 a 24.
+- Build EAS:
+  <https://expo.dev/accounts/jagudo25/projects/control-laboral-app/builds/eaef5531-1ee1-4833-8bcf-d67e294a408f>
+- Artifact AAB:
+  <https://expo.dev/artifacts/eas/0kiCWVHlajRYt6oabR7jvVDLUgDnRYZHTZ2I7D6iue0.aab>
+- Estado actual: el AAB de producción está listo para subir a Google Play
+  cuando la consola permita crear una versión de producción.
 
 ### Próximos pasos de Android
 
-1. Generar un nuevo build Android `preview` desde `main` en el commit actual.
-2. Instalarlo y ejecutar la validación funcional, especialmente firma/WebView y
-   los demás flujos críticos definidos en los checklist del proyecto.
-3. Si el `preview` queda aprobado, generar el build `production` en formato AAB.
-4. Subir el AAB al canal de prueba o de producción que corresponda y completar
-   las verificaciones de Google Play.
-5. Coordinar con el propietario de la cuenta para que solicite el acceso a
+1. Cuando Google Play Console lo permita, crear la versión de producción y
+   subir el AAB generado con `versionCode` 24.
+2. Completar las verificaciones de Google Play y la validación funcional que
+   corresponda al artefacto de producción.
+3. Coordinar con el propietario de la cuenta para que solicite el acceso a
    producción y, cuando proceda, realice o autorice la publicación inicial.
+4. Conservar como evidencia los enlaces del build EAS y del artifact AAB.
 
 ## Diferencias entre plataformas
 
@@ -67,7 +78,7 @@ nuevo build `preview` desde `main` antes de avanzar hacia publicación.
 | Situación en tienda | Aplicación ya publicada | Producción aún inactiva |
 | Etapa | Actualización de una app existente | Primera publicación |
 | Estado visible | Versión 1.1, **Listo para distribución** | Prueba cerrada aparentemente cumplida; acceso a producción pendiente |
-| Siguiente validación | Build SDK 55 en TestFlight | Nuevo `preview` desde `main`, seguido de AAB de producción |
+| Siguiente validación | Build SDK 55 en TestFlight, pendiente por respuesta/2FA del dueño de la cuenta Apple | Subir y validar en Google Play el AAB de producción con `versionCode` 24 |
 | Dependencia administrativa | Flujo normal de actualización | El propietario debe solicitar acceso a producción |
 
 Los dos flujos no deben tratarse como equivalentes: iOS requiere preservar la
@@ -76,14 +87,18 @@ el acceso y la publicación inicial en Google Play.
 
 ## Riesgos y pendientes
 
-- El cambio reciente de `Signing.js` no está cubierto por el build Android
-  `preview` previo; hace falta un artefacto nuevo desde `main`.
-- No consta todavía una validación iOS con SDK 55 en TestFlight.
+- El build Android `preview` previo no cubre el cambio reciente de `Signing.js`;
+  ya existe un AAB de producción nuevo desde `main`, pero su validación en
+  Google Play sigue pendiente.
+- No consta todavía una validación iOS con SDK 55 en TestFlight; el build
+  sigue pendiente por respuesta/2FA del dueño de la cuenta Apple.
 - La instalación y el arranque por sí solos no sustituyen la validación funcional
   completa en cada plataforma.
 - Firma/WebView, permisos, notificaciones, ubicación, archivos/compartición,
   navegación y autenticación deben comprobarse según los checklist vigentes.
-- El AAB Android de producción y su validación en Google Play siguen pendientes.
+- El AAB Android de producción ya fue generado exitosamente; su carga y
+  validación en Google Play siguen pendientes hasta que la consola permita crear
+  una versión de producción.
 - El avance de Android a producción depende de una acción administrativa que el
   usuario actual no puede ejecutar.
 - Las políticas y requisitos de ambas tiendas pueden cambiar y deben volver a
