@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { View, ScrollView, Alert } from "react-native";
 import { Text, useTheme } from "@rneui/themed";
@@ -31,9 +30,6 @@ const Signing = ({ route, navigation }) => {
 
   const { message, type } = route.params || {}; // Desestructuración de los parámetros
   const [motives, setMotives] = useState([]);
-  const [currentDate, setCurrentDate] = useState(
-    dayjs().format("DD [de] MMMM [de] YYYY"),
-  );
   const [turnData, setTurnData] = useState([]);
   const [dateUserTurn, setDateUserTurn] = useState(null);
   const [titleTurn, setTitleTurn] = useState("");
@@ -46,7 +42,16 @@ const Signing = ({ route, navigation }) => {
   const [multipleTurnsData, setMultipleTurnsData] = useState([]);
 
   const getUserTurnPreliminary = async () => {
-    const dayWeek = new Date().getDay();
+    setIsUserMultipleTurn(false);
+    setMultipleTurnsData([]);
+    setIsUserFreeTurn(false);
+    setActions([]);
+    setMotives([]);
+    setTurnData([]);
+    setCountTurnData(0);
+    setTitleTurn("");
+    setTotalHours(0);
+
     try {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_turn`,
@@ -58,17 +63,17 @@ const Signing = ({ route, navigation }) => {
         setIsUserMultipleTurn(true);
         setMultipleTurnsData(response.data.data.horarios || []);
       } else {
+        setIsUserMultipleTurn(false);
+        setMultipleTurnsData([]);
         getUserTurn();
         getUserButtons();
       }
-    } catch (error) {
-      console.log(error);
+    } catch {
+      // Se conserva el fallo silencioso sin exponer datos de la respuesta.
     }
   };
 
   const getUserTurn = async () => {
-    const dayWeek = new Date().getDay();
-
     try {
       const response = await axios.get(
         `${apiUrl}/custom/fichajes/api/index.php?action=user_turn`,
@@ -76,14 +81,11 @@ const Signing = ({ route, navigation }) => {
 
       setDateUserTurn(response.data.data.date || null);
 
-      console.log(response.data.data)
-
       // Obtener el dia en base a: response.data.data.date
 
       const day = dayName[dayjs(response.data.data.date).day()];
       
       let turn = response.data.data.horario[day];
-      console.log(response.data.data.horario[day])
       const marks = response.data.data.marks[day];
       const time = response.data.data.time;
       const isFree = response.data.data.id == -1;
