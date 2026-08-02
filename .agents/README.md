@@ -15,18 +15,25 @@ Laboral GM** desde Expo SDK 52 hasta Expo SDK 55.
   Codex.
 - [`TEST_CHECKLIST.md`](./TEST_CHECKLIST.md): pruebas mínimas de regresión,
   plataforma y publicación.
+- [`STORE_RELEASE_STATUS.md`](./STORE_RELEASE_STATUS.md): estado operativo
+  actual y próximos pasos diferenciados para App Store Connect y Google Play.
 
 ## Documentos de referencia preservados
 
 - `Migración Técnica Control Laboral GM.md`: solicitud técnica original.
 - `Respuesta_Analisis_Codex_Migracion.md`: revisión inicial de la solicitud.
 
-## Estado
+## Estado actual
 
 - Fecha de creación de esta base: 2026-07-26.
-- Rama observada: `upgrade/expo-sdk-55-api-36`.
-- Fase autorizada: documentación y diagnóstico sin cambios funcionales.
-- Objetivo aprobado: Expo SDK 55 mediante la ruta SDK 52 → 53 → 54 → 55.
+- Última actualización del índice: 2026-08-01.
+- Rama observada: `main`.
+- Commit observado: `ee97cca` (`chore: refactor Signing component state
+  management and cleanup`).
+- Migración completada: Expo SDK 55; dependencias alineadas y Expo Doctor
+  aprobado (19/19).
+- Publicación: consultar `STORE_RELEASE_STATUS.md`; iOS ya está en producción y
+  Android continúa en fase de primera publicación.
 
 Antes de trabajar en la migración, leer todos los documentos vigentes de este
 índice. Si la configuración real del repositorio contradice estos documentos,
