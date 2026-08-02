@@ -206,6 +206,11 @@ const Calendar = () => {
         <CardCalendar>
           <RNCalendar
             onDayPress={onDaySelect}
+            renderHeader={(date) => (
+              <Text style={{ color: theme.colors.text, fontWeight: "bold" }}>
+                {dayjs(date).locale("es").format("MMMM YYYY")}
+              </Text>
+            )}
             onMonthChange={(month) => {
               const newMonth = dayjs(month.dateString).format("YYYY-MM");
               setCurrentMonth(newMonth);
