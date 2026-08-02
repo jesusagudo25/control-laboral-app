@@ -10,6 +10,7 @@ import {
 import { Divider, useTheme } from "@rneui/themed";
 import { Calendar as RNCalendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import "dayjs/locale/es";
 import axios from "axios";
 
 import { LocaleConfig } from "react-native-calendars";
@@ -231,7 +232,12 @@ const Calendar = () => {
         </CardCalendar>
 
         <CardCalendar>
-          <Accordion title={`Detalle del ${selectedDate}`} theme={theme}>
+          <Accordion
+            title={`Detalle del ${dayjs(selectedDate)
+              .locale("es")
+              .format("D [de] MMMM [de] YYYY")}`}
+            theme={theme}
+          >
             {dayDetails ? (
               <>
                 {dayDetails.jornada &&

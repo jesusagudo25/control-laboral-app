@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Card, Icon, Header, Button, Dialog } from "@rneui/themed";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
@@ -104,23 +104,28 @@ const Document = ({ route, navigation }) => {
 
   const handleUpload = async () => {
     ignoreAppState.current = true; // Ignorar el estado de la app
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*", // Permitir cualquier tipo de archivo
+        copyToCacheDirectory: true,
+      });
 
-    const result = await DocumentPicker.getDocumentAsync({
-      type: "*/*", // Permitir cualquier tipo de archivo
-      copyToCacheDirectory: true,
-    });
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+      const file = result.assets[0];
 
-    ignoreAppState.current = false; // Dejar de ignorar el estado de la app
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-    if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const file = result.assets[0];
-
-    const base64 = await FileSystem.readAsStringAsync(file.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    handleInputChange("file", base64); // Guardar el archivo en el estado
-    handleInputChange("name", file.name); // Guardar el nombre del archivo en el estado
+      handleInputChange("file", base64); // Guardar el archivo en el estado
+      handleInputChange("name", file.name); // Guardar el nombre del archivo en el estado
+    } catch (error) {
+      console.error("Error al seleccionar o leer el documento", error);
+      setMessage("No se pudo seleccionar o leer el documento.");
+      setShowDialogInfo(true);
+    } finally {
+      ignoreAppState.current = false; // Dejar de ignorar el estado de la app
+    }
   };
 
   const handleSave = async () => {
@@ -163,13 +168,17 @@ const Document = ({ route, navigation }) => {
         setMessage("Documento subido con éxito.");
         setShowDialogInfo(true);
 
-        setIsLoading(false); // Ocultar el indicador de carga
         handleReset(); // Limpiar el formulario
       } else {
         console.error("Error al subir el documento", response.data.msg);
+        setMessage(response.data.msg || "No se pudo subir el documento.");
+        setShowDialogInfo(true);
       }
     } catch (error) {
       console.error("Error al subir el documento", error);
+      setMessage("No se pudo subir el documento.");
+      setShowDialogInfo(true);
+    } finally {
       setIsLoading(false); // Ocultar el indicador de carga
     }
   };

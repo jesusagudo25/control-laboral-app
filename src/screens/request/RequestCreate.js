@@ -194,9 +194,10 @@ const RequestCreate = ({ navigation }) => {
                 <Picker
                   selectedValue={type}
                   onValueChange={(value) => setType(value)}
-                  style={{ width: "100%", height: 55 }}
+                  style={{ width: "100%", height: 55, color: theme.colors.text }}
                   itemStyle={{
                     height: 55,
+                    color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
                 >
@@ -243,9 +244,10 @@ const RequestCreate = ({ navigation }) => {
                 <Picker
                   selectedValue={startShift}
                   onValueChange={(value) => setStartShift(value)}
-                  style={{ width: "100%", height: 55 }}
+                  style={{ width: "100%", height: 55, color: theme.colors.text }}
                   itemStyle={{
                     height: 55,
+                    color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
                 >
@@ -291,9 +293,10 @@ const RequestCreate = ({ navigation }) => {
                 <Picker
                   selectedValue={endShift}
                   onValueChange={(value) => setEndShift(value)}
-                  style={{ width: "100%", height: 55 }}
+                  style={{ width: "100%", height: 55, color: theme.colors.text }}
                   itemStyle={{
                     height: 55,
+                    color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
                 >
@@ -319,9 +322,10 @@ const RequestCreate = ({ navigation }) => {
                 <Picker
                   selectedValue={reviewer}
                   onValueChange={(value) => setReviewer(value)}
-                  style={{ width: "100%", height: 55 }}
+                  style={{ width: "100%", height: 55, color: theme.colors.text }}
                   itemStyle={{
                     height: 55,
+                    color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
                 >

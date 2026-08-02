@@ -5,7 +5,7 @@ import { Card } from "@rneui/themed";
 import { Button } from "@rneui/themed";
 import { useState } from "react";
 
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
 
@@ -30,10 +30,11 @@ const DocumentDetail = ({ navigation, route }) => {
 
       const { uri, headers } = await FileSystem.downloadAsync(url, fileUri);
 
-      save(uri, fileName, headers["Content-Type"]);
+      await save(uri, fileName, headers["Content-Type"]);
     } catch (error) {
-      setIsLoading(false);
       console.error("Error al descargar archivo:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,25 +46,20 @@ const DocumentDetail = ({ navigation, route }) => {
         const base64 = await FileSystem.readAsStringAsync(uri, {
           encoding: FileSystem.EncodingType.Base64,
         });
-        await FileSystem.StorageAccessFramework.createFileAsync(
+        const destinationUri =
+          await FileSystem.StorageAccessFramework.createFileAsync(
           permissions.directoryUri,
           filename,
           mimetype
-        )
-          .then(async (uri) => {
-            await FileSystem.writeAsStringAsync(uri, base64, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-          })
-          .catch((e) => console.log(e));
-        setIsLoading(false);
+        );
+        await FileSystem.writeAsStringAsync(destinationUri, base64, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
       } else {
-        shareAsync(uri);
-        setIsLoading(false);
+        await shareAsync(uri);
       }
     } else {
-      shareAsync(uri);
-      setIsLoading(false);
+      await shareAsync(uri);
     }
   };
 

@@ -24,6 +24,7 @@ const Login = ({ navigation }) => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingForm, setLoadingForm] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -236,14 +237,35 @@ const Login = ({ navigation }) => {
         />
 
         <Text style={theme.label}>Contraseña</Text>
-        <TextInput
-          style={theme.input}
-          placeholder="Ingresa tu contraseña"
-          onChangeText={setPassword}
-          placeholderTextColor={theme.colors.text}
-          value={password}
-          secureTextEntry={true}
-        />
+        <View style={{ position: "relative" }}>
+          <TextInput
+            style={[theme.input, { paddingRight: 45 }]}
+            placeholder="Ingresa tu contraseña"
+            onChangeText={setPassword}
+            placeholderTextColor={theme.colors.text}
+            value={password}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword((current) => !current)}
+            style={{
+              position: "absolute",
+              right: 12,
+              top: 0,
+              bottom: 0,
+              justifyContent: "center",
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            <Icon
+              name={showPassword ? "eye-slash" : "eye"}
+              type="font-awesome"
+              color={theme.colors.text}
+              size={20}
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Remember me checkbox*/}
         <CheckBox
