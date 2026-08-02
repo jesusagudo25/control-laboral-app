@@ -6,6 +6,39 @@ dispositivo, versión de SO, perfil EAS, commit y resultado.
 Estados sugeridos: `[ ]` pendiente, `[x]` aprobado, `[!]` falló, `[-]` no
 aplica.
 
+## Estado SDK 55 después del build Android preview (2026-08-01)
+
+- [x] Proyecto en Expo SDK 55.
+- [x] `.npmrc` contiene `legacy-peer-deps=true` como excepción técnica
+  controlada para que EAS ejecute `npm ci` pese al conflicto conocido entre
+  RNEUI y `react-native-safe-area-context@5.6.2`.
+- [x] `npm ci` finalizó correctamente de forma local.
+- [x] React Native alineado en `0.83.10` mediante
+  `npx expo install react-native`.
+- [x] `npx expo install --check`: `Dependencies are up to date`.
+- [x] `npx expo-doctor`: 19/19 checks passed.
+- [!] Primer `eas build -p android --profile preview`: falló en
+  `Install dependencies` por el conflicto de peer dependencies de RNEUI.
+- [x] Reintento de `eas build -p android --profile preview`: finalizó
+  correctamente; `npm ci` ya no falla y SDK 55 compila en EAS.
+- [x] EAS reportó SDK `55.0.0` y versión `1.0.1 (23)`.
+- [x] Build Android de distribución interna generado con credenciales remotas
+  de Expo: https://expo.dev/accounts/jagudo25/projects/control-laboral-app/builds/3f1e0c14-59f5-4688-9a5a-25da70f90bce
+- [x] APK descargado correctamente desde EAS.
+- [x] APK instalado correctamente en el emulador `Pixel_8`.
+- [x] Aplicación iniciada correctamente en `Pixel_8`.
+- [ ] Confirmar `targetSdkVersion` y `compileSdkVersion` efectivos en 36 con
+  el build generado.
+- [ ] Ejecutar y registrar el checklist funcional completo en dispositivo
+  físico o emulador: login, navegación, solicitudes, documentos, ubicación,
+  firma/WebView, FileSystem/Sharing y notificaciones.
+- [-] Publicación en Google Play: no ejecutada.
+- [-] `eas submit`: no ejecutado.
+
+RNEUI permanece como deuda técnica y riesgo posterior; no se reemplaza en
+esta fase. No se ejecutó `npm audit fix`, no se cambiaron identificadores ni
+configuración de tienda y no se publicó ningún build.
+
 ## Evidencia de ejecución
 
 - [ ] SDK y commit registrados.
@@ -23,8 +56,8 @@ aplica.
 - [ ] `npx expo install --check` conforme.
 - [ ] Configuración Expo efectiva proviene de la fuente esperada.
 - [ ] Bundler inicia sin errores.
-- [ ] Instalación limpia de la aplicación.
-- [ ] Arranque en frío sin cierre inesperado.
+- [x] Instalación limpia de la aplicación en `Pixel_8`.
+- [x] Arranque inicial sin cierre inesperado en `Pixel_8`.
 - [ ] Reinicio y retorno desde segundo plano.
 - [ ] Splash, icono, orientación y tema correctos.
 
@@ -177,7 +210,8 @@ aplica.
 - [ ] Proyecto EAS sin cambios.
 - [ ] Version/build number correctos.
 - [ ] Iconos, splash y nombre correctos.
-- [ ] APK de preview instala y funciona.
+- [x] APK de preview instala y arranca correctamente; funcionalidad completa
+  aún pendiente de validación.
 - [ ] AAB de producción se genera.
 - [ ] IPA de distribución se genera.
 - [ ] Firma y credenciales válidas sin modificarlas.

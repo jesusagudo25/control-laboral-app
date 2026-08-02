@@ -52,6 +52,29 @@ No copiar credenciales, tokens, URLs privadas ni el contenido de
 - `submit.production`: existe, pero los envíos automáticos no están
   autorizados.
 
+## Estado actual de SDK 55 y validación EAS (2026-08-01)
+
+- La aplicación está migrada a Expo SDK 55.
+- React Native quedó alineado en `0.83.10` mediante
+  `npx expo install react-native` después de que Expo Doctor detectara
+  `0.83.6` en lugar de la versión esperada.
+- `npx expo install --check` informa `Dependencies are up to date`.
+- `npx expo-doctor` aprueba 19/19 checks.
+- El primer `eas build -p android --profile preview` falló en
+  `Install dependencies` cuando `npm ci --include=dev` encontró el conflicto
+  de peers entre `@rneui/base@4.0.0-rc.7` y
+  `react-native-safe-area-context@5.6.2`.
+- `.npmrc` con `legacy-peer-deps=true` es una excepción técnica controlada
+  para permitir que EAS Build ejecute `npm ci` con ese conflicto conocido.
+  `npm ci` ya fue validado localmente con resultado correcto.
+- RNEUI permanece como deuda técnica y riesgo posterior; no se reemplaza en
+  esta fase.
+- Está pendiente reintentar el build Android `preview`, validar API 36 efectiva
+  en el artefacto generado, instalarlo en un dispositivo físico y ejecutar el
+  checklist funcional.
+- No se ejecutó `npm audit fix`, no se modificaron identificadores ni
+  configuración de tienda y no se publicó ningún build.
+
 ## Navegación y pantallas observadas
 
 La aplicación usa React Navigation con stack de autenticación, tabs y stack
