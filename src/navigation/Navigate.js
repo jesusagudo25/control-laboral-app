@@ -189,7 +189,7 @@ const AppStack = () => {
         name="DocumentDetail"
         options={{
           headerShown: true,
-          title: "Detalles del Documento",
+          title: "Detalles",
           headerStyle: {
             backgroundColor: theme.colors.accent,
             height: 45,

@@ -2,7 +2,7 @@
 
 ## Referencia actual
 
-- Fecha de actualización: 2026-08-02.
+- Fecha de actualización: 2026-08-03.
 - Rama: `main`.
 - Commit: `ee97cca` (`chore: refactor Signing component state management and cleanup`).
 - Base técnica: Expo SDK 55.
@@ -21,15 +21,22 @@ pero su carga depende de que la consola permita crear la versión de producción
 - Estado visible: **Listo para distribución**.
 - iOS no está en fase de primera publicación. El objetivo es mantener la
   continuidad productiva mediante una actualización de la aplicación existente.
-- Todavía no se ha registrado en esta documentación un build iOS del commit
-  actual compatible con SDK 55 ni su validación en TestFlight.
+- El 2026-08-03 se ejecutó desde la rama `main` el build iOS de producción con
+  `eas build -p ios --profile production` y finalizó exitosamente.
+- Las credenciales iOS están listas para `@jagudo25/control-laboral-app`.
+- Bundle identifier: `com.jagudo25.controllaboralapp`.
+- Push Notifications están configuradas.
+- Build EAS:
+  <https://expo.dev/accounts/jagudo25/projects/control-laboral-app/builds/6cf43f87-ac96-4023-87b1-57f7617745ff>
+- Artifact IPA:
+  <https://expo.dev/artifacts/eas/lg4WXGVcm3VgxFriGiwm1FqPveXnljSE-Jx1LulPpyc.ipa>
+- Estado actual: el IPA de producción fue generado correctamente y está
+  pendiente de submit a App Store Connect/TestFlight.
 
 ### Próximos pasos de iOS
 
-El build iOS sigue pendiente por respuesta y autenticación 2FA del dueño de
-la cuenta Apple.
-
-1. Generar desde `main` un build iOS compatible con Expo SDK 55.
+1. Realizar el submit del IPA a App Store Connect/TestFlight cuando exista la
+   autorización correspondiente.
 2. Validar instalación y flujos funcionales en TestFlight, con atención especial
    al flujo de firma afectado por la mejora reciente.
 3. Confirmar permisos, capacidades, credenciales, metadatos y cumplimiento de
@@ -78,7 +85,7 @@ la cuenta Apple.
 | Situación en tienda | Aplicación ya publicada | Producción aún inactiva |
 | Etapa | Actualización de una app existente | Primera publicación |
 | Estado visible | Versión 1.1, **Listo para distribución** | Prueba cerrada aparentemente cumplida; acceso a producción pendiente |
-| Siguiente validación | Build SDK 55 en TestFlight, pendiente por respuesta/2FA del dueño de la cuenta Apple | Subir y validar en Google Play el AAB de producción con `versionCode` 24 |
+| Siguiente validación | Submit y validación en App Store Connect/TestFlight del IPA de producción generado | Subir y validar en Google Play el AAB de producción con `versionCode` 24 |
 | Dependencia administrativa | Flujo normal de actualización | El propietario debe solicitar acceso a producción |
 
 Los dos flujos no deben tratarse como equivalentes: iOS requiere preservar la
@@ -90,8 +97,8 @@ el acceso y la publicación inicial en Google Play.
 - El build Android `preview` previo no cubre el cambio reciente de `Signing.js`;
   ya existe un AAB de producción nuevo desde `main`, pero su validación en
   Google Play sigue pendiente.
-- No consta todavía una validación iOS con SDK 55 en TestFlight; el build
-  sigue pendiente por respuesta/2FA del dueño de la cuenta Apple.
+- El IPA iOS de producción fue generado exitosamente, pero su submit y
+  validación en App Store Connect/TestFlight siguen pendientes.
 - La instalación y el arranque por sí solos no sustituyen la validación funcional
   completa en cada plataforma.
 - Firma/WebView, permisos, notificaciones, ubicación, archivos/compartición,
