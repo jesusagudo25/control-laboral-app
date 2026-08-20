@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Button, Dialog } from "@rneui/themed";
+import { Button, Dialog, Icon } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -46,7 +46,7 @@ const RequestCreate = ({ navigation }) => {
     setLoadingFields(true);
     // Aquí harías la petición a la API para obtener los campos de la solicitud
     const response = await axios.get(
-      `${apiUrl}/custom/fichajes/api/index.php?action=request_fields`
+      `${apiUrl}/custom/fichajes/api/index.php?action=request_fields`,
     );
 
     setTypes(response.data.msg.tipo);
@@ -119,7 +119,7 @@ const RequestCreate = ({ navigation }) => {
       // Aquí haces la petición a la API
       const response = await axios.post(
         `${apiUrl}/custom/fichajes/api/index.php`,
-        payload
+        payload,
       );
       console.log("Respuesta de la API:", response.data);
       if (response.data.success === false) {
@@ -185,18 +185,24 @@ const RequestCreate = ({ navigation }) => {
                   borderRadius: 5,
                   borderColor: "#1E6091", // Color del borde
                   overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-                  height: 45, // Define la altura del contenedor
+                  height: 52, // Evita recortar el valor seleccionado en Android
                   justifyContent: "center", // Centra el contenido dentro del contenedor
                   paddingVertical: 0, // Elimina padding extra
                   marginVertical: 10, // Espacio entre el Picker y el TextInput
                 }}
               >
                 <Picker
+                  mode="dropdown"
+                  dropdownIconColor="#1E6091"
                   selectedValue={type}
                   onValueChange={(value) => setType(value)}
-                  style={{ width: "100%", height: 55, color: theme.colors.text }}
+                  style={{
+                    width: "100%",
+                    height: 52,
+                    color: theme.colors.text,
+                  }}
                   itemStyle={{
-                    height: 55,
+                    height: 52,
                     color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
@@ -210,10 +216,20 @@ const RequestCreate = ({ navigation }) => {
               {/* Fecha inicio */}
               <Text style={theme.label}>Fecha de inicio</Text>
               <TouchableOpacity
-                style={theme.input}
+                style={[theme.input, styles.dateField]}
                 onPress={() => setShowInicioPicker(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Seleccionar fecha de inicio"
               >
-                <Text>{formatDate(startDate)}</Text>
+                <Text style={[styles.dateText, { color: theme.colors.text }]}>
+                  {formatDate(startDate)}
+                </Text>
+                <Icon
+                  name="calendar-today"
+                  type="material"
+                  color="#1E6091"
+                  size={21}
+                />
               </TouchableOpacity>
               {showInicioPicker && (
                 <DateTimePicker
@@ -235,18 +251,24 @@ const RequestCreate = ({ navigation }) => {
                   borderRadius: 5,
                   borderColor: "#1E6091", // Color del borde
                   overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-                  height: 45, // Define la altura del contenedor
+                  height: 52, // Evita recortar el valor seleccionado en Android
                   justifyContent: "center", // Centra el contenido dentro del contenedor
                   paddingVertical: 0, // Elimina padding extra
                   marginVertical: 10, // Espacio entre el Picker y el TextInput
                 }}
               >
                 <Picker
+                  mode="dropdown"
+                  dropdownIconColor="#1E6091"
                   selectedValue={startShift}
                   onValueChange={(value) => setStartShift(value)}
-                  style={{ width: "100%", height: 55, color: theme.colors.text }}
+                  style={{
+                    width: "100%",
+                    height: 52,
+                    color: theme.colors.text,
+                  }}
                   itemStyle={{
-                    height: 55,
+                    height: 52,
                     color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
@@ -259,10 +281,20 @@ const RequestCreate = ({ navigation }) => {
               {/* Fecha fin */}
               <Text style={theme.label}>Fecha de fin</Text>
               <TouchableOpacity
-                style={theme.input}
+                style={[theme.input, styles.dateField]}
                 onPress={() => setShowFinPicker(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Seleccionar fecha de fin"
               >
-                <Text>{formatDate(endDate)}</Text>
+                <Text style={[styles.dateText, { color: theme.colors.text }]}>
+                  {formatDate(endDate)}
+                </Text>
+                <Icon
+                  name="calendar-today"
+                  type="material"
+                  color="#1E6091"
+                  size={21}
+                />
               </TouchableOpacity>
               {showFinPicker && (
                 <DateTimePicker
@@ -284,18 +316,24 @@ const RequestCreate = ({ navigation }) => {
                   borderRadius: 5,
                   borderColor: "#1E6091", // Color del borde
                   overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-                  height: 45, // Define la altura del contenedor
+                  height: 52, // Evita recortar el valor seleccionado en Android
                   justifyContent: "center", // Centra el contenido dentro del contenedor
                   paddingVertical: 0, // Elimina padding extra
                   marginVertical: 10, // Espacio entre el Picker y el TextInput
                 }}
               >
                 <Picker
+                  mode="dropdown"
+                  dropdownIconColor="#1E6091"
                   selectedValue={endShift}
                   onValueChange={(value) => setEndShift(value)}
-                  style={{ width: "100%", height: 55, color: theme.colors.text }}
+                  style={{
+                    width: "100%",
+                    height: 52,
+                    color: theme.colors.text,
+                  }}
                   itemStyle={{
-                    height: 55,
+                    height: 52,
                     color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
@@ -313,18 +351,24 @@ const RequestCreate = ({ navigation }) => {
                   borderRadius: 5,
                   borderColor: "#1E6091", // Color del borde
                   overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-                  height: 45, // Define la altura del contenedor
+                  height: 52, // Evita recortar el valor seleccionado en Android
                   justifyContent: "center", // Centra el contenido dentro del contenedor
                   paddingVertical: 0, // Elimina padding extra
                   marginVertical: 10, // Espacio entre el Picker y el TextInput
                 }}
               >
                 <Picker
+                  mode="dropdown"
+                  dropdownIconColor="#1E6091"
                   selectedValue={reviewer}
                   onValueChange={(value) => setReviewer(value)}
-                  style={{ width: "100%", height: 55, color: theme.colors.text }}
+                  style={{
+                    width: "100%",
+                    height: 52,
+                    color: theme.colors.text,
+                  }}
                   itemStyle={{
-                    height: 55,
+                    height: 52,
                     color: theme.colors.text,
                     transform: [{ scaleX: 1 }, { scaleY: 1 }],
                   }}
@@ -377,3 +421,16 @@ const RequestCreate = ({ navigation }) => {
 };
 
 export default RequestCreate;
+
+const styles = {
+  dateField: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+  },
+  dateText: {
+    fontSize: 16,
+  },
+};

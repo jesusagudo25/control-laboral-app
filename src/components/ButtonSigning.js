@@ -7,6 +7,7 @@ import CustomModal from "./CustomModal";
 import useApi from "../hooks/useApi"; // Hook para manejar la URL de la API
 
 import { Picker } from "@react-native-picker/picker";
+import FormPicker from "./FormPicker";
 
 import "dayjs/locale/es"; // Importar el locale español
 
@@ -276,39 +277,24 @@ const ButtonSigning = ({
       >
         <Dialog.Title title="Pausa" />
         <Text>Selecciona el motivo de la pausa y añade una descripción.</Text>
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 5,
-            borderColor: "#1E6091", // Color del borde
-            overflow: "hidden", // Esto asegura que el borde se vea alrededor del Picker
-            height: 45, // Define la altura del contenedor
-            justifyContent: "center", // Centra el contenido dentro del contenedor
-            paddingVertical: 0, // Elimina padding extra
-            marginVertical: 10, // Espacio entre el Picker y el TextInput
-          }}
+        <FormPicker
+          selectedValue={motivo_pausa}
+          onValueChange={(itemValue) =>
+            handleInputChange("motivo_pausa", itemValue)
+          }
+          color={theme.colors.text}
+          prompt="Motivo de la pausa"
         >
-          <Picker
-            selectedValue={motivo_pausa}
-            onValueChange={(itemValue) => {
-              handleInputChange("motivo_pausa", itemValue);
-            }}
-            style={{ width: "100%", height: 55 }}
-            itemStyle={{
-              height: 55,
-              transform: [{ scaleX: 1 }, { scaleY: 1 }],
-            }}
-          >
-            <Picker.Item label="Selecciona un motivo" value="" />
-            {motives.map((motive) => (
-              <Picker.Item
-                key={motive.id}
-                label={motive.label}
-                value={motive.id}
-              />
-            ))}
-          </Picker>
-        </View>
+          <Picker.Item label="Selecciona un motivo" value="" color="#666" />
+          {motives.map((motive) => (
+            <Picker.Item
+              key={motive.id}
+              label={motive.label}
+              value={motive.id}
+              color={theme.colors.text}
+            />
+          ))}
+        </FormPicker>
         <TextInput
           style={theme.input}
           placeholder="Descripción"
