@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Button, Image, Dialog, Icon, CheckBox } from "@rneui/themed";
 import { useTheme } from "@rneui/themed";
@@ -15,6 +16,8 @@ import useApi from "../../hooks/useApi";
 import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomModal from "../../components/CustomModal";
+import ModeSwitch from "../../components/common/ModeSwitch";
+import KioskTerminalView from "../../components/kiosk/KioskTerminalView";
 
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -29,6 +32,33 @@ const Login = ({ navigation }) => {
   const [loadingForm, setLoadingForm] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
+  const [mode, setMode] = useState("personal");
+
+  const now = new Date();
+  const weekdays = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+  ];
+  const months = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+  ];
+  const renderedDate = `${weekdays[now.getDay()]} ${now.getDate()} de ${months[now.getMonth()]} • ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   // Relacionado a url set engranaje
   const [modalVisible, setModalVisible] = useState(false);
@@ -169,182 +199,123 @@ const Login = ({ navigation }) => {
 
   return (
     <ScrollView style={{ backgroundColor: theme.colors.background }}>
-      <View style={theme.container}>
-        <TouchableOpacity
-          style={{
-            position: "absolute",
-            top: 5,
-            right: 30,
-            zIndex: 1,
-          }}
-          onPress={() => {
-            setModalVisible(true);
-            setNewUrl(apiUrl || ""); // Inicializar con la URL actual o vacía
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: theme.colors.background,
-              padding: 10,
-              borderRadius: "50%",
-              borderColor: theme.colors.primary,
-              borderWidth: 1,
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
-            }}
-          >
-            <Icon
-              name="cog"
-              type="font-awesome"
-              color={theme.colors.primary}
-              size={24}
-            />
-          </View>
-        </TouchableOpacity>
-
-        <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 20,
-            marginTop: 20,
-          }}
-        >
-          <Image
-            source={require("../../../assets/logo_small.png")}
-            style={{
-              width: 180,
-              height: 100,
-              alignSelf: "center",
-              resizeMode: "contain",
-            }}
+      <View style={styles.header}>
+        <View style={styles.headerModeGroup}>
+          <Icon
+            name={mode === "personal" ? "user" : "desktop"}
+            type="font-awesome"
+            color="#ffffff"
+            size={15}
           />
+          <Text style={styles.headerMode}>
+            {mode === "personal" ? "Modo personal" : "Modo kiosco"}
+          </Text>
         </View>
-
-        <Text style={theme.label}>Usuario</Text>
-        <TextInput
-          style={theme.input}
-          placeholder="Ingresa tu usuario"
-          onChangeText={setUsername}
-          placeholderTextColor={theme.colors.text}
-          value={username}
-        />
-
-        <Text style={theme.label}>Contraseña</Text>
-        <View style={{ position: "relative" }}>
-          <TextInput
-            style={[theme.input, { paddingRight: 45 }]}
-            placeholder="Ingresa tu contraseña"
-            onChangeText={setPassword}
-            placeholderTextColor={theme.colors.text}
-            value={password}
-            secureTextEntry={!showPassword}
-          />
+        <View style={styles.headerRight}>
+          <Text numberOfLines={1} style={styles.headerDate}>
+            {renderedDate}
+          </Text>
           <TouchableOpacity
-            onPress={() => setShowPassword((current) => !current)}
-            style={{
-              position: "absolute",
-              right: 12,
-              top: 0,
-              bottom: 0,
-              justifyContent: "center",
-            }}
+            accessibilityLabel="Configurar URL de acceso"
             accessibilityRole="button"
-            accessibilityLabel={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            onPress={() => {
+              setModalVisible(true);
+              setNewUrl(apiUrl || "");
+            }}
+            style={styles.settingsButton}
           >
-            <Icon
-              name={showPassword ? "eye-slash" : "eye"}
-              type="font-awesome"
-              color={theme.colors.text}
-              size={20}
-            />
+            <Icon name="cog" type="font-awesome" color="#ffffff" size={17} />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Remember me checkbox*/}
-        <CheckBox
-          title="Recordarme"
-          checkedColor={theme.colors.primary}
-          uncheckedColor={theme.colors.primary}
-          containerStyle={{
-            backgroundColor: theme.colors.background,
-            borderColor: theme.colors.background,
-            margin: 0,
-            padding: 0,
-            marginBottom: 2,
-            marginTop: 2,
-            alignSelf: "flex-start",
-          }}
-          textStyle={{ color: theme.colors.text }}
-          checked={rememberMe}
-          onPress={() => saveRememberMe(!rememberMe)}
-        />
+      <ModeSwitch mode={mode} onChange={setMode} />
 
-        {/* Modals */}
-
-        <CustomModal
-          isVisible={showDialog}
-          onBackdropPress={() => setShowDialog(false)}
-        >
-          <Dialog.Title
-            title="Alerta"
-            titleStyle={{
-              color: theme.colors.text,
-              fontSize: 18,
-              fontWeight: "bold",
+      {mode === "kiosk" ? (
+        <KioskTerminalView />
+      ) : (
+        <View style={theme.container}>
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 12,
+              marginTop: 8,
             }}
-          />
-          <Text style={{ color: theme.colors.text }}>{message}</Text>
-        </CustomModal>
+          >
+            <Image
+              source={require("../../../assets/logo_small.png")}
+              style={{
+                width: 150,
+                height: 78,
+                alignSelf: "center",
+                resizeMode: "contain",
+              }}
+            />
+          </View>
 
-        <CustomModal
-          isVisible={modalVisible}
-          onBackdropPress={() => setModalVisible(false)}
-        >
-          <Dialog.Title
-            title="Configurar Acceso"
-            titleStyle={{
-              color: theme.colors.text,
-              fontSize: 18,
-              fontWeight: "bold",
-            }}
-          />
-          <Text style={{ color: theme.colors.text, marginVertical: 10 }}>
-            Ingresa la URL de tu API:
-          </Text>
+          <Text style={theme.label}>Usuario</Text>
           <TextInput
-            placeholder="https://tuempresa.com/api"
             style={theme.input}
-            value={newUrl}
-            onChangeText={setNewUrl}
-            multiline
+            placeholder="Ingresa tu usuario"
+            onChangeText={setUsername}
+            placeholderTextColor={theme.colors.text}
+            value={username}
           />
-          <Button
-            containerStyle={{
-              marginTop: 10,
-              marginBottom: 10,
-              width: "100%",
-            }}
-            buttonStyle={theme.buttonPrimaryStyle}
-            disabledStyle={{
-              backgroundColor: theme.colors.disabled,
-              borderRadius: 3,
-              paddingHorizontal: 15,
-            }}
-            loading={loading}
-            disabled={loading}
-            title="Guardar"
-            onPress={handleSave}
-          />
-        </CustomModal>
 
-        {/* <TouchableOpacity
+          <Text style={theme.label}>Contraseña</Text>
+          <View style={{ position: "relative" }}>
+            <TextInput
+              style={[theme.input, { paddingRight: 45 }]}
+              placeholder="Ingresa tu contraseña"
+              onChangeText={setPassword}
+              placeholderTextColor={theme.colors.text}
+              value={password}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword((current) => !current)}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: 0,
+                bottom: 0,
+                justifyContent: "center",
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+            >
+              <Icon
+                name={showPassword ? "eye-slash" : "eye"}
+                type="font-awesome"
+                color={theme.colors.text}
+                size={20}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Remember me checkbox*/}
+          <CheckBox
+            title="Recordarme"
+            checkedColor={theme.colors.primary}
+            uncheckedColor={theme.colors.primary}
+            containerStyle={{
+              backgroundColor: theme.colors.background,
+              borderColor: theme.colors.background,
+              margin: 0,
+              padding: 0,
+              marginBottom: 2,
+              marginTop: 2,
+              alignSelf: "flex-start",
+            }}
+            textStyle={{ color: theme.colors.text }}
+            checked={rememberMe}
+            onPress={() => saveRememberMe(!rememberMe)}
+          />
+
+          {/* <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => navigation.navigate("PasswordRecovery")}
         >
@@ -361,21 +332,21 @@ const Login = ({ navigation }) => {
           </Text>
         </TouchableOpacity> */}
 
-        <Button
-          title="Iniciar sesión"
-          containerStyle={theme.buttonPrimaryContainer}
-          buttonStyle={theme.buttonPrimaryStyle}
-          disabledStyle={{
-            backgroundColor: theme.colors.disabled,
-            borderRadius: 3,
-            paddingHorizontal: 15,
-          }}
-          onPress={() => handleLogin()}
-          loading={loading}
-          disabled={loading}
-        />
+          <Button
+            title="Iniciar sesión"
+            containerStyle={theme.buttonPrimaryContainer}
+            buttonStyle={theme.buttonPrimaryStyle}
+            disabledStyle={{
+              backgroundColor: theme.colors.disabled,
+              borderRadius: 3,
+              paddingHorizontal: 15,
+            }}
+            onPress={() => handleLogin()}
+            loading={loading}
+            disabled={loading}
+          />
 
-        {/* <Button
+          {/* <Button
           title="Crea tu usuario o abre tu cuenta"
           type="outline"
           titleStyle={{ color: theme.colors.primary }}
@@ -383,9 +354,104 @@ const Login = ({ navigation }) => {
           buttonStyle={theme.buttonSecondaryStyle}
           onPress={() => navigation.navigate("Register")}
         /> */}
-      </View>
+        </View>
+      )}
+
+      <CustomModal
+        isVisible={showDialog}
+        onBackdropPress={() => setShowDialog(false)}
+      >
+        <Dialog.Title
+          title="Alerta"
+          titleStyle={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: "bold",
+          }}
+        />
+        <Text style={{ color: theme.colors.text }}>{message}</Text>
+      </CustomModal>
+
+      <CustomModal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}
+      >
+        <Dialog.Title
+          title="Configurar Acceso"
+          titleStyle={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: "bold",
+          }}
+        />
+        <Text style={{ color: theme.colors.text, marginVertical: 10 }}>
+          Ingresa la URL de tu API:
+        </Text>
+        <TextInput
+          placeholder="https://tuempresa.com/api"
+          style={theme.input}
+          value={newUrl}
+          onChangeText={setNewUrl}
+          multiline
+        />
+        <Button
+          containerStyle={{ marginTop: 10, marginBottom: 10, width: "100%" }}
+          buttonStyle={theme.buttonPrimaryStyle}
+          disabledStyle={{
+            backgroundColor: theme.colors.disabled,
+            borderRadius: 3,
+            paddingHorizontal: 15,
+          }}
+          loading={loading}
+          disabled={loading}
+          title="Guardar"
+          onPress={handleSave}
+        />
+      </CustomModal>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  header: {
+    alignItems: "center",
+    backgroundColor: "#f7941e",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 48,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  headerModeGroup: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexShrink: 0,
+  },
+  headerMode: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "700",
+    marginLeft: 8,
+  },
+  headerRight: { alignItems: "center", flexDirection: "row", flexShrink: 1 },
+  headerDate: {
+    color: "#ffffff",
+    flexShrink: 1,
+    fontSize: 12,
+    marginLeft: 12,
+    textAlign: "right",
+    textTransform: "capitalize",
+  },
+  settingsButton: {
+    alignItems: "center",
+    borderColor: "rgba(255, 255, 255, 0.55)",
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 32,
+    justifyContent: "center",
+    marginLeft: 10,
+    width: 32,
+  },
+});
 
 export default Login;
