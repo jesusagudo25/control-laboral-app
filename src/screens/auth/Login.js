@@ -18,6 +18,28 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomModal from "../../components/CustomModal";
 import ModeSwitch from "../../components/common/ModeSwitch";
 import KioskTerminalView from "../../components/kiosk/KioskTerminalView";
+import KioskActionsView from "../../components/kiosk/KioskActionsView";
+
+const SIMULATED_WORKER = {
+  name: "Juan Pérez",
+  detail: "Operario · ROMESUR",
+  status: "Jornada activa",
+};
+
+const KIOSK_ACTIONS = [
+  {
+    id: "start-break",
+    title: "Iniciar pausa",
+    description: "Registra una pausa temporal en tu jornada.",
+    icon: "pause",
+  },
+  {
+    id: "end-shift",
+    title: "Finalizar jornada",
+    description: "Finaliza tu jornada laboral del día de hoy.",
+    icon: "stop",
+  },
+];
 
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -33,6 +55,15 @@ const Login = ({ navigation }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
   const [mode, setMode] = useState("personal");
+  const [kioskStep, setKioskStep] = useState("terminal");
+
+  const isKioskOperationalStep = mode === "kiosk" && kioskStep !== "terminal";
+  const showInitialScreenControls = !isKioskOperationalStep;
+
+  const handleModeChange = (nextMode) => {
+    setMode(nextMode);
+    setKioskStep("terminal");
+  };
 
   const now = new Date();
   const weekdays = [
@@ -215,24 +246,41 @@ const Login = ({ navigation }) => {
           <Text numberOfLines={1} style={styles.headerDate}>
             {renderedDate}
           </Text>
-          <TouchableOpacity
-            accessibilityLabel="Configurar URL de acceso"
-            accessibilityRole="button"
-            onPress={() => {
-              setModalVisible(true);
-              setNewUrl(apiUrl || "");
-            }}
-            style={styles.settingsButton}
-          >
-            <Icon name="cog" type="font-awesome" color="#ffffff" size={17} />
-          </TouchableOpacity>
+          {showInitialScreenControls && (
+            <TouchableOpacity
+              accessibilityLabel="Configurar URL de acceso"
+              accessibilityRole="button"
+              onPress={() => {
+                setModalVisible(true);
+                setNewUrl(apiUrl || "");
+              }}
+              style={styles.settingsButton}
+            >
+              <Icon name="cog" type="font-awesome" color="#ffffff" size={17} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      <ModeSwitch mode={mode} onChange={setMode} />
+      {showInitialScreenControls && (
+        <ModeSwitch mode={mode} onChange={handleModeChange} />
+      )}
 
       {mode === "kiosk" ? (
-        <KioskTerminalView />
+        kioskStep === "actions" ? (
+          <KioskActionsView
+            availableActions={KIOSK_ACTIONS}
+            onActionPress={(action) =>
+              console.log(`Acción de kiosco simulada: ${action.id}`)
+            }
+            onReturnToTerminal={() => setKioskStep("terminal")}
+            worker={SIMULATED_WORKER}
+          />
+        ) : (
+          <KioskTerminalView
+            onWorkerIdentified={() => setKioskStep("actions")}
+          />
+        )
       ) : (
         <View style={theme.container}>
           <View
