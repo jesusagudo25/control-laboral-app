@@ -38,9 +38,6 @@ const KioskTerminalView = ({ onWorkerIdentified }) => (
       <Text style={styles.scanText}>
         Colócalo frente a la cámara para registrar tu entrada o salida.
       </Text>
-      <Text style={styles.simulationText}>
-        Toca aquí para simular el escaneo
-      </Text>
     </TouchableOpacity>
 
     <View style={styles.infoCard}>
