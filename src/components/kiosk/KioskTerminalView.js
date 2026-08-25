@@ -1,12 +1,12 @@
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Icon } from "@rneui/themed";
 
 const Corner = ({ position }) => (
   <View style={[styles.corner, styles[position]]} />
 );
 
-const KioskTerminalView = () => (
+const KioskTerminalView = ({ onWorkerIdentified }) => (
   <View style={styles.container}>
     <Image
       source={require("../../../assets/logo_small.png")}
@@ -17,7 +17,14 @@ const KioskTerminalView = () => (
       Escanea tu código QR para registrar tu jornada
     </Text>
 
-    <View style={styles.card}>
+    <TouchableOpacity
+      accessibilityHint="Abre las acciones de jornada con un trabajador simulado"
+      accessibilityLabel="Simular lectura de código QR"
+      accessibilityRole="button"
+      activeOpacity={0.85}
+      onPress={onWorkerIdentified}
+      style={styles.card}
+    >
       <View style={styles.scanner}>
         <Corner position="topLeft" />
         <Corner position="topRight" />
@@ -31,7 +38,10 @@ const KioskTerminalView = () => (
       <Text style={styles.scanText}>
         Colócalo frente a la cámara para registrar tu entrada o salida.
       </Text>
-    </View>
+      <Text style={styles.simulationText}>
+        Toca aquí para simular el escaneo
+      </Text>
+    </TouchableOpacity>
 
     <View style={styles.infoCard}>
       <Icon name="users" type="font-awesome" color="#f7941e" size={21} />
@@ -123,6 +133,12 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginTop: 7,
     textAlign: "center",
+  },
+  simulationText: {
+    color: "#b9650a",
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 12,
   },
   infoCard: {
     alignItems: "flex-start",
