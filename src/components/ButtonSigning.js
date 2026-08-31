@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, Alert } from "react-native";
+import { View, TextInput, Alert, Platform } from "react-native";
 import { useTheme } from "@rneui/themed";
 import { Text, Button, Dialog } from "@rneui/themed";
 import axios from "axios";
@@ -282,16 +282,21 @@ const ButtonSigning = ({
           onValueChange={(itemValue) =>
             handleInputChange("motivo_pausa", itemValue)
           }
-          color={theme.colors.text}
+          selectedTextColor={theme.colors.text}
+          iosItemColor={theme.colors.text}
           prompt="Motivo de la pausa"
         >
-          <Picker.Item label="Selecciona un motivo" value="" color="#666" />
+          <Picker.Item
+            label="Selecciona un motivo"
+            value=""
+            color={Platform.OS === "ios" ? "#666" : undefined}
+          />
           {motives.map((motive) => (
             <Picker.Item
               key={motive.id}
               label={motive.label}
               value={motive.id}
-              color={theme.colors.text}
+              color={Platform.OS === "ios" ? theme.colors.text : undefined}
             />
           ))}
         </FormPicker>

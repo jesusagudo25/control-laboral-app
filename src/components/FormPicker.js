@@ -1,28 +1,37 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
 const FormPicker = ({
   selectedValue,
   onValueChange,
   children,
-  color = "#0D0D0D",
+  selectedTextColor = "#0D0D0D",
+  androidItemColor,
+  iosItemColor = "#0D0D0D",
   prompt,
-}) => (
-  <View style={styles.container}>
-    <Picker
-      selectedValue={selectedValue}
-      onValueChange={onValueChange}
-      mode="dropdown"
-      prompt={prompt}
-      dropdownIconColor="#1E6091"
-      style={[styles.picker, { color }]}
-      itemStyle={[styles.item, { color }]}
-    >
-      {children}
-    </Picker>
-  </View>
-);
+}) => {
+  const itemColor = Platform.select({
+    android: androidItemColor,
+    ios: iosItemColor,
+  });
+
+  return (
+    <View style={styles.container}>
+      <Picker
+        selectedValue={selectedValue}
+        onValueChange={onValueChange}
+        mode="dropdown"
+        prompt={prompt}
+        dropdownIconColor="#1E6091"
+        style={[styles.picker, { color: selectedTextColor }]}
+        itemStyle={[styles.item, itemColor ? { color: itemColor } : null]}
+      >
+        {children}
+      </Picker>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
