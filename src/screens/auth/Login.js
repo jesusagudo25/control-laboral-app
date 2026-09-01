@@ -17,32 +17,7 @@ import { registerForPushNotificationsAsync } from "../../hooks/usePushNotificati
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomModal from "../../components/CustomModal";
 import ModeSwitch from "../../components/common/ModeSwitch";
-import KioskTerminalView from "../../components/kiosk/KioskTerminalView";
-import KioskActionsView from "../../components/kiosk/KioskActionsView";
-import KioskConfirmationView from "../../components/kiosk/KioskConfirmationView";
-
-const SIMULATED_WORKER = {
-  name: "Juan Pérez",
-  detail: "Operario · ROMESUR",
-  status: "Jornada activa",
-};
-
-const KIOSK_ACTIONS = [
-  {
-    id: "start-break",
-    title: "Iniciar pausa",
-    description: "Registra una pausa temporal en tu jornada.",
-    icon: "pause",
-    confirmationTitle: "Pausa iniciada",
-  },
-  {
-    id: "end-shift",
-    title: "Finalizar jornada",
-    description: "Finaliza tu jornada laboral del día de hoy.",
-    icon: "stop",
-    confirmationTitle: "Jornada finalizada",
-  },
-];
+import KioskFlow from "../../components/kiosk/KioskFlow";
 
 const Login = ({ navigation }) => {
   const { theme } = useTheme(); // Obtener el tema actual
@@ -58,26 +33,13 @@ const Login = ({ navigation }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
   const [mode, setMode] = useState("personal");
-  const [kioskStep, setKioskStep] = useState("terminal");
-  const [selectedKioskAction, setSelectedKioskAction] = useState(null);
+  const [isKioskOperational, setIsKioskOperational] = useState(false);
 
-  const isKioskOperationalStep = mode === "kiosk" && kioskStep !== "terminal";
-  const showInitialScreenControls = !isKioskOperationalStep;
+  const showInitialScreenControls = !isKioskOperational;
 
   const handleModeChange = (nextMode) => {
     setMode(nextMode);
-    setKioskStep("terminal");
-    setSelectedKioskAction(null);
-  };
-
-  const handleKioskAction = (action) => {
-    setSelectedKioskAction(action);
-    setKioskStep("confirmation");
-  };
-
-  const handleReturnToTerminal = () => {
-    setSelectedKioskAction(null);
-    setKioskStep("terminal");
+    setIsKioskOperational(false);
   };
 
   const now = new Date();
@@ -282,25 +244,7 @@ const Login = ({ navigation }) => {
       )}
 
       {mode === "kiosk" ? (
-        kioskStep === "confirmation" && selectedKioskAction ? (
-          <KioskConfirmationView
-            action={selectedKioskAction}
-            onAnotherAction={() => setKioskStep("actions")}
-            onReturnToTerminal={handleReturnToTerminal}
-            worker={SIMULATED_WORKER}
-          />
-        ) : kioskStep === "actions" ? (
-          <KioskActionsView
-            availableActions={KIOSK_ACTIONS}
-            onActionPress={handleKioskAction}
-            onReturnToTerminal={handleReturnToTerminal}
-            worker={SIMULATED_WORKER}
-          />
-        ) : (
-          <KioskTerminalView
-            onWorkerIdentified={() => setKioskStep("actions")}
-          />
-        )
+        <KioskFlow onOperationalStateChange={setIsKioskOperational} />
       ) : (
         <View style={theme.container}>
           <View
