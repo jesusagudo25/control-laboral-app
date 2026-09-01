@@ -48,16 +48,10 @@ export const getUserTurn = async (apiUrl, workerToken) => {
   return response.data;
 };
 
-export const selectUserTurn = async (
-  apiUrl,
-  workerToken,
-  date,
-  idHorarioM
-) => {
+export const selectUserTurn = async (apiUrl, workerToken, turnData) => {
   const response = await createKioskClient(apiUrl, workerToken).post("", {
+    ...turnData,
     action: "user_turn",
-    date,
-    idHorarioM,
   });
   return response.data;
 };
@@ -69,11 +63,7 @@ export const getKioskShiftStatus = async (apiUrl, workerToken) => {
   return response.data;
 };
 
-export const submitKioskFichaje = async (
-  apiUrl,
-  workerToken,
-  fichajeData
-) => {
+export const submitKioskFichaje = async (apiUrl, workerToken, fichajeData) => {
   const response = await createKioskClient(apiUrl, workerToken).post("", {
     ...fichajeData,
     action: "kiosk_fichaje",

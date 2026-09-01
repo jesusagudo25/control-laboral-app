@@ -20,6 +20,7 @@ const KioskTerminalView = ({
   kioskConfigError,
   isValidatingQr,
   isLoadingWorkerInfo,
+  isLoadingUserTurn,
   onRetry,
   onQrValueChange,
   onWorkerIdentified,
@@ -77,7 +78,8 @@ const KioskTerminalView = ({
         <View
           style={[
             styles.card,
-            (isValidatingQr || isLoadingWorkerInfo) && styles.cardDisabled,
+            (isValidatingQr || isLoadingWorkerInfo || isLoadingUserTurn) &&
+              styles.cardDisabled,
           ]}
         >
           <View style={styles.scanner}>
@@ -102,7 +104,9 @@ const KioskTerminalView = ({
             accessibilityLabel="Código QR simulado"
             autoCapitalize="none"
             autoCorrect={false}
-            editable={!isValidatingQr && !isLoadingWorkerInfo}
+            editable={
+              !isValidatingQr && !isLoadingWorkerInfo && !isLoadingUserTurn
+            }
             onChangeText={onQrValueChange}
             onSubmitEditing={onWorkerIdentified}
             placeholder="Introduce un QR de prueba"
@@ -110,7 +114,12 @@ const KioskTerminalView = ({
             style={styles.qrInput}
             value={qrValue}
           />
-          {isLoadingWorkerInfo ? (
+          {isLoadingUserTurn ? (
+            <View style={styles.validationState}>
+              <ActivityIndicator color="#f7941e" size="small" />
+              <Text style={styles.validationText}>Cargando horarios...</Text>
+            </View>
+          ) : isLoadingWorkerInfo ? (
             <View style={styles.validationState}>
               <ActivityIndicator color="#f7941e" size="small" />
               <Text style={styles.validationText}>

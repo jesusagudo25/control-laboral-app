@@ -4,11 +4,14 @@ import {
   getCompanyInfo,
   getKioskConfig,
   getUserInfo,
+  getUserTurn,
+  selectUserTurn,
   validateKioskQr,
 } from "../../services/kioskApi";
 import KioskActionsView from "./KioskActionsView";
 import KioskConfirmationView from "./KioskConfirmationView";
 import KioskTerminalView from "./KioskTerminalView";
+import KioskTurnSelectorView from "./KioskTurnSelectorView";
 
 const SIMULATED_ACTIONS = [
   {
@@ -55,6 +58,21 @@ const isValidKioskConfig = (data) =>
 const isUnauthorizedError = (error) =>
   [401, 403].includes(error?.response?.status);
 
+const normalizeTurnOptions = (turns) => {
+  if (Array.isArray(turns)) {
+    return turns.map((turn, index) => ({
+      ...turn,
+      id: turn?.id ?? turn?.idHorarioM ?? String(index),
+    }));
+  }
+
+  if (turns && typeof turns === "object") {
+    return Object.entries(turns).map(([id, turn]) => ({ ...turn, id }));
+  }
+
+  return [];
+};
+
 const KioskFlow = ({ onOperationalStateChange }) => {
   const { apiUrl } = useApi();
   const [kioskStep, setKioskStep] = useState("terminal");
@@ -74,6 +92,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [geoLocationPolicy, setGeoLocationPolicy] = useState(null);
   const [isLoadingWorkerInfo, setIsLoadingWorkerInfo] = useState(false);
   const [workerInfoError, setWorkerInfoError] = useState(null);
+  const [dateUserTurn, setDateUserTurn] = useState(null);
+  const [isMultipleTurn, setIsMultipleTurn] = useState(false);
+  const [turnOptions, setTurnOptions] = useState([]);
+  const [selectedTurn, setSelectedTurn] = useState(null);
+  const [isSavingTurn, setIsSavingTurn] = useState(false);
+  const [turnError, setTurnError] = useState(null);
+  const [isLoadingUserTurn, setIsLoadingUserTurn] = useState(false);
   const isValidatingQrRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
 
@@ -150,6 +175,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setGeoLocationPolicy(null);
     setIsLoadingWorkerInfo(false);
     setWorkerInfoError(null);
+    setDateUserTurn(null);
+    setIsMultipleTurn(false);
+    setTurnOptions([]);
+    setSelectedTurn(null);
+    setIsSavingTurn(false);
+    setTurnError(null);
+    setIsLoadingUserTurn(false);
     setSelectedKioskAction(null);
   };
 
@@ -157,6 +189,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setQrValue(value);
     setQrError(null);
     setWorkerInfoError(null);
+    setTurnError(null);
   };
 
   const onWorkerIdentified = async () => {
@@ -180,6 +213,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setWorkerInfoError(null);
 
     let isLoadingInformation = false;
+    let isLoadingTurnInformation = false;
 
     try {
       const response = await validateKioskQr(
@@ -259,7 +293,30 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       setCompanyInfo({ name: companyResponse.data.name.trim() });
       setUserInfo(sanitizedUserInfo);
       setGeoLocationPolicy(sanitizedUserInfo.geolocal);
-      setKioskStep("actions");
+      isLoadingTurnInformation = true;
+      setIsLoadingUserTurn(true);
+
+      const turnResponse = await getUserTurn(
+        normalizedApiUrl,
+        temporaryWorkerToken,
+      );
+
+      if (requestId !== qrValidationRequestRef.current) {
+        return;
+      }
+
+      if (turnResponse?.success !== true || !turnResponse.data) {
+        throw new Error("Invalid user turn response");
+      }
+
+      const turnDate = turnResponse.data.date ?? null;
+      const hasMultipleTurns = turnResponse.data.multiples === true;
+
+      setDateUserTurn(turnDate);
+      setIsMultipleTurn(hasMultipleTurns);
+      setTurnOptions(normalizeTurnOptions(turnResponse.data.horarios));
+      setSelectedTurn(null);
+      setKioskStep(hasMultipleTurns ? "turn-selector" : "actions");
     } catch (error) {
       if (requestId === qrValidationRequestRef.current) {
         setWorkerToken(null);
@@ -268,13 +325,20 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         setCompanyInfo(null);
         setUserInfo(null);
         setGeoLocationPolicy(null);
+        setDateUserTurn(null);
+        setIsMultipleTurn(false);
+        setTurnOptions([]);
+        setSelectedTurn(null);
 
         if (isLoadingInformation) {
-          setWorkerInfoError(
-            isUnauthorizedError(error)
-              ? "La sesión temporal venció. Escanea nuevamente el código QR."
-              : "No se pudo cargar la información del trabajador. Inténtalo de nuevo.",
-          );
+          const errorMessage = isUnauthorizedError(error)
+            ? "La sesión temporal venció. Escanea nuevamente el código QR."
+            : isLoadingTurnInformation
+              ? "No se pudieron cargar los horarios del trabajador. Inténtalo de nuevo."
+              : "No se pudo cargar la información del trabajador. Inténtalo de nuevo.";
+
+          setWorkerInfoError(errorMessage);
+          if (isLoadingTurnInformation) setTurnError(errorMessage);
         } else {
           setQrError(
             "No se pudo validar el código QR. Verifícalo e inténtalo de nuevo.",
@@ -287,7 +351,47 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         isValidatingQrRef.current = false;
         setIsValidatingQr(false);
         setIsLoadingWorkerInfo(false);
+        setIsLoadingUserTurn(false);
       }
+    }
+  };
+
+  const onSelectTurn = (turn) => {
+    setSelectedTurn(turn);
+    setTurnError(null);
+  };
+
+  const onConfirmTurn = async () => {
+    if (!selectedTurn || isSavingTurn) {
+      setTurnError("Selecciona un horario para continuar.");
+      return;
+    }
+
+    try {
+      setIsSavingTurn(true);
+      setTurnError(null);
+      const response = await selectUserTurn(apiUrl, workerToken, {
+        action: "user_turn",
+        date: dateUserTurn,
+        idHorarioM: selectedTurn.id,
+      });
+
+      if (response?.success !== true) {
+        setTurnError(
+          response?.msg || "No se pudo guardar el horario seleccionado.",
+        );
+        return;
+      }
+
+      setKioskStep("actions");
+    } catch (error) {
+      setTurnError(
+        isUnauthorizedError(error)
+          ? "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente."
+          : "No se pudo guardar el horario seleccionado. Inténtalo de nuevo.",
+      );
+    } finally {
+      setIsSavingTurn(false);
     }
   };
 
@@ -322,6 +426,22 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       }
     : null;
 
+  if (kioskStep === "turn-selector" && hasWorkerSession && isMultipleTurn) {
+    return (
+      <KioskTurnSelectorView
+        date={dateUserTurn}
+        isSaving={isSavingTurn}
+        onConfirm={onConfirmTurn}
+        onReturnToTerminal={onReturnToTerminal}
+        onSelectTurn={onSelectTurn}
+        selectedTurn={selectedTurn}
+        turnError={turnError}
+        turns={turnOptions}
+        worker={worker}
+      />
+    );
+  }
+
   if (kioskStep === "confirmation" && selectedKioskAction && hasWorkerSession) {
     return (
       <KioskConfirmationView
@@ -351,6 +471,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       kioskConfigError={kioskConfigError}
       isValidatingQr={isValidatingQr}
       isLoadingWorkerInfo={isLoadingWorkerInfo}
+      isLoadingUserTurn={isLoadingUserTurn}
       onRetry={() => setKioskConfigRequest((request) => request + 1)}
       onQrValueChange={onQrValueChange}
       onWorkerIdentified={onWorkerIdentified}
