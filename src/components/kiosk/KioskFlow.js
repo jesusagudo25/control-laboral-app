@@ -269,17 +269,22 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setTurnError(null);
   };
 
-  const onWorkerIdentified = async () => {
+  const onWorkerIdentified = async (scannedValue) => {
     if (isValidatingQrRef.current) {
       return;
     }
 
     const normalizedApiUrl = normalizeApiUrl(apiUrl);
-    const normalizedQrValue = qrValue.trim();
+    const normalizedQrValue =
+      typeof scannedValue === "string" ? scannedValue.trim() : qrValue.trim();
 
     if (!normalizedApiUrl || !normalizedQrValue) {
       setQrError("Introduce un código QR válido para continuar.");
       return;
+    }
+
+    if (normalizedQrValue !== qrValue) {
+      setQrValue(normalizedQrValue);
     }
 
     const requestId = qrValidationRequestRef.current + 1;
@@ -729,6 +734,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       isLoadingWorkerInfo={isLoadingWorkerInfo}
       isLoadingUserTurn={isLoadingUserTurn}
       onRetry={() => setKioskConfigRequest((request) => request + 1)}
+      onQrScanned={onWorkerIdentified}
       onQrValueChange={onQrValueChange}
       onWorkerIdentified={onWorkerIdentified}
       qrError={qrError}

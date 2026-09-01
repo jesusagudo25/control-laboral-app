@@ -23,6 +23,7 @@
     "dayjs": "^1.11.13",
     "expo": "~55.0.31",
     "expo-build-properties": "~55.0.18",
+    "expo-camera": "~55.0.23",
     "expo-constants": "~55.0.17",
     "expo-dev-client": "~55.0.40",
     "expo-device": "~55.0.21",

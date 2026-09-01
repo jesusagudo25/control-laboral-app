@@ -9,10 +9,7 @@ import {
   View,
 } from "react-native";
 import { Icon } from "@rneui/themed";
-
-const Corner = ({ position }) => (
-  <View style={[styles.corner, styles[position]]} />
-);
+import KioskQrScannerView from "./KioskQrScannerView";
 
 const KioskTerminalView = ({
   isLoading,
@@ -22,6 +19,7 @@ const KioskTerminalView = ({
   isLoadingWorkerInfo,
   isLoadingUserTurn,
   onRetry,
+  onQrScanned,
   onQrValueChange,
   onWorkerIdentified,
   qrError,
@@ -82,20 +80,12 @@ const KioskTerminalView = ({
               styles.cardDisabled,
           ]}
         >
-          <View style={styles.scanner}>
-            <Corner position="topLeft" />
-            <Corner position="topRight" />
-            <Corner position="bottomLeft" />
-            <Corner position="bottomRight" />
-            <View style={styles.cameraCircle}>
-              <Icon
-                name="camera"
-                type="font-awesome"
-                color="#f7941e"
-                size={36}
-              />
-            </View>
-          </View>
+          <KioskQrScannerView
+            disabled={
+              isValidatingQr || isLoadingWorkerInfo || isLoadingUserTurn
+            }
+            onQrScanned={onQrScanned}
+          />
           <Text style={styles.scanTitle}>Acerca tu código QR</Text>
           <Text style={styles.scanText}>
             Colócalo frente a la cámara para registrar tu entrada o salida.
@@ -143,11 +133,7 @@ const KioskTerminalView = ({
             >
               <Text style={styles.simulationText}>SIMULAR LECTURA QR</Text>
             </TouchableOpacity>
-          ) : (
-            <Text accessibilityRole="alert" style={styles.scannerUnavailable}>
-              El lector QR no está disponible en este build.
-            </Text>
-          )}
+          ) : null}
           {!!qrError && (
             <Text accessibilityRole="alert" style={styles.qrError}>
               {qrError}
@@ -246,35 +232,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   cardDisabled: { opacity: 0.7 },
-  scanner: {
-    alignItems: "center",
-    height: 166,
-    justifyContent: "center",
-    width: 166,
-  },
-  cameraCircle: {
-    alignItems: "center",
-    backgroundColor: "#fff4e8",
-    borderRadius: 40,
-    height: 68,
-    justifyContent: "center",
-    width: 68,
-  },
-  corner: {
-    borderColor: "#f7941e",
-    height: 34,
-    position: "absolute",
-    width: 34,
-  },
-  topLeft: { borderLeftWidth: 4, borderTopWidth: 4, left: 0, top: 0 },
-  topRight: { borderRightWidth: 4, borderTopWidth: 4, right: 0, top: 0 },
-  bottomLeft: { borderBottomWidth: 4, borderLeftWidth: 4, bottom: 0, left: 0 },
-  bottomRight: {
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    bottom: 0,
-    right: 0,
-  },
   scanTitle: {
     color: "#28231f",
     fontSize: 19,
@@ -293,13 +250,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   simulationButton: { marginTop: 12, padding: 8 },
-  scannerUnavailable: {
-    color: "#a53a2a",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 14,
-    textAlign: "center",
-  },
   qrInput: {
     backgroundColor: "#fffaf5",
     borderColor: "#e8c49c",
