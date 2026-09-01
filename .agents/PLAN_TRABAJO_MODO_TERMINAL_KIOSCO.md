@@ -403,7 +403,6 @@ Mostrar:
 
 ```text
 nombre de empresa
-logo si aplica
 ```
 
 ## Uso de `user_info`
@@ -461,8 +460,6 @@ Casos:
 
 ```text
 company_info correcto
-company_info sin logo
-company_info con logo inválido
 user_info correcto
 user_info sin firstname/lastname
 user_info con geolocal null

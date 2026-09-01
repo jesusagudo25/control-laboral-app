@@ -19,11 +19,13 @@ const KioskTerminalView = ({
   kioskConfig,
   kioskConfigError,
   isValidatingQr,
+  isLoadingWorkerInfo,
   onRetry,
   onQrValueChange,
   onWorkerIdentified,
   qrError,
   qrValue,
+  workerInfoError,
 }) => (
   <View style={styles.container}>
     <Image
@@ -72,7 +74,12 @@ const KioskTerminalView = ({
           Escanea tu código QR para registrar tu jornada
         </Text>
 
-        <View style={[styles.card, isValidatingQr && styles.cardDisabled]}>
+        <View
+          style={[
+            styles.card,
+            (isValidatingQr || isLoadingWorkerInfo) && styles.cardDisabled,
+          ]}
+        >
           <View style={styles.scanner}>
             <Corner position="topLeft" />
             <Corner position="topRight" />
@@ -95,7 +102,7 @@ const KioskTerminalView = ({
             accessibilityLabel="Código QR simulado"
             autoCapitalize="none"
             autoCorrect={false}
-            editable={!isValidatingQr}
+            editable={!isValidatingQr && !isLoadingWorkerInfo}
             onChangeText={onQrValueChange}
             onSubmitEditing={onWorkerIdentified}
             placeholder="Introduce un QR de prueba"
@@ -103,7 +110,14 @@ const KioskTerminalView = ({
             style={styles.qrInput}
             value={qrValue}
           />
-          {isValidatingQr ? (
+          {isLoadingWorkerInfo ? (
+            <View style={styles.validationState}>
+              <ActivityIndicator color="#f7941e" size="small" />
+              <Text style={styles.validationText}>
+                Cargando información del trabajador...
+              </Text>
+            </View>
+          ) : isValidatingQr ? (
             <View style={styles.validationState}>
               <ActivityIndicator color="#f7941e" size="small" />
               <Text style={styles.validationText}>Validando QR...</Text>
@@ -122,6 +136,11 @@ const KioskTerminalView = ({
           {!!qrError && (
             <Text accessibilityRole="alert" style={styles.qrError}>
               {qrError}
+            </Text>
+          )}
+          {!!workerInfoError && (
+            <Text accessibilityRole="alert" style={styles.qrError}>
+              {workerInfoError}
             </Text>
           )}
         </View>

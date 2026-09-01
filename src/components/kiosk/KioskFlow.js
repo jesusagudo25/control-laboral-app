@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import useApi from "../../hooks/useApi";
-import { getKioskConfig, validateKioskQr } from "../../services/kioskApi";
+import {
+  getCompanyInfo,
+  getKioskConfig,
+  getUserInfo,
+  validateKioskQr,
+} from "../../services/kioskApi";
 import KioskActionsView from "./KioskActionsView";
 import KioskConfirmationView from "./KioskConfirmationView";
 import KioskTerminalView from "./KioskTerminalView";
-
-const SIMULATED_WORKER = {
-  name: "Juan Pérez",
-  detail: "Operario · ROMESUR",
-  status: "Jornada activa",
-};
 
 const SIMULATED_ACTIONS = [
   {
@@ -53,6 +52,9 @@ const isValidKioskConfig = (data) =>
     data.worker_session_ttl_seconds,
   ].every((value) => Number.isFinite(value) && value >= 0);
 
+const isUnauthorizedError = (error) =>
+  [401, 403].includes(error?.response?.status);
+
 const KioskFlow = ({ onOperationalStateChange }) => {
   const { apiUrl } = useApi();
   const [kioskStep, setKioskStep] = useState("terminal");
@@ -67,6 +69,11 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [qrError, setQrError] = useState(null);
   const [workerSessionStartedAt, setWorkerSessionStartedAt] = useState(null);
   const [workerSessionDeadline, setWorkerSessionDeadline] = useState(null);
+  const [companyInfo, setCompanyInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [geoLocationPolicy, setGeoLocationPolicy] = useState(null);
+  const [isLoadingWorkerInfo, setIsLoadingWorkerInfo] = useState(false);
+  const [workerInfoError, setWorkerInfoError] = useState(null);
   const isValidatingQrRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
 
@@ -138,12 +145,18 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setQrError(null);
     setWorkerSessionStartedAt(null);
     setWorkerSessionDeadline(null);
+    setCompanyInfo(null);
+    setUserInfo(null);
+    setGeoLocationPolicy(null);
+    setIsLoadingWorkerInfo(false);
+    setWorkerInfoError(null);
     setSelectedKioskAction(null);
   };
 
   const onQrValueChange = (value) => {
     setQrValue(value);
     setQrError(null);
+    setWorkerInfoError(null);
   };
 
   const onWorkerIdentified = async () => {
@@ -164,6 +177,9 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     isValidatingQrRef.current = true;
     setIsValidatingQr(true);
     setQrError(null);
+    setWorkerInfoError(null);
+
+    let isLoadingInformation = false;
 
     try {
       const response = await validateKioskQr(
@@ -187,25 +203,90 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       const sessionTtlMilliseconds =
         kioskConfig.worker_session_ttl_seconds * 1000;
 
-      setWorkerToken(response.access_token);
+      const temporaryWorkerToken = response.access_token.trim();
+
+      setWorkerToken(temporaryWorkerToken);
       setWorkerSessionStartedAt(sessionStartedAt);
       setWorkerSessionDeadline(sessionStartedAt + sessionTtlMilliseconds);
       setSelectedKioskAction(null);
+      isLoadingInformation = true;
+      setIsLoadingWorkerInfo(true);
+
+      const companyResponse = await getCompanyInfo(
+        normalizedApiUrl,
+        temporaryWorkerToken,
+      );
+
+      if (requestId !== qrValidationRequestRef.current) {
+        return;
+      }
+
+      if (
+        companyResponse?.success !== true ||
+        typeof companyResponse.data?.name !== "string" ||
+        !companyResponse.data.name.trim()
+      ) {
+        throw new Error("Invalid company information response");
+      }
+
+      const userResponse = await getUserInfo(
+        normalizedApiUrl,
+        temporaryWorkerToken,
+      );
+
+      if (requestId !== qrValidationRequestRef.current) {
+        return;
+      }
+
+      const firstname = userResponse?.data?.firstname;
+      const lastname = userResponse?.data?.lastname;
+
+      if (
+        userResponse?.success !== true ||
+        typeof firstname !== "string" ||
+        typeof lastname !== "string" ||
+        !`${firstname} ${lastname}`.trim()
+      ) {
+        throw new Error("Invalid worker information response");
+      }
+
+      const sanitizedUserInfo = {
+        firstname: firstname.trim(),
+        lastname: lastname.trim(),
+        geolocal: userResponse.data.geolocal ?? null,
+      };
+
+      setCompanyInfo({ name: companyResponse.data.name.trim() });
+      setUserInfo(sanitizedUserInfo);
+      setGeoLocationPolicy(sanitizedUserInfo.geolocal);
       setKioskStep("actions");
-    } catch {
+    } catch (error) {
       if (requestId === qrValidationRequestRef.current) {
         setWorkerToken(null);
         setWorkerSessionStartedAt(null);
         setWorkerSessionDeadline(null);
-        setQrError(
-          "No se pudo validar el código QR. Verifícalo e inténtalo de nuevo.",
-        );
+        setCompanyInfo(null);
+        setUserInfo(null);
+        setGeoLocationPolicy(null);
+
+        if (isLoadingInformation) {
+          setWorkerInfoError(
+            isUnauthorizedError(error)
+              ? "La sesión temporal venció. Escanea nuevamente el código QR."
+              : "No se pudo cargar la información del trabajador. Inténtalo de nuevo.",
+          );
+        } else {
+          setQrError(
+            "No se pudo validar el código QR. Verifícalo e inténtalo de nuevo.",
+          );
+        }
         setKioskStep("terminal");
       }
     } finally {
       if (requestId === qrValidationRequestRef.current) {
         isValidatingQrRef.current = false;
         setIsValidatingQr(false);
+        setIsLoadingWorkerInfo(false);
       }
     }
   };
@@ -228,8 +309,18 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const hasWorkerSession = Boolean(
     workerToken &&
       workerSessionStartedAt !== null &&
-      workerSessionDeadline !== null,
+      workerSessionDeadline !== null &&
+      companyInfo &&
+      userInfo,
   );
+
+  const worker = userInfo
+    ? {
+        name: `${userInfo.firstname} ${userInfo.lastname}`.trim(),
+        companyName: companyInfo?.name ?? "",
+        geoLocationPolicy,
+      }
+    : null;
 
   if (kioskStep === "confirmation" && selectedKioskAction && hasWorkerSession) {
     return (
@@ -237,7 +328,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         action={selectedKioskAction}
         onAnotherAction={onAnotherAction}
         onReturnToTerminal={onReturnToTerminal}
-        worker={SIMULATED_WORKER}
+        worker={worker}
       />
     );
   }
@@ -248,7 +339,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         availableActions={SIMULATED_ACTIONS}
         onActionPress={onActionPress}
         onReturnToTerminal={onReturnToTerminal}
-        worker={SIMULATED_WORKER}
+        worker={worker}
       />
     );
   }
@@ -259,11 +350,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       kioskConfig={kioskConfig}
       kioskConfigError={kioskConfigError}
       isValidatingQr={isValidatingQr}
+      isLoadingWorkerInfo={isLoadingWorkerInfo}
       onRetry={() => setKioskConfigRequest((request) => request + 1)}
       onQrValueChange={onQrValueChange}
       onWorkerIdentified={onWorkerIdentified}
       qrError={qrError}
       qrValue={qrValue}
+      workerInfoError={workerInfoError}
     />
   );
 };

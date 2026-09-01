@@ -22,11 +22,7 @@ const KioskActionsView = ({
       </View>
       <View style={styles.workerContent}>
         <Text style={styles.workerName}>{worker.name}</Text>
-        <Text style={styles.workerDetail}>{worker.detail}</Text>
-      </View>
-      <View style={styles.activeBadge}>
-        <View style={styles.activeDot} />
-        <Text style={styles.activeText}>{worker.status}</Text>
+        <Text style={styles.workerDetail}>{worker.companyName}</Text>
       </View>
     </View>
 
@@ -133,22 +129,6 @@ const styles = StyleSheet.create({
   workerContent: { flex: 1, marginLeft: 12 },
   workerName: { color: "#28231f", fontSize: 17, fontWeight: "700" },
   workerDetail: { color: "#756b63", fontSize: 13, marginTop: 4 },
-  activeBadge: {
-    alignItems: "center",
-    backgroundColor: "#eaf7ed",
-    borderRadius: 14,
-    flexDirection: "row",
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-  },
-  activeDot: {
-    backgroundColor: "#3fa85c",
-    borderRadius: 4,
-    height: 7,
-    marginRight: 5,
-    width: 7,
-  },
-  activeText: { color: "#26763c", fontSize: 11, fontWeight: "700" },
   actions: { marginTop: 12, maxWidth: 460, width: "100%" },
   actionCard: {
     alignItems: "center",
