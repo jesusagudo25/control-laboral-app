@@ -1,68 +1,128 @@
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Icon } from "@rneui/themed";
 
 const Corner = ({ position }) => (
   <View style={[styles.corner, styles[position]]} />
 );
 
-const KioskTerminalView = ({ onWorkerIdentified }) => (
+const KioskTerminalView = ({
+  isLoading,
+  kioskConfig,
+  kioskConfigError,
+  onRetry,
+  onWorkerIdentified,
+}) => (
   <View style={styles.container}>
     <Image
       source={require("../../../assets/logo_small.png")}
       style={styles.logo}
     />
     <Text style={styles.title}>Terminal de fichaje</Text>
-    <Text style={styles.subtitle}>
-      Escanea tu código QR para registrar tu jornada
-    </Text>
+    {isLoading && (
+      <View style={styles.stateCard}>
+        <ActivityIndicator color="#f7941e" size="large" />
+        <Text style={styles.stateTitle}>Cargando modo kiosco...</Text>
+      </View>
+    )}
+    {!isLoading && kioskConfigError && (
+      <View style={styles.stateCard}>
+        <Icon
+          name="exclamation-circle"
+          type="font-awesome"
+          color="#b9650a"
+          size={36}
+        />
+        <Text style={styles.stateTitle}>No se pudo iniciar la terminal</Text>
+        <Text style={styles.stateText}>{kioskConfigError}</Text>
+        <TouchableOpacity
+          accessibilityLabel="Reintentar carga del modo kiosco"
+          accessibilityRole="button"
+          onPress={onRetry}
+          style={styles.retryButton}
+        >
+          <Text style={styles.retryButtonText}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+    {!isLoading && !kioskConfigError && kioskConfig?.enabled === false && (
+      <View style={styles.stateCard}>
+        <Icon name="ban" type="font-awesome" color="#b9650a" size={36} />
+        <Text style={styles.stateTitle}>Modo kiosco no disponible</Text>
+        <Text style={styles.stateText}>
+          La terminal está deshabilitada en la configuración actual.
+        </Text>
+      </View>
+    )}
+    {kioskConfig?.enabled === true && (
+      <>
+        <Text style={styles.subtitle}>
+          Escanea tu código QR para registrar tu jornada
+        </Text>
 
-    <TouchableOpacity
-      accessibilityHint="Abre las acciones de jornada con un trabajador simulado"
-      accessibilityLabel="Simular lectura de código QR"
-      accessibilityRole="button"
-      activeOpacity={0.85}
-      onPress={onWorkerIdentified}
-      style={styles.card}
-    >
-      <View style={styles.scanner}>
-        <Corner position="topLeft" />
-        <Corner position="topRight" />
-        <Corner position="bottomLeft" />
-        <Corner position="bottomRight" />
-        <View style={styles.cameraCircle}>
-          <Icon name="camera" type="font-awesome" color="#f7941e" size={36} />
+        <TouchableOpacity
+          accessibilityHint="Abre las acciones de jornada con un trabajador simulado"
+          accessibilityLabel="Simular lectura de código QR"
+          accessibilityRole="button"
+          activeOpacity={0.85}
+          onPress={onWorkerIdentified}
+          style={styles.card}
+        >
+          <View style={styles.scanner}>
+            <Corner position="topLeft" />
+            <Corner position="topRight" />
+            <Corner position="bottomLeft" />
+            <Corner position="bottomRight" />
+            <View style={styles.cameraCircle}>
+              <Icon
+                name="camera"
+                type="font-awesome"
+                color="#f7941e"
+                size={36}
+              />
+            </View>
+          </View>
+          <Text style={styles.scanTitle}>Acerca tu código QR</Text>
+          <Text style={styles.scanText}>
+            Colócalo frente a la cámara para registrar tu entrada o salida.
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.infoCard}>
+          <Icon name="users" type="font-awesome" color="#f7941e" size={21} />
+          <View style={styles.infoContent}>
+            <Text style={styles.infoTitle}>Terminal compartida</Text>
+            <Text style={styles.infoText}>
+              Este dispositivo es de uso compartido. No se almacena información
+              personal.
+            </Text>
+          </View>
         </View>
-      </View>
-      <Text style={styles.scanTitle}>Acerca tu código QR</Text>
-      <Text style={styles.scanText}>
-        Colócalo frente a la cámara para registrar tu entrada o salida.
-      </Text>
-    </TouchableOpacity>
 
-    <View style={styles.infoCard}>
-      <Icon name="users" type="font-awesome" color="#f7941e" size={21} />
-      <View style={styles.infoContent}>
-        <Text style={styles.infoTitle}>Terminal compartida</Text>
-        <Text style={styles.infoText}>
-          Este dispositivo es de uso compartido. No se almacena información
-          personal.
-        </Text>
-      </View>
-    </View>
-
-    <View style={styles.footerCard}>
-      <View style={styles.footerText}>
-        <Text style={styles.infoTitle}>Retorno automático por inactividad</Text>
-        <Text style={styles.infoText}>
-          La sesión se cerrará en 60 segundos sin uso.
-        </Text>
-      </View>
-      <View style={styles.status}>
-        <View style={styles.statusDot} />
-        <Text style={styles.statusText}>Activo</Text>
-      </View>
-    </View>
+        <View style={styles.footerCard}>
+          <View style={styles.footerText}>
+            <Text style={styles.infoTitle}>
+              Retorno automático por inactividad
+            </Text>
+            <Text style={styles.infoText}>
+              La sesión se cerrará en {kioskConfig.idle_timeout_seconds}{" "}
+              segundos sin uso.
+            </Text>
+          </View>
+          <View style={styles.status}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>Activo</Text>
+          </View>
+        </View>
+      </>
+    )}
   </View>
 );
 
@@ -76,6 +136,36 @@ const styles = StyleSheet.create({
     marginTop: 7,
     textAlign: "center",
   },
+  stateCard: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    marginTop: 22,
+    maxWidth: 460,
+    padding: 24,
+    width: "100%",
+  },
+  stateTitle: {
+    color: "#28231f",
+    fontSize: 18,
+    fontWeight: "700",
+    marginTop: 14,
+    textAlign: "center",
+  },
+  stateText: {
+    color: "#756b63",
+    lineHeight: 21,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#f7941e",
+    borderRadius: 10,
+    marginTop: 18,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+  },
+  retryButtonText: { color: "#fff", fontSize: 15, fontWeight: "700" },
   card: {
     alignItems: "center",
     backgroundColor: "#fff",
