@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useApi from "../../hooks/useApi";
-import { getKioskConfig } from "../../services/kioskApi";
+import { getKioskConfig, validateKioskQr } from "../../services/kioskApi";
 import KioskActionsView from "./KioskActionsView";
 import KioskConfirmationView from "./KioskConfirmationView";
 import KioskTerminalView from "./KioskTerminalView";
@@ -61,6 +61,14 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [isKioskConfigLoading, setIsKioskConfigLoading] = useState(false);
   const [kioskConfigError, setKioskConfigError] = useState(null);
   const [kioskConfigRequest, setKioskConfigRequest] = useState(0);
+  const [qrValue, setQrValue] = useState("");
+  const [workerToken, setWorkerToken] = useState(null);
+  const [isValidatingQr, setIsValidatingQr] = useState(false);
+  const [qrError, setQrError] = useState(null);
+  const [workerSessionStartedAt, setWorkerSessionStartedAt] = useState(null);
+  const [workerSessionDeadline, setWorkerSessionDeadline] = useState(null);
+  const isValidatingQrRef = useRef(false);
+  const qrValidationRequestRef = useRef(0);
 
   useEffect(() => {
     let isActive = true;
@@ -115,14 +123,91 @@ const KioskFlow = ({ onOperationalStateChange }) => {
 
   useEffect(
     () => () => {
+      qrValidationRequestRef.current += 1;
       onOperationalStateChange?.(false);
     },
     [onOperationalStateChange],
   );
 
-  const onWorkerIdentified = () => {
+  const resetWorkerSession = () => {
+    qrValidationRequestRef.current += 1;
+    isValidatingQrRef.current = false;
+    setQrValue("");
+    setWorkerToken(null);
+    setIsValidatingQr(false);
+    setQrError(null);
+    setWorkerSessionStartedAt(null);
+    setWorkerSessionDeadline(null);
     setSelectedKioskAction(null);
-    setKioskStep("actions");
+  };
+
+  const onQrValueChange = (value) => {
+    setQrValue(value);
+    setQrError(null);
+  };
+
+  const onWorkerIdentified = async () => {
+    if (isValidatingQrRef.current) {
+      return;
+    }
+
+    const normalizedApiUrl = normalizeApiUrl(apiUrl);
+    const normalizedQrValue = qrValue.trim();
+
+    if (!normalizedApiUrl || !normalizedQrValue) {
+      setQrError("Introduce un código QR válido para continuar.");
+      return;
+    }
+
+    const requestId = qrValidationRequestRef.current + 1;
+    qrValidationRequestRef.current = requestId;
+    isValidatingQrRef.current = true;
+    setIsValidatingQr(true);
+    setQrError(null);
+
+    try {
+      const response = await validateKioskQr(
+        normalizedApiUrl,
+        normalizedQrValue,
+      );
+
+      if (requestId !== qrValidationRequestRef.current) {
+        return;
+      }
+
+      if (
+        response?.success !== true ||
+        typeof response.access_token !== "string" ||
+        !response.access_token.trim()
+      ) {
+        throw new Error("Invalid QR validation response");
+      }
+
+      const sessionStartedAt = Date.now();
+      const sessionTtlMilliseconds =
+        kioskConfig.worker_session_ttl_seconds * 1000;
+
+      setWorkerToken(response.access_token);
+      setWorkerSessionStartedAt(sessionStartedAt);
+      setWorkerSessionDeadline(sessionStartedAt + sessionTtlMilliseconds);
+      setSelectedKioskAction(null);
+      setKioskStep("actions");
+    } catch {
+      if (requestId === qrValidationRequestRef.current) {
+        setWorkerToken(null);
+        setWorkerSessionStartedAt(null);
+        setWorkerSessionDeadline(null);
+        setQrError(
+          "No se pudo validar el código QR. Verifícalo e inténtalo de nuevo.",
+        );
+        setKioskStep("terminal");
+      }
+    } finally {
+      if (requestId === qrValidationRequestRef.current) {
+        isValidatingQrRef.current = false;
+        setIsValidatingQr(false);
+      }
+    }
   };
 
   const onActionPress = (action) => {
@@ -131,7 +216,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onReturnToTerminal = () => {
-    setSelectedKioskAction(null);
+    resetWorkerSession();
     setKioskStep("terminal");
   };
 
@@ -140,7 +225,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setKioskStep("actions");
   };
 
-  if (kioskStep === "confirmation" && selectedKioskAction) {
+  const hasWorkerSession = Boolean(
+    workerToken &&
+      workerSessionStartedAt !== null &&
+      workerSessionDeadline !== null,
+  );
+
+  if (kioskStep === "confirmation" && selectedKioskAction && hasWorkerSession) {
     return (
       <KioskConfirmationView
         action={selectedKioskAction}
@@ -151,7 +242,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     );
   }
 
-  if (kioskStep === "actions") {
+  if (kioskStep === "actions" && hasWorkerSession) {
     return (
       <KioskActionsView
         availableActions={SIMULATED_ACTIONS}
@@ -167,8 +258,12 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       isLoading={isKioskConfigLoading}
       kioskConfig={kioskConfig}
       kioskConfigError={kioskConfigError}
+      isValidatingQr={isValidatingQr}
       onRetry={() => setKioskConfigRequest((request) => request + 1)}
+      onQrValueChange={onQrValueChange}
       onWorkerIdentified={onWorkerIdentified}
+      qrError={qrError}
+      qrValue={qrValue}
     />
   );
 };

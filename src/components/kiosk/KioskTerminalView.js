@@ -4,6 +4,7 @@ import {
   Image,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -17,8 +18,12 @@ const KioskTerminalView = ({
   isLoading,
   kioskConfig,
   kioskConfigError,
+  isValidatingQr,
   onRetry,
+  onQrValueChange,
   onWorkerIdentified,
+  qrError,
+  qrValue,
 }) => (
   <View style={styles.container}>
     <Image
@@ -67,14 +72,7 @@ const KioskTerminalView = ({
           Escanea tu código QR para registrar tu jornada
         </Text>
 
-        <TouchableOpacity
-          accessibilityHint="Abre las acciones de jornada con un trabajador simulado"
-          accessibilityLabel="Simular lectura de código QR"
-          accessibilityRole="button"
-          activeOpacity={0.85}
-          onPress={onWorkerIdentified}
-          style={styles.card}
-        >
+        <View style={[styles.card, isValidatingQr && styles.cardDisabled]}>
           <View style={styles.scanner}>
             <Corner position="topLeft" />
             <Corner position="topRight" />
@@ -93,7 +91,40 @@ const KioskTerminalView = ({
           <Text style={styles.scanText}>
             Colócalo frente a la cámara para registrar tu entrada o salida.
           </Text>
-        </TouchableOpacity>
+          <TextInput
+            accessibilityLabel="Código QR simulado"
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isValidatingQr}
+            onChangeText={onQrValueChange}
+            onSubmitEditing={onWorkerIdentified}
+            placeholder="Introduce un QR de prueba"
+            returnKeyType="done"
+            style={styles.qrInput}
+            value={qrValue}
+          />
+          {isValidatingQr ? (
+            <View style={styles.validationState}>
+              <ActivityIndicator color="#f7941e" size="small" />
+              <Text style={styles.validationText}>Validando QR...</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              accessibilityHint="Valida el código QR introducido"
+              accessibilityLabel="Simular lectura de código QR"
+              accessibilityRole="button"
+              onPress={onWorkerIdentified}
+              style={styles.simulationButton}
+            >
+              <Text style={styles.simulationText}>SIMULAR LECTURA QR</Text>
+            </TouchableOpacity>
+          )}
+          {!!qrError && (
+            <Text accessibilityRole="alert" style={styles.qrError}>
+              {qrError}
+            </Text>
+          )}
+        </View>
 
         <View style={styles.infoCard}>
           <Icon name="users" type="font-awesome" color="#f7941e" size={21} />
@@ -180,6 +211,7 @@ const styles = StyleSheet.create({
     shadowRadius: 9,
     width: "100%",
   },
+  cardDisabled: { opacity: 0.7 },
   scanner: {
     alignItems: "center",
     height: 166,
@@ -225,7 +257,37 @@ const styles = StyleSheet.create({
     color: "#b9650a",
     fontSize: 12,
     fontWeight: "700",
+  },
+  simulationButton: { marginTop: 12, padding: 8 },
+  qrInput: {
+    backgroundColor: "#fffaf5",
+    borderColor: "#e8c49c",
+    borderRadius: 10,
+    borderWidth: 1,
+    color: "#28231f",
+    marginTop: 16,
+    maxWidth: 340,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    width: "100%",
+  },
+  validationState: {
+    alignItems: "center",
+    flexDirection: "row",
     marginTop: 12,
+  },
+  validationText: {
+    color: "#b9650a",
+    fontSize: 12,
+    fontWeight: "700",
+    marginLeft: 8,
+  },
+  qrError: {
+    color: "#a53a2a",
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 10,
+    textAlign: "center",
   },
   infoCard: {
     alignItems: "flex-start",
