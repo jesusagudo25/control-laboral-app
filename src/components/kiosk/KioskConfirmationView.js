@@ -22,10 +22,18 @@ const DetailRow = ({ label, value, last }) => (
 const KioskConfirmationView = ({
   worker,
   action,
+  result,
   onReturnToTerminal,
   onAnotherAction,
 }) => {
-  const registeredAt = React.useMemo(() => formatDateTime(new Date()), []);
+  const registeredAt = React.useMemo(() => {
+    const resultDate = result?.data?.datetime || result?.data?.date;
+    const parsedDate = resultDate ? new Date(resultDate) : new Date();
+    return formatDateTime(
+      Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
+    );
+  }, [result]);
+  const resultMessage = result?.msg || result?.message;
 
   return (
     <View style={styles.container}>
@@ -38,6 +46,9 @@ const KioskConfirmationView = ({
       </View>
       <Text style={styles.title}>Marcación registrada</Text>
       <Text style={styles.subtitle}>Tu acción se registró correctamente.</Text>
+      {resultMessage ? (
+        <Text style={styles.resultMessage}>{resultMessage}</Text>
+      ) : null}
 
       <View style={styles.detailCard}>
         <DetailRow label="Trabajador" value={worker.name} />
@@ -115,6 +126,12 @@ const styles = StyleSheet.create({
     color: "#756b63",
     fontSize: 15,
     marginTop: 7,
+    textAlign: "center",
+  },
+  resultMessage: {
+    color: "#3e744b",
+    fontSize: 14,
+    marginTop: 8,
     textAlign: "center",
   },
   detailCard: {

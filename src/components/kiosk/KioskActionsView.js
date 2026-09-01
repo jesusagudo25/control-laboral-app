@@ -16,8 +16,11 @@ const KioskActionsView = ({
   isLoadingLocation,
   location,
   locationError,
+  fichajeError,
+  isSubmittingFichaje,
   onActionPress,
   onRetry,
+  onRetryFichaje,
   onReturnToTerminal,
   shiftStatusError,
 }) => (
@@ -61,6 +64,20 @@ const KioskActionsView = ({
     )}
 
     <View style={styles.actions}>
+      {fichajeError && (
+        <View style={styles.statusCard}>
+          <Text style={styles.errorText}>{fichajeError}</Text>
+          <TouchableOpacity
+            disabled={isSubmittingFichaje}
+            onPress={onRetryFichaje}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryText}>
+              {isSubmittingFichaje ? "Enviando..." : "Reintentar"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {isLoading && <ActivityIndicator color="#f7941e" size="large" />}
       {!isLoading && shiftStatusError && (
         <View style={styles.statusCard}>
@@ -84,6 +101,7 @@ const KioskActionsView = ({
             accessibilityLabel={action.title}
             accessibilityRole="button"
             activeOpacity={0.8}
+            disabled={isSubmittingFichaje}
             key={action.id}
             onPress={() => onActionPress(action)}
             style={styles.actionCard}
@@ -211,6 +229,7 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   statusText: { color: "#756b63", fontSize: 14, textAlign: "center" },
+  errorText: { color: "#a33b2b", fontSize: 14, textAlign: "center" },
   retryButton: { marginTop: 12, padding: 8 },
   retryText: { color: "#9b5a16", fontSize: 14, fontWeight: "700" },
   actionCard: {

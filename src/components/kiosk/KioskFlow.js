@@ -8,11 +8,14 @@ import {
   getUserInfo,
   getUserTurn,
   selectUserTurn,
+  submitKioskFichaje,
   validateKioskQr,
 } from "../../services/kioskApi";
 import { normalizeKioskShiftStatus } from "../../utils/kioskActions";
 import KioskActionsView from "./KioskActionsView";
 import KioskConfirmationView from "./KioskConfirmationView";
+import KioskPauseModal from "./KioskPauseModal";
+import KioskSignatureView from "./KioskSignatureView";
 import KioskTerminalView from "./KioskTerminalView";
 import KioskTurnSelectorView from "./KioskTurnSelectorView";
 
@@ -90,7 +93,12 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [kioskWorkDate, setKioskWorkDate] = useState(null);
   const [isLoadingShiftStatus, setIsLoadingShiftStatus] = useState(false);
   const [shiftStatusError, setShiftStatusError] = useState(null);
+  const [isSubmittingFichaje, setIsSubmittingFichaje] = useState(false);
+  const [fichajeError, setFichajeError] = useState(null);
+  const [fichajeResult, setFichajeResult] = useState(null);
+  const [pendingFichajeData, setPendingFichajeData] = useState(null);
   const isValidatingQrRef = useRef(false);
+  const isSubmittingFichajeRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
   const { location, locationError, isLoadingLocation } = useKioskLocation(
     geoLocationPolicy,
@@ -183,6 +191,11 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setIsLoadingShiftStatus(false);
     setShiftStatusError(null);
     setSelectedKioskAction(null);
+    isSubmittingFichajeRef.current = false;
+    setIsSubmittingFichaje(false);
+    setFichajeError(null);
+    setFichajeResult(null);
+    setPendingFichajeData(null);
   };
 
   const loadKioskShiftStatus = async (normalizedApiUrl, token, requestId) => {
@@ -443,9 +456,96 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     }
   };
 
+  const handleSubmitKioskFichaje = async (action, extraData = {}) => {
+    if (isSubmittingFichajeRef.current) return;
+
+    const workDate = kioskWorkDate || dateUserTurn;
+
+    if (!workDate) {
+      setFichajeError("No se pudo determinar la fecha de la jornada.");
+      return;
+    }
+
+    if (!location || isLoadingLocation) {
+      setFichajeError(
+        locationError || "La ubicación todavía no está preparada.",
+      );
+      return;
+    }
+
+    if (
+      action.fichaje === "ficharpausa" &&
+      kioskMotives.length > 0 &&
+      !extraData.motivo_pausa
+    ) {
+      setFichajeError("Selecciona un motivo de pausa para continuar.");
+      return;
+    }
+
+    if (action.fichaje === "ficharfirma" && !extraData.signature) {
+      setFichajeError("La firma es obligatoria para continuar.");
+      return;
+    }
+
+    const payload = {
+      action: "kiosk_fichaje",
+      date: workDate,
+      fichaje: action.fichaje,
+      description: extraData.description?.trim() || "",
+      motivo_pausa: extraData.motivo_pausa || "",
+      long: location.longitude,
+      lat: location.latitude,
+      signature: extraData.signature || "",
+    };
+
+    setSelectedKioskAction(action);
+    setPendingFichajeData(extraData);
+    setFichajeError(null);
+    isSubmittingFichajeRef.current = true;
+    setIsSubmittingFichaje(true);
+
+    try {
+      const response = await submitKioskFichaje(apiUrl, workerToken, payload);
+
+      if (response?.success !== true) {
+        setFichajeError(
+          response?.msg ||
+            response?.message ||
+            "No se pudo registrar la acción.",
+        );
+        return;
+      }
+
+      setFichajeResult(response);
+      setKioskStep("confirmation");
+    } catch (error) {
+      setFichajeError(
+        isUnauthorizedError(error)
+          ? "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente."
+          : "No se pudo registrar la acción. Comprueba la conexión e inténtalo de nuevo.",
+      );
+    } finally {
+      isSubmittingFichajeRef.current = false;
+      setIsSubmittingFichaje(false);
+    }
+  };
+
   const onActionPress = (action) => {
     setSelectedKioskAction(action);
-    setKioskStep("confirmation");
+    setFichajeError(null);
+    setPendingFichajeData(null);
+
+    if (action.fichaje === "ficharpausa") {
+      setKioskStep("pause");
+      return;
+    }
+
+    if (action.fichaje === "ficharfirma") {
+      setKioskStep("signature");
+      return;
+    }
+
+    handleSubmitKioskFichaje(action);
   };
 
   const onReturnToTerminal = () => {
@@ -455,6 +555,9 @@ const KioskFlow = ({ onOperationalStateChange }) => {
 
   const onAnotherAction = () => {
     setSelectedKioskAction(null);
+    setFichajeError(null);
+    setFichajeResult(null);
+    setPendingFichajeData(null);
     setKioskStep("actions");
   };
 
@@ -490,12 +593,45 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     );
   }
 
-  if (kioskStep === "confirmation" && selectedKioskAction && hasWorkerSession) {
+  if (
+    kioskStep === "confirmation" &&
+    selectedKioskAction &&
+    fichajeResult &&
+    hasWorkerSession
+  ) {
     return (
       <KioskConfirmationView
         action={selectedKioskAction}
+        result={fichajeResult}
         onAnotherAction={onAnotherAction}
         onReturnToTerminal={onReturnToTerminal}
+        worker={worker}
+      />
+    );
+  }
+
+  if (kioskStep === "pause" && selectedKioskAction && hasWorkerSession) {
+    return (
+      <KioskPauseModal
+        error={fichajeError}
+        isSubmitting={isSubmittingFichaje}
+        motives={kioskMotives}
+        onCancel={onAnotherAction}
+        onSubmit={(data) => handleSubmitKioskFichaje(selectedKioskAction, data)}
+        worker={worker}
+      />
+    );
+  }
+
+  if (kioskStep === "signature" && selectedKioskAction && hasWorkerSession) {
+    return (
+      <KioskSignatureView
+        error={fichajeError}
+        isSubmitting={isSubmittingFichaje}
+        onCancel={onAnotherAction}
+        onSubmit={(signature) =>
+          handleSubmitKioskFichaje(selectedKioskAction, { signature })
+        }
         worker={worker}
       />
     );
@@ -505,8 +641,10 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     return (
       <KioskActionsView
         availableActions={kioskActions}
+        fichajeError={fichajeError}
         isLoading={isLoadingShiftStatus}
         isLoadingLocation={isLoadingLocation}
+        isSubmittingFichaje={isSubmittingFichaje}
         location={location}
         locationError={locationError}
         motives={kioskMotives}
@@ -516,6 +654,12 @@ const KioskFlow = ({ onOperationalStateChange }) => {
             normalizeApiUrl(apiUrl),
             workerToken,
             qrValidationRequestRef.current,
+          )
+        }
+        onRetryFichaje={() =>
+          handleSubmitKioskFichaje(
+            selectedKioskAction,
+            pendingFichajeData || {},
           )
         }
         onReturnToTerminal={onReturnToTerminal}
