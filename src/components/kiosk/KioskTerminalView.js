@@ -100,20 +100,22 @@ const KioskTerminalView = ({
           <Text style={styles.scanText}>
             Colócalo frente a la cámara para registrar tu entrada o salida.
           </Text>
-          <TextInput
-            accessibilityLabel="Código QR simulado"
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={
-              !isValidatingQr && !isLoadingWorkerInfo && !isLoadingUserTurn
-            }
-            onChangeText={onQrValueChange}
-            onSubmitEditing={onWorkerIdentified}
-            placeholder="Introduce un QR de prueba"
-            returnKeyType="done"
-            style={styles.qrInput}
-            value={qrValue}
-          />
+          {__DEV__ && (
+            <TextInput
+              accessibilityLabel="Código QR simulado"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={
+                !isValidatingQr && !isLoadingWorkerInfo && !isLoadingUserTurn
+              }
+              onChangeText={onQrValueChange}
+              onSubmitEditing={onWorkerIdentified}
+              placeholder="Introduce un QR de prueba"
+              returnKeyType="done"
+              style={styles.qrInput}
+              value={qrValue}
+            />
+          )}
           {isLoadingUserTurn ? (
             <View style={styles.validationState}>
               <ActivityIndicator color="#f7941e" size="small" />
@@ -131,7 +133,7 @@ const KioskTerminalView = ({
               <ActivityIndicator color="#f7941e" size="small" />
               <Text style={styles.validationText}>Validando QR...</Text>
             </View>
-          ) : (
+          ) : __DEV__ ? (
             <TouchableOpacity
               accessibilityHint="Valida el código QR introducido"
               accessibilityLabel="Simular lectura de código QR"
@@ -141,6 +143,10 @@ const KioskTerminalView = ({
             >
               <Text style={styles.simulationText}>SIMULAR LECTURA QR</Text>
             </TouchableOpacity>
+          ) : (
+            <Text accessibilityRole="alert" style={styles.scannerUnavailable}>
+              El lector QR no está disponible en este build.
+            </Text>
           )}
           {!!qrError && (
             <Text accessibilityRole="alert" style={styles.qrError}>
@@ -287,6 +293,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   simulationButton: { marginTop: 12, padding: 8 },
+  scannerUnavailable: {
+    color: "#a53a2a",
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 14,
+    textAlign: "center",
+  },
   qrInput: {
     backgroundColor: "#fffaf5",
     borderColor: "#e8c49c",
