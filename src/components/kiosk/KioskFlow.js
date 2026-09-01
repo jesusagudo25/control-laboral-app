@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import useApi from "../../hooks/useApi";
 import useKioskLocation from "../../hooks/useKioskLocation";
+import useKioskTimers from "../../hooks/useKioskTimers";
 import {
   getCompanyInfo,
   getKioskConfig,
@@ -202,6 +203,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setKioskStep("terminal");
   };
   resetWorkerSessionRef.current = resetWorkerSession;
+
+  const { idleSeconds, resetIdle } = useKioskTimers({
+    enabled: Boolean(workerToken && workerSessionDeadline !== null),
+    idleTimeoutSeconds: kioskConfig?.idle_timeout_seconds ?? 0,
+    workerSessionDeadline,
+    onExpire: (reason) => resetWorkerSessionRef.current?.(reason),
+  });
 
   useEffect(() => {
     if (kioskStep !== "confirmation" || !fichajeResult) return undefined;
@@ -433,11 +441,13 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onSelectTurn = (turn) => {
+    resetIdle();
     setSelectedTurn(turn);
     setTurnError(null);
   };
 
   const onConfirmTurn = async () => {
+    resetIdle();
     if (!selectedTurn || isSavingTurn) {
       setTurnError("Selecciona un horario para continuar.");
       return;
@@ -565,6 +575,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onActionPress = (action) => {
+    resetIdle();
     setSelectedKioskAction(action);
     setFichajeError(null);
     setPendingFichajeData(null);
@@ -609,6 +620,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   if (kioskStep === "turn-selector" && hasWorkerSession && isMultipleTurn) {
     return (
       <KioskTurnSelectorView
+        idleSeconds={idleSeconds}
+        onInteraction={resetIdle}
         date={dateUserTurn}
         isSaving={isSavingTurn}
         onConfirm={onConfirmTurn}
@@ -643,6 +656,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   if (kioskStep === "pause" && selectedKioskAction && hasWorkerSession) {
     return (
       <KioskPauseModal
+        idleSeconds={idleSeconds}
+        onInteraction={resetIdle}
         error={fichajeError}
         isSubmitting={isSubmittingFichaje}
         motives={kioskMotives}
@@ -656,6 +671,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   if (kioskStep === "signature" && selectedKioskAction && hasWorkerSession) {
     return (
       <KioskSignatureView
+        idleSeconds={idleSeconds}
+        onInteraction={resetIdle}
         error={fichajeError}
         isSubmitting={isSubmittingFichaje}
         onCancel={onAnotherAction}
@@ -670,6 +687,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   if (kioskStep === "actions" && hasWorkerSession) {
     return (
       <KioskActionsView
+        idleSeconds={idleSeconds}
         availableActions={kioskActions}
         fichajeError={fichajeError}
         isLoading={isLoadingShiftStatus}
@@ -679,19 +697,21 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         locationError={locationError}
         motives={kioskMotives}
         onActionPress={onActionPress}
-        onRetry={() =>
+        onRetry={() => {
+          resetIdle();
           loadKioskShiftStatus(
             normalizeApiUrl(apiUrl),
             workerToken,
             qrValidationRequestRef.current,
-          )
-        }
-        onRetryFichaje={() =>
+          );
+        }}
+        onRetryFichaje={() => {
+          resetIdle();
           handleSubmitKioskFichaje(
             selectedKioskAction,
             pendingFichajeData || {},
-          )
-        }
+          );
+        }}
         onReturnToTerminal={onReturnToTerminal}
         shiftStatusError={shiftStatusError}
         workDate={kioskWorkDate}

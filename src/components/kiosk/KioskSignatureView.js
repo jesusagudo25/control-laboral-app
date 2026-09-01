@@ -6,6 +6,8 @@ const KioskSignatureView = ({
   worker,
   error,
   isSubmitting,
+  idleSeconds,
+  onInteraction,
   onCancel,
   onSubmit,
 }) => {
@@ -26,6 +28,7 @@ const KioskSignatureView = ({
           clearText="Limpiar"
           confirmText="Confirmar"
           descriptionText="Dibuja tu firma"
+          onBegin={onInteraction}
           onEmpty={() =>
             setLocalError("La firma es obligatoria para continuar.")
           }
@@ -39,9 +42,16 @@ const KioskSignatureView = ({
       {localError || error ? (
         <Text style={styles.error}>{localError || error}</Text>
       ) : null}
+      <Text style={styles.idleTimer}>
+        Inactividad: {String(Math.floor(idleSeconds / 60)).padStart(2, "0")}:
+        {String(idleSeconds % 60).padStart(2, "0")}
+      </Text>
       <TouchableOpacity
         disabled={isSubmitting}
-        onPress={() => signatureRef.current?.readSignature()}
+        onPress={() => {
+          onInteraction();
+          signatureRef.current?.readSignature();
+        }}
         style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
       >
         <Text style={styles.primaryText}>
@@ -92,6 +102,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   error: { color: "#a33b2b", fontSize: 13, marginTop: 12 },
+  idleTimer: { color: "#b9650a", fontWeight: "700", marginTop: 12 },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#f7941e",

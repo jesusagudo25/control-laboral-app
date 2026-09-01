@@ -13,6 +13,8 @@ const KioskPauseModal = ({
   motives,
   error,
   isSubmitting,
+  idleSeconds,
+  onInteraction,
   onCancel,
   onSubmit,
 }) => {
@@ -36,7 +38,10 @@ const KioskPauseModal = ({
               <TouchableOpacity
                 key={motive.value}
                 disabled={isSubmitting}
-                onPress={() => setSelectedMotive(motive.value)}
+                onPress={() => {
+                  onInteraction();
+                  setSelectedMotive(motive.value);
+                }}
                 style={[
                   styles.motive,
                   selectedMotive === motive.value && styles.selectedMotive,
@@ -52,7 +57,10 @@ const KioskPauseModal = ({
         <TextInput
           editable={!isSubmitting}
           multiline
-          onChangeText={setDescription}
+          onChangeText={(value) => {
+            onInteraction();
+            setDescription(value);
+          }}
           placeholder="Añade una observación"
           style={styles.input}
           value={description}
@@ -60,9 +68,17 @@ const KioskPauseModal = ({
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
+      <Text style={styles.idleTimer}>
+        Inactividad: {String(Math.floor(idleSeconds / 60)).padStart(2, "0")}:
+        {String(idleSeconds % 60).padStart(2, "0")}
+      </Text>
+
       <TouchableOpacity
         disabled={isSubmitting}
-        onPress={() => onSubmit({ description, motivo_pausa: selectedMotive })}
+        onPress={() => {
+          onInteraction();
+          onSubmit({ description, motivo_pausa: selectedMotive });
+        }}
         style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
       >
         <Text style={styles.primaryText}>
@@ -123,6 +139,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   error: { color: "#a33b2b", fontSize: 13, marginTop: 12 },
+  idleTimer: { color: "#b9650a", fontWeight: "700", marginTop: 14 },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#f7941e",

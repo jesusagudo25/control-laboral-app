@@ -18,6 +18,7 @@ const KioskActionsView = ({
   locationError,
   fichajeError,
   isSubmittingFichaje,
+  idleSeconds,
   onActionPress,
   onRetry,
   onRetryFichaje,
@@ -143,11 +144,14 @@ const KioskActionsView = ({
       <View style={styles.footerText}>
         <Text style={styles.infoTitle}>Retorno automático por inactividad</Text>
         <Text style={styles.infoText}>
-          La sesión se cerrará en 60 segundos sin uso.
+          La sesión se cerrará al terminar el contador sin uso.
         </Text>
       </View>
       <View style={styles.timerBadge}>
-        <Text style={styles.timerText}>00:60</Text>
+        <Text style={styles.timerText}>
+          {String(Math.floor(idleSeconds / 60)).padStart(2, "0")}:
+          {String(idleSeconds % 60).padStart(2, "0")}
+        </Text>
       </View>
     </View>
 

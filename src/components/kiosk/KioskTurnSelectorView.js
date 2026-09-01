@@ -34,6 +34,8 @@ const getTimeRanges = (turn, date) =>
 const KioskTurnSelectorView = ({
   date,
   isSaving,
+  idleSeconds,
+  onInteraction,
   onConfirm,
   onReturnToTerminal,
   onSelectTurn,
@@ -66,7 +68,10 @@ const KioskTurnSelectorView = ({
             accessibilityState={{ checked: isSelected }}
             activeOpacity={0.8}
             key={String(turn.id)}
-            onPress={() => onSelectTurn(turn)}
+            onPress={() => {
+              onInteraction();
+              onSelectTurn(turn);
+            }}
             style={[styles.turnCard, isSelected && styles.selectedTurnCard]}
           >
             <View style={styles.turnContent}>
@@ -106,7 +111,10 @@ const KioskTurnSelectorView = ({
       accessibilityLabel="Confirmar horario seleccionado"
       accessibilityRole="button"
       disabled={isSaving || !selectedTurn}
-      onPress={onConfirm}
+      onPress={() => {
+        onInteraction();
+        onConfirm();
+      }}
       style={[
         styles.confirmButton,
         (isSaving || !selectedTurn) && styles.disabledButton,
@@ -118,6 +126,11 @@ const KioskTurnSelectorView = ({
         <Text style={styles.confirmText}>Confirmar horario</Text>
       )}
     </TouchableOpacity>
+
+    <Text style={styles.idleTimer}>
+      Inactividad: {String(Math.floor(idleSeconds / 60)).padStart(2, "0")}:
+      {String(idleSeconds % 60).padStart(2, "0")}
+    </Text>
 
     <TouchableOpacity onPress={onReturnToTerminal} style={styles.returnButton}>
       <Icon name="arrow-left" type="font-awesome" color="#9b5a16" size={13} />
@@ -164,6 +177,7 @@ const styles = StyleSheet.create({
   },
   disabledButton: { opacity: 0.5 },
   confirmText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  idleTimer: { color: "#b9650a", fontWeight: "700", marginTop: 14 },
   returnButton: {
     alignItems: "center",
     flexDirection: "row",
