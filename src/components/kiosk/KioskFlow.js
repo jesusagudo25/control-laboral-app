@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import useApi from "../../hooks/useApi";
+import useKioskLocation from "../../hooks/useKioskLocation";
 import {
   getCompanyInfo,
   getKioskConfig,
@@ -91,6 +92,10 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [shiftStatusError, setShiftStatusError] = useState(null);
   const isValidatingQrRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
+  const { location, locationError, isLoadingLocation } = useKioskLocation(
+    geoLocationPolicy,
+    Boolean(workerToken && userInfo),
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -501,6 +506,9 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       <KioskActionsView
         availableActions={kioskActions}
         isLoading={isLoadingShiftStatus}
+        isLoadingLocation={isLoadingLocation}
+        location={location}
+        locationError={locationError}
         motives={kioskMotives}
         onActionPress={onActionPress}
         onRetry={() =>

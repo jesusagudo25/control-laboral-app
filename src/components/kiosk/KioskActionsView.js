@@ -13,6 +13,9 @@ const KioskActionsView = ({
   worker,
   availableActions,
   isLoading,
+  isLoadingLocation,
+  location,
+  locationError,
   onActionPress,
   onRetry,
   onReturnToTerminal,
@@ -35,6 +38,27 @@ const KioskActionsView = ({
         <Text style={styles.workerDetail}>{worker.companyName}</Text>
       </View>
     </View>
+
+    {(isLoadingLocation || locationError) && (
+      <View style={styles.locationCard}>
+        {isLoadingLocation ? (
+          <ActivityIndicator color="#f7941e" size="small" />
+        ) : (
+          <Icon
+            name="map-marker"
+            type="font-awesome"
+            color="#b9650a"
+            size={20}
+          />
+        )}
+        <Text style={styles.locationText}>
+          {isLoadingLocation
+            ? "Preparando ubicación..."
+            : locationError ||
+              (location ? "Ubicación preparada." : "Ubicación pendiente.")}
+        </Text>
+      </View>
+    )}
 
     <View style={styles.actions}>
       {isLoading && <ActivityIndicator color="#f7941e" size="large" />}
@@ -157,6 +181,25 @@ const styles = StyleSheet.create({
   workerContent: { flex: 1, marginLeft: 12 },
   workerName: { color: "#28231f", fontSize: 17, fontWeight: "700" },
   workerDetail: { color: "#756b63", fontSize: 13, marginTop: 4 },
+  locationCard: {
+    alignItems: "center",
+    backgroundColor: "#fff8ef",
+    borderColor: "#f8d8b1",
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    marginTop: 12,
+    maxWidth: 460,
+    padding: 12,
+    width: "100%",
+  },
+  locationText: {
+    color: "#756b63",
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    marginLeft: 10,
+  },
   actions: { marginTop: 12, maxWidth: 460, width: "100%" },
   statusCard: {
     alignItems: "center",
