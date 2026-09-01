@@ -96,14 +96,15 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [isSubmittingFichaje, setIsSubmittingFichaje] = useState(false);
   const [fichajeError, setFichajeError] = useState(null);
   const [fichajeResult, setFichajeResult] = useState(null);
+  const [confirmationSeconds, setConfirmationSeconds] = useState(0);
   const [pendingFichajeData, setPendingFichajeData] = useState(null);
   const isValidatingQrRef = useRef(false);
   const isSubmittingFichajeRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
-  const { location, locationError, isLoadingLocation } = useKioskLocation(
-    geoLocationPolicy,
-    Boolean(workerToken && userInfo),
-  );
+  const lastResetReasonRef = useRef(null);
+  const resetWorkerSessionRef = useRef(null);
+  const { location, locationError, isLoadingLocation, resetLocation } =
+    useKioskLocation(geoLocationPolicy, Boolean(workerToken && userInfo));
 
   useEffect(() => {
     let isActive = true;
@@ -164,7 +165,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     [onOperationalStateChange],
   );
 
-  const resetWorkerSession = () => {
+  const resetWorkerSession = (reason) => {
+    lastResetReasonRef.current = reason;
     qrValidationRequestRef.current += 1;
     isValidatingQrRef.current = false;
     setQrValue("");
@@ -173,7 +175,6 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setQrError(null);
     setWorkerSessionStartedAt(null);
     setWorkerSessionDeadline(null);
-    setCompanyInfo(null);
     setUserInfo(null);
     setGeoLocationPolicy(null);
     setIsLoadingWorkerInfo(false);
@@ -195,8 +196,27 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setIsSubmittingFichaje(false);
     setFichajeError(null);
     setFichajeResult(null);
+    setConfirmationSeconds(0);
     setPendingFichajeData(null);
+    resetLocation();
+    setKioskStep("terminal");
   };
+  resetWorkerSessionRef.current = resetWorkerSession;
+
+  useEffect(() => {
+    if (kioskStep !== "confirmation" || !fichajeResult) return undefined;
+
+    if (confirmationSeconds <= 0) {
+      resetWorkerSessionRef.current("confirmation-timeout");
+      return undefined;
+    }
+
+    const timerId = globalThis.setTimeout(() => {
+      setConfirmationSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => globalThis.clearTimeout(timerId);
+  }, [confirmationSeconds, fichajeResult, kioskStep]);
 
   const loadKioskShiftStatus = async (normalizedApiUrl, token, requestId) => {
     setKioskStep("actions");
@@ -379,7 +399,6 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         setWorkerToken(null);
         setWorkerSessionStartedAt(null);
         setWorkerSessionDeadline(null);
-        setCompanyInfo(null);
         setUserInfo(null);
         setGeoLocationPolicy(null);
         setDateUserTurn(null);
@@ -424,6 +443,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       return;
     }
 
+    const requestId = qrValidationRequestRef.current;
+
     try {
       setIsSavingTurn(true);
       setTurnError(null);
@@ -432,6 +453,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         date: dateUserTurn,
         idHorarioM: selectedTurn.id,
       });
+
+      if (requestId !== qrValidationRequestRef.current) return;
 
       if (response?.success !== true) {
         setTurnError(
@@ -446,13 +469,16 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         qrValidationRequestRef.current,
       );
     } catch (error) {
+      if (requestId !== qrValidationRequestRef.current) return;
       setTurnError(
         isUnauthorizedError(error)
           ? "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente."
           : "No se pudo guardar el horario seleccionado. Inténtalo de nuevo.",
       );
     } finally {
-      setIsSavingTurn(false);
+      if (requestId === qrValidationRequestRef.current) {
+        setIsSavingTurn(false);
+      }
     }
   };
 
@@ -504,8 +530,12 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     isSubmittingFichajeRef.current = true;
     setIsSubmittingFichaje(true);
 
+    const requestId = qrValidationRequestRef.current;
+
     try {
       const response = await submitKioskFichaje(apiUrl, workerToken, payload);
+
+      if (requestId !== qrValidationRequestRef.current) return;
 
       if (response?.success !== true) {
         setFichajeError(
@@ -517,16 +547,20 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       }
 
       setFichajeResult(response);
+      setConfirmationSeconds(kioskConfig.confirmation_timeout_seconds);
       setKioskStep("confirmation");
     } catch (error) {
+      if (requestId !== qrValidationRequestRef.current) return;
       setFichajeError(
         isUnauthorizedError(error)
           ? "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente."
           : "No se pudo registrar la acción. Comprueba la conexión e inténtalo de nuevo.",
       );
     } finally {
-      isSubmittingFichajeRef.current = false;
-      setIsSubmittingFichaje(false);
+      if (requestId === qrValidationRequestRef.current) {
+        isSubmittingFichajeRef.current = false;
+        setIsSubmittingFichaje(false);
+      }
     }
   };
 
@@ -549,16 +583,11 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onReturnToTerminal = () => {
-    resetWorkerSession();
-    setKioskStep("terminal");
+    resetWorkerSession("return-to-terminal");
   };
 
   const onAnotherAction = () => {
-    setSelectedKioskAction(null);
-    setFichajeError(null);
-    setFichajeResult(null);
-    setPendingFichajeData(null);
-    setKioskStep("actions");
+    resetWorkerSession("another-action");
   };
 
   const hasWorkerSession = Boolean(
@@ -602,6 +631,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     return (
       <KioskConfirmationView
         action={selectedKioskAction}
+        confirmationSeconds={confirmationSeconds}
         result={fichajeResult}
         onAnotherAction={onAnotherAction}
         onReturnToTerminal={onReturnToTerminal}

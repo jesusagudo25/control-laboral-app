@@ -12,6 +12,14 @@ const formatDateTime = (date) =>
     minute: "2-digit",
   })}`;
 
+const formatCountdown = (seconds) => {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  return `${String(minutes).padStart(2, "0")}:${String(
+    safeSeconds % 60,
+  ).padStart(2, "0")}`;
+};
+
 const DetailRow = ({ label, value, last }) => (
   <View style={[styles.detailRow, last && styles.lastDetailRow]}>
     <Text style={styles.detailLabel}>{label}</Text>
@@ -23,6 +31,7 @@ const KioskConfirmationView = ({
   worker,
   action,
   result,
+  confirmationSeconds,
   onReturnToTerminal,
   onAnotherAction,
 }) => {
@@ -64,9 +73,9 @@ const KioskConfirmationView = ({
           <Text style={styles.returnTitle}>
             Volviendo a la pantalla inicial en
           </Text>
-          <Text style={styles.returnHint}>Retorno automático simulado</Text>
+          <Text style={styles.returnHint}>La sesión temporal se cerrará</Text>
         </View>
-        <Text style={styles.timer}>00:05</Text>
+        <Text style={styles.timer}>{formatCountdown(confirmationSeconds)}</Text>
       </View>
 
       <TouchableOpacity
