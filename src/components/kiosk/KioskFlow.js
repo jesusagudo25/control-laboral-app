@@ -3,32 +3,17 @@ import useApi from "../../hooks/useApi";
 import {
   getCompanyInfo,
   getKioskConfig,
+  getKioskShiftStatus,
   getUserInfo,
   getUserTurn,
   selectUserTurn,
   validateKioskQr,
 } from "../../services/kioskApi";
+import { normalizeKioskShiftStatus } from "../../utils/kioskActions";
 import KioskActionsView from "./KioskActionsView";
 import KioskConfirmationView from "./KioskConfirmationView";
 import KioskTerminalView from "./KioskTerminalView";
 import KioskTurnSelectorView from "./KioskTurnSelectorView";
-
-const SIMULATED_ACTIONS = [
-  {
-    id: "start-break",
-    title: "Iniciar pausa",
-    description: "Registra una pausa temporal en tu jornada.",
-    icon: "pause",
-    confirmationTitle: "Pausa iniciada",
-  },
-  {
-    id: "end-shift",
-    title: "Finalizar jornada",
-    description: "Finaliza tu jornada laboral del día de hoy.",
-    icon: "stop",
-    confirmationTitle: "Jornada finalizada",
-  },
-];
 
 const normalizeApiUrl = (value) => {
   if (typeof value !== "string" || !value.trim()) {
@@ -99,6 +84,11 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [isSavingTurn, setIsSavingTurn] = useState(false);
   const [turnError, setTurnError] = useState(null);
   const [isLoadingUserTurn, setIsLoadingUserTurn] = useState(false);
+  const [kioskActions, setKioskActions] = useState([]);
+  const [kioskMotives, setKioskMotives] = useState([]);
+  const [kioskWorkDate, setKioskWorkDate] = useState(null);
+  const [isLoadingShiftStatus, setIsLoadingShiftStatus] = useState(false);
+  const [shiftStatusError, setShiftStatusError] = useState(null);
   const isValidatingQrRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
 
@@ -182,7 +172,48 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     setIsSavingTurn(false);
     setTurnError(null);
     setIsLoadingUserTurn(false);
+    setKioskActions([]);
+    setKioskMotives([]);
+    setKioskWorkDate(null);
+    setIsLoadingShiftStatus(false);
+    setShiftStatusError(null);
     setSelectedKioskAction(null);
+  };
+
+  const loadKioskShiftStatus = async (normalizedApiUrl, token, requestId) => {
+    setKioskStep("actions");
+    setIsLoadingShiftStatus(true);
+    setShiftStatusError(null);
+    setKioskActions([]);
+    setKioskMotives([]);
+    setKioskWorkDate(null);
+
+    try {
+      const response = await getKioskShiftStatus(normalizedApiUrl, token);
+
+      if (requestId !== qrValidationRequestRef.current) return;
+
+      if (response?.success !== true || !response.data) {
+        throw new Error("Invalid kiosk shift status response");
+      }
+
+      const normalizedStatus = normalizeKioskShiftStatus(response.data);
+      setKioskActions(normalizedStatus.actions);
+      setKioskMotives(normalizedStatus.motives);
+      setKioskWorkDate(normalizedStatus.workDate);
+    } catch (error) {
+      if (requestId === qrValidationRequestRef.current) {
+        setShiftStatusError(
+          isUnauthorizedError(error)
+            ? "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente."
+            : "No se pudieron cargar las acciones disponibles. Inténtalo de nuevo.",
+        );
+      }
+    } finally {
+      if (requestId === qrValidationRequestRef.current) {
+        setIsLoadingShiftStatus(false);
+      }
+    }
   };
 
   const onQrValueChange = (value) => {
@@ -316,7 +347,15 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       setIsMultipleTurn(hasMultipleTurns);
       setTurnOptions(normalizeTurnOptions(turnResponse.data.horarios));
       setSelectedTurn(null);
-      setKioskStep(hasMultipleTurns ? "turn-selector" : "actions");
+      if (hasMultipleTurns) {
+        setKioskStep("turn-selector");
+      } else {
+        await loadKioskShiftStatus(
+          normalizedApiUrl,
+          temporaryWorkerToken,
+          requestId,
+        );
+      }
     } catch (error) {
       if (requestId === qrValidationRequestRef.current) {
         setWorkerToken(null);
@@ -383,7 +422,11 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         return;
       }
 
-      setKioskStep("actions");
+      await loadKioskShiftStatus(
+        normalizeApiUrl(apiUrl),
+        workerToken,
+        qrValidationRequestRef.current,
+      );
     } catch (error) {
       setTurnError(
         isUnauthorizedError(error)
@@ -456,9 +499,20 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   if (kioskStep === "actions" && hasWorkerSession) {
     return (
       <KioskActionsView
-        availableActions={SIMULATED_ACTIONS}
+        availableActions={kioskActions}
+        isLoading={isLoadingShiftStatus}
+        motives={kioskMotives}
         onActionPress={onActionPress}
+        onRetry={() =>
+          loadKioskShiftStatus(
+            normalizeApiUrl(apiUrl),
+            workerToken,
+            qrValidationRequestRef.current,
+          )
+        }
         onReturnToTerminal={onReturnToTerminal}
+        shiftStatusError={shiftStatusError}
+        workDate={kioskWorkDate}
         worker={worker}
       />
     );

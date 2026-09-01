@@ -1,12 +1,22 @@
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Icon } from "@rneui/themed";
 
 const KioskActionsView = ({
   worker,
   availableActions,
+  isLoading,
   onActionPress,
+  onRetry,
   onReturnToTerminal,
+  shiftStatusError,
 }) => (
   <View style={styles.container}>
     <Image
@@ -27,35 +37,53 @@ const KioskActionsView = ({
     </View>
 
     <View style={styles.actions}>
-      {availableActions.map((action) => (
-        <TouchableOpacity
-          accessibilityLabel={action.title}
-          accessibilityRole="button"
-          activeOpacity={0.8}
-          key={action.id}
-          onPress={() => onActionPress(action)}
-          style={styles.actionCard}
-        >
-          <View style={styles.actionIcon}>
+      {isLoading && <ActivityIndicator color="#f7941e" size="large" />}
+      {!isLoading && shiftStatusError && (
+        <View style={styles.statusCard}>
+          <Text style={styles.statusText}>{shiftStatusError}</Text>
+          <TouchableOpacity onPress={onRetry} style={styles.retryButton}>
+            <Text style={styles.retryText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {!isLoading && !shiftStatusError && availableActions.length === 0 && (
+        <View style={styles.statusCard}>
+          <Text style={styles.statusText}>
+            No hay acciones disponibles en este momento.
+          </Text>
+        </View>
+      )}
+      {!isLoading &&
+        !shiftStatusError &&
+        availableActions.map((action) => (
+          <TouchableOpacity
+            accessibilityLabel={action.title}
+            accessibilityRole="button"
+            activeOpacity={0.8}
+            key={action.id}
+            onPress={() => onActionPress(action)}
+            style={styles.actionCard}
+          >
+            <View style={styles.actionIcon}>
+              <Icon
+                name={action.icon}
+                type="font-awesome"
+                color="#f7941e"
+                size={22}
+              />
+            </View>
+            <View style={styles.actionContent}>
+              <Text style={styles.actionTitle}>{action.title}</Text>
+              <Text style={styles.actionDescription}>{action.description}</Text>
+            </View>
             <Icon
-              name={action.icon}
+              name="chevron-right"
               type="font-awesome"
-              color="#f7941e"
-              size={22}
+              color="#b8ada4"
+              size={15}
             />
-          </View>
-          <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>{action.title}</Text>
-            <Text style={styles.actionDescription}>{action.description}</Text>
-          </View>
-          <Icon
-            name="chevron-right"
-            type="font-awesome"
-            color="#b8ada4"
-            size={15}
-          />
-        </TouchableOpacity>
-      ))}
+          </TouchableOpacity>
+        ))}
     </View>
 
     <View style={styles.infoCard}>
@@ -130,6 +158,18 @@ const styles = StyleSheet.create({
   workerName: { color: "#28231f", fontSize: 17, fontWeight: "700" },
   workerDetail: { color: "#756b63", fontSize: 13, marginTop: 4 },
   actions: { marginTop: 12, maxWidth: 460, width: "100%" },
+  statusCard: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#eee2d7",
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 18,
+  },
+  statusText: { color: "#756b63", fontSize: 14, textAlign: "center" },
+  retryButton: { marginTop: 12, padding: 8 },
+  retryText: { color: "#9b5a16", fontSize: 14, fontWeight: "700" },
   actionCard: {
     alignItems: "center",
     backgroundColor: "#fff",
