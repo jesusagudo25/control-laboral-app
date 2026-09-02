@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 const KioskQrScannerView = ({ disabled, onQrScanned }) => {
   const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState("front");
   const hasScannedRef = useRef(false);
   const hasRequestedPermissionRef = useRef(false);
+  const isSwitchingCameraRef = useRef(false);
 
   useEffect(() => {
     if (!permission || hasRequestedPermissionRef.current) return;
@@ -23,13 +25,37 @@ const KioskQrScannerView = ({ disabled, onQrScanned }) => {
   }, [disabled]);
 
   const handleBarcodeScanned = ({ data }) => {
-    if (disabled || hasScannedRef.current || typeof data !== "string") return;
+    if (
+      disabled ||
+      isSwitchingCameraRef.current ||
+      hasScannedRef.current ||
+      typeof data !== "string"
+    )
+      return;
 
     const qrValue = data.trim();
     if (!qrValue) return;
 
     hasScannedRef.current = true;
     onQrScanned(qrValue);
+  };
+
+  const handleCameraChange = () => {
+    if (disabled || isSwitchingCameraRef.current) return;
+
+    isSwitchingCameraRef.current = true;
+    hasScannedRef.current = true;
+    setFacing((currentFacing) =>
+      currentFacing === "front" ? "back" : "front",
+    );
+  };
+
+  const handleCameraReady = () => {
+    isSwitchingCameraRef.current = false;
+
+    if (!disabled) {
+      hasScannedRef.current = false;
+    }
   };
 
   if (!permission) {
@@ -69,7 +95,8 @@ const KioskQrScannerView = ({ disabled, onQrScanned }) => {
     <View style={[styles.scanner, disabled && styles.scannerDisabled]}>
       <CameraView
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        facing="back"
+        facing={facing}
+        onCameraReady={handleCameraReady}
         onBarcodeScanned={disabled ? undefined : handleBarcodeScanned}
         style={StyleSheet.absoluteFill}
       />
@@ -79,6 +106,16 @@ const KioskQrScannerView = ({ disabled, onQrScanned }) => {
         <View style={[styles.corner, styles.bottomLeft]} />
         <View style={[styles.corner, styles.bottomRight]} />
       </View>
+      <TouchableOpacity
+        accessibilityHint="Alterna entre la cámara frontal y trasera"
+        accessibilityLabel="Cambiar cámara"
+        accessibilityRole="button"
+        disabled={disabled}
+        onPress={handleCameraChange}
+        style={styles.cameraButton}
+      >
+        <Text style={styles.cameraButtonText}>Cambiar cámara</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -91,6 +128,16 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   scannerDisabled: { opacity: 0.55 },
+  cameraButton: {
+    alignSelf: "center",
+    backgroundColor: "rgba(40, 35, 31, 0.78)",
+    borderRadius: 16,
+    bottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    position: "absolute",
+  },
+  cameraButtonText: { color: "#fff", fontSize: 12, fontWeight: "600" },
   frame: {
     bottom: 34,
     left: 70,

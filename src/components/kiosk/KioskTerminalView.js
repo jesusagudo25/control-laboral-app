@@ -86,9 +86,11 @@ const KioskTerminalView = ({
             }
             onQrScanned={onQrScanned}
           />
-          <Text style={styles.scanTitle}>Acerca tu código QR</Text>
+          <Text style={styles.scanTitle}>
+            Acerque su código QR a la cámara frontal
+          </Text>
           <Text style={styles.scanText}>
-            Colócalo frente a la cámara para registrar tu entrada o salida.
+            Mantenga el código dentro del recuadro
           </Text>
           {__DEV__ && (
             <TextInput
