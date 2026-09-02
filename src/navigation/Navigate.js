@@ -296,10 +296,8 @@ const Navigate = () => {
       });
 
     return () => {
-      Notifications.removeNotificationSubscription(
-        notificationListener.current
-      );
-      Notifications.removeNotificationSubscription(responseListener.current);
+      notificationListener.current?.remove?.();
+      responseListener.current?.remove?.();
     };
   }, []);
 
