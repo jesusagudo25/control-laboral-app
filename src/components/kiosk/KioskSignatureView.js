@@ -39,6 +39,18 @@ const KioskSignatureView = ({
           webStyle={signatureWebStyle}
         />
       </View>
+      <TouchableOpacity
+        accessibilityRole="button"
+        disabled={isSubmitting}
+        onPress={() => {
+          onInteraction();
+          setLocalError(null);
+          signatureRef.current?.clearSignature();
+        }}
+        style={[styles.clearButton, isSubmitting && styles.disabledButton]}
+      >
+        <Text style={styles.clearText}>Limpiar firma</Text>
+      </TouchableOpacity>
       {localError || error ? (
         <Text style={styles.error}>{localError || error}</Text>
       ) : null}
@@ -102,6 +114,17 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   error: { color: "#a33b2b", fontSize: 13, marginTop: 12 },
+  clearButton: {
+    alignItems: "center",
+    borderColor: "#9b5a16",
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 10,
+    maxWidth: 460,
+    padding: 10,
+    width: "100%",
+  },
+  clearText: { color: "#9b5a16", fontSize: 14, fontWeight: "700" },
   idleTimer: { color: "#b9650a", fontWeight: "700", marginTop: 12 },
   primaryButton: {
     alignItems: "center",

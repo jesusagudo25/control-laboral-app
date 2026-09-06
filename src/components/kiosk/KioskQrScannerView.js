@@ -4,29 +4,66 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 
 const KioskQrScannerView = ({ disabled, onQrScanned }) => {
   const [permission, requestPermission] = useCameraPermissions();
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [permissionError, setPermissionError] = useState(null);
   const [facing, setFacing] = useState("front");
+  const cameraActiveRef = useRef(false);
   const hasScannedRef = useRef(false);
-  const hasRequestedPermissionRef = useRef(false);
   const isSwitchingCameraRef = useRef(false);
 
-  useEffect(() => {
-    if (!permission || hasRequestedPermissionRef.current) return;
+  const stopCamera = () => {
+    cameraActiveRef.current = false;
+    hasScannedRef.current = false;
+    isSwitchingCameraRef.current = false;
+    setIsCameraActive(false);
+    setPermissionError(null);
+  };
 
-    if (!permission.granted && permission.canAskAgain) {
-      hasRequestedPermissionRef.current = true;
-      requestPermission();
-    }
-  }, [permission, requestPermission]);
-
   useEffect(() => {
-    if (!disabled) {
-      hasScannedRef.current = false;
-    }
+    if (disabled) stopCamera();
   }, [disabled]);
+
+  useEffect(
+    () => () => {
+      cameraActiveRef.current = false;
+    },
+    [],
+  );
+
+  const startCamera = async () => {
+    if (disabled || cameraActiveRef.current) return;
+
+    cameraActiveRef.current = true;
+    hasScannedRef.current = false;
+    isSwitchingCameraRef.current = true;
+    setFacing("front");
+    setPermissionError(null);
+    try {
+      const result = permission?.granted
+        ? permission
+        : await requestPermission();
+      if (!cameraActiveRef.current) return;
+      if (result.granted) {
+        setIsCameraActive(true);
+      } else {
+        cameraActiveRef.current = false;
+        setPermissionError(
+          "Se necesita permiso de cámara para escanear el código QR.",
+        );
+      }
+    } catch {
+      if (!cameraActiveRef.current) return;
+      cameraActiveRef.current = false;
+      setPermissionError(
+        "No se pudo solicitar permiso de cámara. Inténtalo de nuevo.",
+      );
+    }
+  };
 
   const handleBarcodeScanned = ({ data }) => {
     if (
       disabled ||
+      !cameraActiveRef.current ||
       isSwitchingCameraRef.current ||
       hasScannedRef.current ||
       typeof data !== "string"
@@ -37,52 +74,46 @@ const KioskQrScannerView = ({ disabled, onQrScanned }) => {
     if (!qrValue) return;
 
     hasScannedRef.current = true;
+    cameraActiveRef.current = false;
+    setIsCameraActive(false);
     onQrScanned(qrValue);
   };
 
   const handleCameraChange = () => {
-    if (disabled || isSwitchingCameraRef.current) return;
-
+    if (disabled || !cameraActiveRef.current || isSwitchingCameraRef.current)
+      return;
     isSwitchingCameraRef.current = true;
-    hasScannedRef.current = true;
     setFacing((currentFacing) =>
       currentFacing === "front" ? "back" : "front",
     );
   };
 
   const handleCameraReady = () => {
+    if (!cameraActiveRef.current || disabled) return;
     isSwitchingCameraRef.current = false;
-
-    if (!disabled) {
-      hasScannedRef.current = false;
-    }
   };
 
-  if (!permission) {
+  if (!isCameraActive || disabled || !permission?.granted) {
     return (
       <View style={styles.permissionState}>
-        <Text style={styles.permissionText}>Preparando la cámara...</Text>
-      </View>
-    );
-  }
-
-  if (!permission.granted) {
-    return (
-      <View style={styles.permissionState}>
-        <Text accessibilityRole="alert" style={styles.permissionText}>
-          Se necesita permiso de cámara para escanear el código QR.
+        <Text style={styles.scanTitle}>Lector QR listo</Text>
+        <Text style={styles.permissionText}>
+          Presione Iniciar cámara para escanear el código QR
         </Text>
-        {permission.canAskAgain && (
-          <TouchableOpacity
-            accessibilityLabel="Solicitar permiso de cámara"
-            accessibilityRole="button"
-            onPress={requestPermission}
-            style={styles.permissionButton}
-          >
-            <Text style={styles.permissionButtonText}>PERMITIR CÁMARA</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={startCamera}
+          style={styles.permissionButton}
+        >
+          <Text style={styles.permissionButtonText}>Iniciar cámara</Text>
+        </TouchableOpacity>
+        {!!permissionError && (
+          <Text accessibilityRole="alert" style={styles.settingsText}>
+            {permissionError}
+          </Text>
         )}
-        {!permission.canAskAgain && (
+        {permission && !permission.granted && !permission.canAskAgain && (
           <Text style={styles.settingsText}>
             Habilita la cámara desde los ajustes del dispositivo para continuar.
           </Text>
@@ -92,29 +123,41 @@ const KioskQrScannerView = ({ disabled, onQrScanned }) => {
   }
 
   return (
-    <View style={[styles.scanner, disabled && styles.scannerDisabled]}>
-      <CameraView
-        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        facing={facing}
-        onCameraReady={handleCameraReady}
-        onBarcodeScanned={disabled ? undefined : handleBarcodeScanned}
-        style={StyleSheet.absoluteFill}
-      />
-      <View pointerEvents="none" style={styles.frame}>
-        <View style={[styles.corner, styles.topLeft]} />
-        <View style={[styles.corner, styles.topRight]} />
-        <View style={[styles.corner, styles.bottomLeft]} />
-        <View style={[styles.corner, styles.bottomRight]} />
+    <View style={styles.activeScanner}>
+      <View style={styles.scanner}>
+        <CameraView
+          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          facing={facing}
+          onCameraReady={handleCameraReady}
+          onBarcodeScanned={handleBarcodeScanned}
+          style={StyleSheet.absoluteFill}
+        />
+        <View pointerEvents="none" style={styles.frame}>
+          <View style={[styles.corner, styles.topLeft]} />
+          <View style={[styles.corner, styles.topRight]} />
+          <View style={[styles.corner, styles.bottomLeft]} />
+          <View style={[styles.corner, styles.bottomRight]} />
+        </View>
+        <TouchableOpacity
+          accessibilityHint="Alterna entre la cámara frontal y trasera"
+          accessibilityLabel="Cambiar cámara"
+          accessibilityRole="button"
+          onPress={handleCameraChange}
+          style={styles.cameraButton}
+        >
+          <Text style={styles.cameraButtonText}>Cambiar cámara</Text>
+        </TouchableOpacity>
       </View>
+      <Text style={styles.scanTitle}>Acerque su código QR a la cámara</Text>
+      <Text style={styles.permissionText}>
+        Mantenga el código dentro del recuadro
+      </Text>
       <TouchableOpacity
-        accessibilityHint="Alterna entre la cámara frontal y trasera"
-        accessibilityLabel="Cambiar cámara"
         accessibilityRole="button"
-        disabled={disabled}
-        onPress={handleCameraChange}
-        style={styles.cameraButton}
+        onPress={stopCamera}
+        style={styles.closeButton}
       >
-        <Text style={styles.cameraButtonText}>Cambiar cámara</Text>
+        <Text style={styles.closeButtonText}>Apagar cámara</Text>
       </TouchableOpacity>
     </View>
   );
@@ -127,7 +170,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     width: "100%",
   },
-  scannerDisabled: { opacity: 0.55 },
+  activeScanner: { alignItems: "center", width: "100%" },
+  scanTitle: {
+    color: "#28231f",
+    fontSize: 19,
+    fontWeight: "700",
+    marginVertical: 12,
+    textAlign: "center",
+  },
+  closeButton: { marginTop: 12, padding: 10 },
+  closeButtonText: { color: "#b9650a", fontWeight: "600" },
   cameraButton: {
     alignSelf: "center",
     backgroundColor: "rgba(40, 35, 31, 0.78)",

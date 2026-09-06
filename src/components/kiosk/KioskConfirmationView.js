@@ -32,6 +32,7 @@ const KioskConfirmationView = ({
   action,
   result,
   confirmationSeconds,
+  isSessionExpired = false,
   onReturnToTerminal,
   onAnotherAction,
 }) => {
@@ -71,9 +72,15 @@ const KioskConfirmationView = ({
         </View>
         <View style={styles.returnContent}>
           <Text style={styles.returnTitle}>
-            Volviendo a la pantalla inicial en
+            {isSessionExpired
+              ? "Volviendo a la terminal en"
+              : "Volviendo a Acciones de jornada en"}
           </Text>
-          <Text style={styles.returnHint}>La sesión temporal se cerrará</Text>
+          <Text style={styles.returnHint}>
+            {isSessionExpired
+              ? "La sesión temporal venció"
+              : "Puedes realizar otra acción con tu sesión actual"}
+          </Text>
         </View>
         <Text style={styles.timer}>{formatCountdown(confirmationSeconds)}</Text>
       </View>

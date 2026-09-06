@@ -86,12 +86,6 @@ const KioskTerminalView = ({
             }
             onQrScanned={onQrScanned}
           />
-          <Text style={styles.scanTitle}>
-            Acerque su código QR a la cámara frontal
-          </Text>
-          <Text style={styles.scanText}>
-            Mantenga el código dentro del recuadro
-          </Text>
           {__DEV__ && (
             <TextInput
               accessibilityLabel="Código QR simulado"
@@ -234,18 +228,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   cardDisabled: { opacity: 0.7 },
-  scanTitle: {
-    color: "#28231f",
-    fontSize: 19,
-    fontWeight: "700",
-    marginTop: 16,
-  },
-  scanText: {
-    color: "#756b63",
-    lineHeight: 21,
-    marginTop: 7,
-    textAlign: "center",
-  },
   simulationText: {
     color: "#b9650a",
     fontSize: 12,

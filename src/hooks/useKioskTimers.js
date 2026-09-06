@@ -7,12 +7,14 @@ const useKioskTimers = ({
   enabled,
   idleTimeoutSeconds,
   workerSessionDeadline,
+  idlePaused = false,
   onExpire,
 }) => {
   const [idleSeconds, setIdleSeconds] = useState(0);
   const idleDeadlineRef = useRef(null);
   const onExpireRef = useRef(onExpire);
   const expiredRef = useRef(false);
+  const ttlExpiredRef = useRef(false);
 
   onExpireRef.current = onExpire;
 
@@ -27,21 +29,22 @@ const useKioskTimers = ({
     if (!enabled || workerSessionDeadline === null) {
       idleDeadlineRef.current = null;
       expiredRef.current = false;
+      ttlExpiredRef.current = false;
       setIdleSeconds(0);
       return undefined;
     }
 
-    expiredRef.current = false;
     idleDeadlineRef.current = Date.now() + idleTimeoutSeconds * 1000;
 
     const updateTimers = () => {
       if (expiredRef.current) return;
 
-      if (Date.now() >= workerSessionDeadline) {
-        expiredRef.current = true;
+      if (!ttlExpiredRef.current && Date.now() >= workerSessionDeadline) {
+        ttlExpiredRef.current = true;
         onExpireRef.current("worker_session_ttl");
-        return;
       }
+
+      if (idlePaused) return;
 
       const remainingIdleSeconds = secondsUntil(idleDeadlineRef.current);
       setIdleSeconds(remainingIdleSeconds);
@@ -56,7 +59,7 @@ const useKioskTimers = ({
     const intervalId = globalThis.setInterval(updateTimers, 250);
 
     return () => globalThis.clearInterval(intervalId);
-  }, [enabled, idleTimeoutSeconds, workerSessionDeadline]);
+  }, [enabled, idleTimeoutSeconds, workerSessionDeadline, idlePaused]);
 
   return { idleSeconds, resetIdle };
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Alert } from "react-native";
 import useApi from "../../hooks/useApi";
 import useKioskLocation from "../../hooks/useKioskLocation";
 import useKioskTimers from "../../hooks/useKioskTimers";
@@ -99,6 +100,10 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   const [fichajeResult, setFichajeResult] = useState(null);
   const [confirmationSeconds, setConfirmationSeconds] = useState(0);
   const [pendingFichajeData, setPendingFichajeData] = useState(null);
+  const [isWorkerSessionExpired, setIsWorkerSessionExpired] = useState(false);
+  const expiryAlertShownRef = useRef(false);
+  const finishConfirmationRef = useRef(null);
+  const confirmationFinishedRef = useRef(false);
   const isValidatingQrRef = useRef(false);
   const isSubmittingFichajeRef = useRef(false);
   const qrValidationRequestRef = useRef(0);
@@ -167,6 +172,8 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   );
 
   const resetWorkerSession = (reason) => {
+    setIsWorkerSessionExpired(false);
+    expiryAlertShownRef.current = false;
     lastResetReasonRef.current = reason;
     qrValidationRequestRef.current += 1;
     isValidatingQrRef.current = false;
@@ -208,14 +215,53 @@ const KioskFlow = ({ onOperationalStateChange }) => {
     enabled: Boolean(workerToken && workerSessionDeadline !== null),
     idleTimeoutSeconds: kioskConfig?.idle_timeout_seconds ?? 0,
     workerSessionDeadline,
-    onExpire: (reason) => resetWorkerSessionRef.current?.(reason),
+    idlePaused:
+      kioskStep === "confirmation" || isSubmittingFichaje || isSavingTurn,
+    onExpire: (reason) => {
+      if (reason === "worker_session_ttl") {
+        setIsWorkerSessionExpired(true);
+      } else {
+        resetWorkerSessionRef.current?.(reason);
+      }
+    },
   });
+
+  useEffect(() => {
+    if (!isWorkerSessionExpired || isSubmittingFichaje || isSavingTurn) return;
+    if (kioskStep === "confirmation") return;
+    if (["pause", "signature", "turn-selector"].includes(kioskStep)) {
+      if (expiryAlertShownRef.current) return;
+      expiryAlertShownRef.current = true;
+      Alert.alert(
+        "Sesión vencida",
+        "La sesión temporal venció. Vuelve a la terminal y escanea el QR nuevamente.",
+        [
+          {
+            text: "Volver a la terminal",
+            onPress: () => resetWorkerSessionRef.current("worker_session_ttl"),
+          },
+        ],
+        { cancelable: false },
+      );
+      return;
+    }
+    resetWorkerSessionRef.current("worker_session_ttl");
+  }, [isWorkerSessionExpired, isSubmittingFichaje, isSavingTurn, kioskStep]);
+
+  const canUseWorkerSession = () => {
+    if (!workerToken || workerSessionDeadline === null) return false;
+    if (isWorkerSessionExpired || Date.now() >= workerSessionDeadline) {
+      setIsWorkerSessionExpired(true);
+      return false;
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (kioskStep !== "confirmation" || !fichajeResult) return undefined;
 
     if (confirmationSeconds <= 0) {
-      resetWorkerSessionRef.current("confirmation-timeout");
+      finishConfirmationRef.current();
       return undefined;
     }
 
@@ -452,6 +498,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onConfirmTurn = async () => {
+    if (!canUseWorkerSession()) return;
     resetIdle();
     if (!selectedTurn || isSavingTurn) {
       setTurnError("Selecciona un horario para continuar.");
@@ -478,6 +525,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         return;
       }
 
+      if (!canUseWorkerSession()) return;
       await loadKioskShiftStatus(
         normalizeApiUrl(apiUrl),
         workerToken,
@@ -498,6 +546,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const handleSubmitKioskFichaje = async (action, extraData = {}) => {
+    if (!canUseWorkerSession()) return;
     if (isSubmittingFichajeRef.current) return;
 
     const workDate = kioskWorkDate || dateUserTurn;
@@ -562,6 +611,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       }
 
       setFichajeResult(response);
+      confirmationFinishedRef.current = false;
       setConfirmationSeconds(kioskConfig.confirmation_timeout_seconds);
       setKioskStep("confirmation");
     } catch (error) {
@@ -580,6 +630,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onActionPress = (action) => {
+    if (!canUseWorkerSession()) return;
     resetIdle();
     setSelectedKioskAction(action);
     setFichajeError(null);
@@ -599,12 +650,31 @@ const KioskFlow = ({ onOperationalStateChange }) => {
   };
 
   const onReturnToTerminal = () => {
-    resetWorkerSession("return-to-terminal");
+    resetWorkerSession("manual_return");
   };
 
   const onAnotherAction = () => {
-    resetWorkerSession("another-action");
+    if (!canUseWorkerSession()) {
+      resetWorkerSession("worker_session_ttl");
+      return;
+    }
+    if (kioskStep === "confirmation") {
+      if (confirmationFinishedRef.current) return;
+      confirmationFinishedRef.current = true;
+    }
+    setFichajeResult(null);
+    setSelectedKioskAction(null);
+    setFichajeError(null);
+    setPendingFichajeData(null);
+    setConfirmationSeconds(0);
+    resetIdle();
+    loadKioskShiftStatus(
+      normalizeApiUrl(apiUrl),
+      workerToken,
+      qrValidationRequestRef.current,
+    );
   };
+  finishConfirmationRef.current = onAnotherAction;
 
   const hasWorkerSession = Boolean(
     workerToken &&
@@ -650,6 +720,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
       <KioskConfirmationView
         action={selectedKioskAction}
         confirmationSeconds={confirmationSeconds}
+        isSessionExpired={isWorkerSessionExpired}
         result={fichajeResult}
         onAnotherAction={onAnotherAction}
         onReturnToTerminal={onReturnToTerminal}
@@ -703,6 +774,7 @@ const KioskFlow = ({ onOperationalStateChange }) => {
         motives={kioskMotives}
         onActionPress={onActionPress}
         onRetry={() => {
+          if (!canUseWorkerSession()) return;
           resetIdle();
           loadKioskShiftStatus(
             normalizeApiUrl(apiUrl),
